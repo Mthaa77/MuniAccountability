@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MuniAccountability Command</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand-lockup">
+          <div class="brand-mark">MC</div>
+          <div>
+            <strong>MuniCommand</strong>
+            <span>Oversight OS</span>
+          </div>
+        </div>
+        <nav>
+          <a class="active" href="#command">Command</a>
+          <a href="#municipalities">Municipalities</a>
+          <a href="#workflows">Workflows</a>
+          <a href="#intelligence">Intelligence</a>
+          <a href="#briefings">Briefings</a>
+          <a href="#sources">Sources</a>
+          <a href="#municheck">MuniCheck</a>
+          <a href="#munidata">MuniData</a>
+        </nav>
+        <div class="sidebar-card">
+          <strong>Evidence guardrail</strong>
+          <span>No source, no assertion. Treasury telemetry is disabled until validation passes.</span>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyeless">Provincial Treasury pilot workspace</p>
+            <h1>MuniAccountability Command</h1>
+          </div>
+          <div class="top-actions">
+            <button>Search</button>
+            <button>As of 6 Jul 2026</button>
+            <button class="primary-action">Generate brief</button>
+          </div>
+        </header>
+
+        <section class="hero-band" id="command">
+          <div>
+            <p class="eyeless">Municipal Oversight, Intervention and Recovery Operating System</p>
+            <h2>Find the risk. Assign the action. Prove the recovery.</h2>
+            <p>
+              Phase 1 is AGSA-first: evidence-backed case files, intervention queue, actions,
+              decision logs and cited briefings before live Treasury telemetry is enabled.
+            </p>
+          </div>
+          <div class="hero-actions">
+            <span class="badge good">AGSA verified</span>
+            <span class="badge watch">Treasury pending validation</span>
+            <span class="badge risk">Decision required</span>
+          </div>
+        </section>
+
+        <section class="product-strip" aria-label="Product surfaces">
+          <article><strong>MuniCommand</strong><span>Institutional oversight command centre</span></article>
+          <article><strong>MuniPulse</strong><span>Recovery and corrective-action workspace</span></article>
+          <article><strong>MuniCheck</strong><span>Public plain-language municipal profile</span></article>
+          <article><strong>MuniData</strong><span>API, exports, widgets and partner feeds</span></article>
+        </section>
+
+        <section class="metrics-grid" id="metrics"></section>
+
+        <section class="main-grid">
+          <section class="panel wide" id="workflows">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">AGSA-first operational worklist</p>
+                <h2>Intervention Queue</h2>
+              </div>
+              <button>Explain ranking</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Municipality</th>
+                    <th>Why it is here</th>
+                    <th>Severity</th>
+                    <th>Next action</th>
+                    <th>Owner</th>
+                    <th>Due</th>
+                  </tr>
+                </thead>
+                <tbody id="queueRows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel map-panel" id="intelligence">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">Map with table fallback</p>
+                <h2>Gauteng Risk View</h2>
+              </div>
+              <span class="badge watch">Boundary version pending</span>
+            </div>
+            <div class="map-canvas" aria-label="Schematic Gauteng municipality risk map">
+              <div class="province-shape"></div>
+              <div id="mapPoints"></div>
+            </div>
+            <div class="map-list" id="mapList"></div>
+          </section>
+
+          <section class="panel" id="municipalities">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">Municipality 360</p>
+                <h2 id="caseName">Case file</h2>
+              </div>
+              <span id="caseSeverity" class="badge risk">Critical</span>
+            </div>
+            <p class="lead" id="caseSummary"></p>
+            <div class="case-meta" id="caseMeta"></div>
+            <div class="ipi-block">
+              <div><span>Intervention Priority Index</span><strong id="ipiScore"></strong></div>
+              <div class="ipi-bar"><span id="ipiBar"></span></div>
+            </div>
+            <div class="metric-list" id="caseMetrics"></div>
+          </section>
+
+          <section class="panel evidence-panel" id="sources">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">Evidence drawer preview</p>
+                <h2>Why ranked #1</h2>
+              </div>
+            </div>
+            <dl class="evidence-list" id="evidenceList"></dl>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">Finding to action engine</p>
+                <h2>Action Evidence</h2>
+              </div>
+              <span class="badge watch">2 review risks</span>
+            </div>
+            <div class="action-stack" id="actions"></div>
+          </section>
+
+          <section class="panel" id="briefings">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">Committee and executive packs</p>
+                <h2>Briefing Builder</h2>
+              </div>
+            </div>
+            <div class="briefing-list" id="briefingsList"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">Data operations console</p>
+                <h2>Source Health</h2>
+              </div>
+            </div>
+            <div class="source-stack" id="sourceHealth"></div>
+          </section>
+
+          <section class="panel assistant-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyeless">Source-locked assistant</p>
+                <h2>Ask MuniCommand</h2>
+              </div>
+            </div>
+            <div class="assistant-answer">
+              <strong>Example answer policy</strong>
+              <p>
+                Direct answer, data coverage, evidence citations, filters applied, confidence label,
+                and suggested follow-up actions. No source means no assertion.
+              </p>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
