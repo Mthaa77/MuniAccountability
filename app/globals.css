@@ -1198,6 +1198,34 @@ tbody tr:hover {
   outline: none;
 }
 
+.action-lifecycle {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.7rem;
+}
+
+.action-lifecycle small {
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.action-lifecycle select,
+.action-lifecycle input {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid rgba(31, 57, 84, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  font: inherit;
+  padding: 0.65rem 0.75rem;
+}
+
+.action-lifecycle div {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .review-workspace,
 .review-list {
   display: grid;

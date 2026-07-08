@@ -78,7 +78,29 @@ const draftAction = {
   sourceFindingId: finding.findingId,
   sourceQueueItemId: `qi_finding_${finding.findingId}`,
   municipalityId: "ZA_GP_EKU",
-  title: `Resolve: ${finding.subtheme}`
+  title: `Resolve: ${finding.subtheme}`,
+  assignedTo: "Executive sponsor",
+  evidenceAttachments: [
+    {
+      id: "ev_fixture",
+      label: "Management response pack",
+      submittedBy: "fixture",
+      submittedAt: "2026-07-08T00:00:00.000Z"
+    }
+  ],
+  statusHistory: [
+    {
+      status: "not_started",
+      changedAt: "2026-07-08T00:00:00.000Z",
+      changedBy: "fixture"
+    },
+    {
+      status: "evidence_submitted",
+      changedAt: "2026-07-08T00:10:00.000Z",
+      changedBy: "fixture",
+      reason: "Evidence attachment added"
+    }
+  ]
 };
 
 assert(reviewStore.schemaVersion === "agsa-review-decisions-v0.1", "Unexpected review-decision store schema.");
@@ -93,6 +115,9 @@ assert((confidenceCounts.cohort_derived ?? 0) >= 1, "Expected at least one cohor
 assert((confidenceCounts.needs_review ?? 0) >= 1, "Expected at least one needs-review outcome mapping.");
 assert(sourceDocument && sourceDocumentCitations.length > 0, "Source document detail should have citations.");
 assert(draftAction.sourceFindingId === finding.findingId, "Draft action should preserve source finding id.");
+assert(draftAction.assignedTo, "Draft action should carry an assigned owner.");
+assert(draftAction.evidenceAttachments.length === 1, "Draft action lifecycle should support evidence attachments.");
+assert(draftAction.statusHistory.at(-1).status === "evidence_submitted", "Draft action lifecycle should preserve status history.");
 assert(finding.citationId, "Finding detail fixture should include citation id.");
 
 console.log(

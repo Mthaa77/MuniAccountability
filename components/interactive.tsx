@@ -14,7 +14,7 @@ import {
   sourceFreshnessEvents,
   sourceHealth
 } from "@/lib/pilot-data";
-import type { Action, AgsaReviewDecision, AgsaReviewDecisionStatus, DraftAction, QueueItem, Severity, SourceHealth } from "@/lib/types";
+import type { Action, ActionStatus, AgsaReviewDecision, AgsaReviewDecisionStatus, DraftAction, QueueItem, Severity, SourceHealth } from "@/lib/types";
 import { Badge, actionLabel, severityLabel } from "./ui";
 
 type QueueRiskType = QueueItem["riskType"];
@@ -269,12 +269,16 @@ export function EvidenceDrawer({ item, onCreateAction }: { item: QueueItem; onCr
 
 export function ActionKanban({ scopedActions = actions }: { scopedActions?: Action[] }) {
   const [draftActions, setDraftActions] = useState<DraftAction[]>([]);
+  const [draftMessage, setDraftMessage] = useState("Draft lifecycle changes persist to the local workflow store.");
+  const [evidenceDrafts, setEvidenceDrafts] = useState<Record<string, string>>({});
   const boardActions = [...scopedActions, ...draftActions.filter((draft) => scopedActions === actions || scopedActions.some((action) => action.municipalityId === draft.municipalityId))];
   const columns = [
     { id: "overdue", label: "Overdue" },
     { id: "in_progress", label: "In progress" },
+    { id: "evidence_submitted", label: "Evidence submitted" },
     { id: "under_review", label: "Under review" },
-    { id: "approved", label: "Approved" }
+    { id: "approved", label: "Approved" },
+    { id: "closed_with_residual_risk", label: "Closed with risk" }
   ] as const;
 
   useEffect(() => {
@@ -298,25 +302,113 @@ export function ActionKanban({ scopedActions = actions }: { scopedActions?: Acti
     };
   }, []);
 
+  async function transitionDraft(action: DraftAction, status: ActionStatus) {
+    setDraftMessage(`Moving ${action.title} to ${actionLabel[status].toLowerCase()}...`);
+    const response = await fetch(`/api/v1/actions/drafts/${action.id}/transition`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status,
+        changedBy: "prototype-reviewer",
+        reason: "Updated from Actions board"
+      })
+    });
+
+    if (!response.ok) {
+      setDraftMessage("Could not update draft action status.");
+      return;
+    }
+
+    const payload = (await response.json()) as { data?: { action?: DraftAction } };
+    if (payload.data?.action) {
+      setDraftActions((current) => current.map((draft) => (draft.id === action.id ? payload.data!.action! : draft)));
+      setDraftMessage(`Saved ${actionLabel[status].toLowerCase()} transition.`);
+    }
+  }
+
+  async function attachEvidence(action: DraftAction) {
+    const label = evidenceDrafts[action.id]?.trim();
+    if (!label) {
+      setDraftMessage("Add an evidence label before attaching it.");
+      return;
+    }
+
+    setDraftMessage(`Attaching evidence to ${action.title}...`);
+    const response = await fetch(`/api/v1/actions/drafts/${action.id}/evidence`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        label,
+        submittedBy: "prototype-reviewer",
+        note: "Evidence reference captured from Actions board"
+      })
+    });
+
+    if (!response.ok) {
+      setDraftMessage("Could not attach evidence.");
+      return;
+    }
+
+    const payload = (await response.json()) as { data?: { action?: DraftAction } };
+    if (payload.data?.action) {
+      setDraftActions((current) => current.map((draft) => (draft.id === action.id ? payload.data!.action! : draft)));
+      setEvidenceDrafts((current) => ({ ...current, [action.id]: "" }));
+      setDraftMessage("Evidence attachment saved.");
+    }
+  }
+
   return (
-    <section className="kanban">
-      {columns.map((column) => (
-        <div className="kanban-column" key={column.id}>
-          <div className="kanban-header">
-            <strong>{column.label}</strong>
-            <span>{boardActions.filter((action) => action.status === column.id).length}</span>
+    <>
+      <div className="review-save-state">
+        <Badge tone="under_review">workflow</Badge>
+        <span>{draftMessage}</span>
+      </div>
+      <section className="kanban">
+        {columns.map((column) => (
+          <div className="kanban-column" key={column.id}>
+            <div className="kanban-header">
+              <strong>{column.label}</strong>
+              <span>{boardActions.filter((action) => action.status === column.id).length}</span>
+            </div>
+            {boardActions.filter((action) => action.status === column.id).map((action) => {
+              const draft = "createdAt" in action ? (action as DraftAction) : null;
+
+              return (
+                <article className="kanban-card" key={action.id}>
+                  <strong>{action.title}</strong>
+                  <span>{municipalityName(action.municipalityId)}</span>
+                  <p>{action.linkedFinding}</p>
+                  <Badge tone={action.status}>{actionLabel[action.status]}</Badge>
+                  {draft ? (
+                    <div className="action-lifecycle">
+                      <small>Assigned to {draft.assignedTo ?? draft.owner} / evidence {draft.evidenceAttachments?.length ?? 0}</small>
+                      <select value={draft.status} onChange={(event) => transitionDraft(draft, event.target.value as ActionStatus)}>
+                        <option value="not_started">Not started</option>
+                        <option value="in_progress">In progress</option>
+                        <option value="evidence_submitted">Evidence submitted</option>
+                        <option value="under_review">Under review</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="escalated">Escalated</option>
+                        <option value="closed_with_residual_risk">Closed with residual risk</option>
+                      </select>
+                      <div>
+                        <input
+                          value={evidenceDrafts[draft.id] ?? ""}
+                          onChange={(event) => setEvidenceDrafts((current) => ({ ...current, [draft.id]: event.target.value }))}
+                          placeholder="Evidence label or reference"
+                        />
+                        <button className="secondary-action" onClick={() => attachEvidence(draft)}>Attach</button>
+                      </div>
+                    </div>
+                  ) : null}
+                </article>
+              );
+            })}
           </div>
-          {boardActions.filter((action) => action.status === column.id).map((action) => (
-            <article className="kanban-card" key={action.id}>
-              <strong>{action.title}</strong>
-              <span>{municipalityName(action.municipalityId)}</span>
-              <p>{action.linkedFinding}</p>
-              <Badge tone={action.status}>{actionLabel[action.status]}</Badge>
-            </article>
-          ))}
-        </div>
-      ))}
-    </section>
+        ))}
+      </section>
+    </>
   );
 }
 

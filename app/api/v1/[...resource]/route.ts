@@ -5,7 +5,7 @@ import {
   listAgsaReviewDecisions,
   saveAgsaReviewDecision
 } from "@/lib/agsa-review-store";
-import { listDraftActions, patchDraftAction, saveDraftAction } from "@/lib/draft-action-store";
+import { addDraftActionEvidence, listDraftActions, patchDraftAction, saveDraftAction, transitionDraftAction } from "@/lib/draft-action-store";
 import { getFindingDetail } from "@/lib/pilot-data";
 import { applyReviewOverlay, applyReviewOverlays } from "@/lib/review-overlays";
 import { getPublicMuniCheckProfile, listPublicMuniCheckProfiles } from "@/lib/public-municheck";
@@ -379,9 +379,37 @@ export async function GET(request: Request, context: Context) {
 export async function POST(request: Request, context: Context) {
   const body = await request.json().catch(() => ({}));
   const resource = context.params.resource ?? [];
-  const [family, id, child] = resource;
+  const [family, id, child, operation] = resource;
 
   if (family === "actions" && id === "drafts") {
+    if (child && operation === "transition") {
+      try {
+        return NextResponse.json(apiResponse(transitionDraftAction(child, body)), { status: 202 });
+      } catch (error) {
+        return NextResponse.json(
+          apiResponse({
+            accepted: false,
+            error: error instanceof Error ? error.message : "Invalid draft action transition"
+          }),
+          { status: 404 }
+        );
+      }
+    }
+
+    if (child && operation === "evidence") {
+      try {
+        return NextResponse.json(apiResponse(addDraftActionEvidence(child, body)), { status: 201 });
+      } catch (error) {
+        return NextResponse.json(
+          apiResponse({
+            accepted: false,
+            error: error instanceof Error ? error.message : "Invalid draft action evidence"
+          }),
+          { status: 400 }
+        );
+      }
+    }
+
     try {
       return NextResponse.json(apiResponse(saveDraftAction(body)), { status: 201 });
     } catch (error) {
@@ -446,11 +474,12 @@ export async function POST(request: Request, context: Context) {
 export async function PATCH(request: Request, context: Context) {
   const body = await request.json().catch(() => ({}));
   const resource = context.params.resource ?? [];
-  const [family, id, child] = resource;
+  const [family, id, child, operation] = resource;
 
   if (family === "actions" && id === "drafts" && child) {
     try {
-      return NextResponse.json(apiResponse(patchDraftAction(child, body)), { status: 202 });
+      const result = operation === "transition" ? transitionDraftAction(child, body) : patchDraftAction(child, body);
+      return NextResponse.json(apiResponse(result), { status: 202 });
     } catch (error) {
       return NextResponse.json(
         apiResponse({

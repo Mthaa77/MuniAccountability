@@ -604,6 +604,9 @@ export const muniDataEndpoints = [
   { method: "GET", path: "/v1/municheck/{id}", access: "Public safe", description: "Single public MuniCheck profile with source-backed timeline, findings and methodology notes." },
   { method: "GET", path: "/v1/agsa/review-decisions", access: "Institutional", description: "Persisted AGSA extraction review decisions and review-state counts." },
   { method: "GET", path: "/v1/actions/drafts", access: "Institutional", description: "Draft remediation actions generated from findings and queue items." },
+  { method: "PATCH", path: "/v1/actions/drafts/{id}", access: "Institutional", description: "Update draft action owner, due date, status, evidence metadata, closure note and residual-risk fields." },
+  { method: "POST", path: "/v1/actions/drafts/{id}/transition", access: "Institutional", description: "Record an auditable draft action status transition with reviewer and reason." },
+  { method: "POST", path: "/v1/actions/drafts/{id}/evidence", access: "Institutional", description: "Attach an evidence reference to a draft action and move it into evidence-submitted state where appropriate." },
   { method: "GET", path: "/v1/data-freshness", access: "Public safe", description: "Source status, freshness records and extraction exceptions." },
   { method: "GET", path: "/admin/data-quality", access: "Institutional UI", description: "Data quality and publication-readiness dashboard." },
   { method: "POST", path: "/v1/assistant/query", access: "Institutional", description: "Source-locked assistant response over AGSA evidence only; unsupported questions return no-assertion refusal." }

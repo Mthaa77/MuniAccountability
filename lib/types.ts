@@ -104,8 +104,30 @@ export type Action = {
 export type DraftAction = Action & {
   sourceQueueItemId?: string;
   sourceFindingId?: string;
+  assignedTo?: string;
+  evidenceAttachments?: ActionEvidenceAttachment[];
+  statusHistory?: ActionStatusHistoryEntry[];
+  closureNote?: string;
+  residualRisk?: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ActionEvidenceAttachment = {
+  id: string;
+  label: string;
+  url?: string;
+  submittedBy: string;
+  submittedAt: string;
+  note?: string;
+  sourceRefId?: string;
+};
+
+export type ActionStatusHistoryEntry = {
+  status: ActionStatus;
+  changedAt: string;
+  changedBy: string;
+  reason?: string;
 };
 
 export type DraftActionStore = {
