@@ -33,6 +33,9 @@ jobs:
       - name: Verify source search fixtures
         run: npm run test:source-search-fixtures
 
+      - name: Verify validation gates
+        run: npm run test:validation-gates
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 

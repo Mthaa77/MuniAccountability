@@ -10,6 +10,7 @@ import { getFindingDetail } from "@/lib/pilot-data";
 import { applyReviewOverlay, applyReviewOverlays } from "@/lib/review-overlays";
 import { getPublicMuniCheckProfile, listPublicMuniCheckProfiles } from "@/lib/public-municheck";
 import { answerSourceLockedQuery, searchAgsaEvidence } from "@/lib/source-search";
+import { annexureValidation, sourceValidationSummary, treasuryValidation } from "@/lib/source-validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -283,6 +284,18 @@ export async function GET(request: Request, context: Context) {
         gatedBy: ["source health", "reuse review", "formula versioning", "freshness SLA"]
       })
     );
+  }
+
+  if (family === "validation") {
+    if (id === "annexures") {
+      return NextResponse.json(apiResponse(annexureValidation));
+    }
+
+    if (id === "treasury") {
+      return NextResponse.json(apiResponse(treasuryValidation));
+    }
+
+    return NextResponse.json(apiResponse(sourceValidationSummary));
   }
 
   if (family === "compare") {

@@ -607,6 +607,9 @@ export const muniDataEndpoints = [
   { method: "PATCH", path: "/v1/actions/drafts/{id}", access: "Institutional", description: "Update draft action owner, due date, status, evidence metadata, closure note and residual-risk fields." },
   { method: "POST", path: "/v1/actions/drafts/{id}/transition", access: "Institutional", description: "Record an auditable draft action status transition with reviewer and reason." },
   { method: "POST", path: "/v1/actions/drafts/{id}/evidence", access: "Institutional", description: "Attach an evidence reference to a draft action and move it into evidence-submitted state where appropriate." },
+  { method: "GET", path: "/v1/validation", access: "Institutional", description: "Validation summary for exact-annexure and Treasury/Municipal Money unlock gates." },
+  { method: "GET", path: "/v1/validation/annexures", access: "Institutional", description: "MFMA annexure mapping gates and unresolved municipality outcome mappings." },
+  { method: "GET", path: "/v1/validation/treasury", access: "Institutional", description: "Treasury/Municipal Money source, reuse, schema, formula and freshness gates before Financial Pulse unlock." },
   { method: "GET", path: "/v1/data-freshness", access: "Public safe", description: "Source status, freshness records and extraction exceptions." },
   { method: "GET", path: "/admin/data-quality", access: "Institutional UI", description: "Data quality and publication-readiness dashboard." },
   { method: "POST", path: "/v1/assistant/query", access: "Institutional", description: "Source-locked assistant response over AGSA evidence only; unsupported questions return no-assertion refusal." }

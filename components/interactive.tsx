@@ -14,6 +14,7 @@ import {
   sourceFreshnessEvents,
   sourceHealth
 } from "@/lib/pilot-data";
+import { treasuryValidation } from "@/lib/source-validation";
 import type { Action, ActionStatus, AgsaReviewDecision, AgsaReviewDecisionStatus, DraftAction, QueueItem, Severity, SourceHealth } from "@/lib/types";
 import { Badge, actionLabel, severityLabel } from "./ui";
 
@@ -786,9 +787,6 @@ export function RecoveryMilestoneList({ milestones }: { milestones: typeof impor
 }
 
 export function FinancialValidationPanel() {
-  const gates = ["Source health", "Reuse review", "Schema fingerprint", "Formula version", "Freshness SLA"];
-  const completed = new Set(["Source health"]);
-
   return (
     <section className="panel validation-panel">
       <div className="panel-header">
@@ -798,13 +796,13 @@ export function FinancialValidationPanel() {
         </div>
         <Badge tone="under_review">Pending validation</Badge>
       </div>
-      <p className="lead">Financial pulse values are intentionally disabled until Municipal Money connector and reuse checks pass.</p>
+      <p className="lead">{treasuryValidation.summary}</p>
       <div className="gate-list">
-        {gates.map((gate) => (
-          <article key={gate}>
-            <span className={completed.has(gate) ? "complete" : ""} />
-            <strong>{gate}</strong>
-            <em>{completed.has(gate) ? "Started" : "Required before live display"}</em>
+        {treasuryValidation.gates.map((gate) => (
+          <article key={gate.id}>
+            <span className={gate.status === "passed" ? "complete" : ""} />
+            <strong>{gate.label}</strong>
+            <em>{gate.evidence}</em>
           </article>
         ))}
       </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge, PageHeader } from "@/components/ui";
 import { getAgsaReviewGovernance } from "@/lib/agsa-review-store";
 import { agsaDocuments, extractionIssues, mappedAuditOutcomes } from "@/lib/pilot-data";
+import { annexureValidation } from "@/lib/source-validation";
 
 export default function DataQualityPage() {
   const governance = getAgsaReviewGovernance(extractionIssues.length);
@@ -37,8 +38,8 @@ export default function DataQualityPage() {
         </article>
         <article className="metric-card tone-risk">
           <span>Needs-review mappings</span>
-          <strong>{confidenceCounts.needs_review ?? 0}</strong>
-          <p>Municipality outcomes still needing annexure confirmation.</p>
+          <strong>{annexureValidation.unresolvedCount}</strong>
+          <p>Municipality outcomes still needing exact annexure confirmation.</p>
         </article>
       </section>
 
@@ -81,6 +82,28 @@ export default function DataQualityPage() {
             ))}
           </div>
         </section>
+      </section>
+
+      <section className="panel wide">
+        <div className="panel-header">
+          <div>
+            <p className="eyeless">Annexure validation gate</p>
+            <h2>{annexureValidation.label}</h2>
+          </div>
+          <Badge tone={annexureValidation.status === "passed" ? "healthy" : "risk"}>{annexureValidation.status}</Badge>
+        </div>
+        <p className="lead">{annexureValidation.summary}</p>
+        <div className="breakdown-list">
+          {annexureValidation.gates.map((gate) => (
+            <article key={gate.id}>
+              <div>
+                <strong>{gate.label}</strong>
+                <span>{gate.status.replaceAll("_", " ")}</span>
+              </div>
+              <p>{gate.evidence}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </>
   );
