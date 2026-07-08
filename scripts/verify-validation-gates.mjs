@@ -22,8 +22,10 @@ assert(sourceValidation.includes("reuse_permission"), "Treasury validation shoul
 assert(sourceValidation.includes("schema_fingerprint"), "Treasury validation should include schema gate.");
 assert(sourceValidation.includes("formula_version"), "Treasury validation should include formula gate.");
 assert(sourceValidation.includes("freshness_sla"), "Treasury validation should include freshness gate.");
+assert(sourceValidation.includes("formulaReadiness"), "Treasury validation should expose formula readiness.");
 assert(apiRoute.includes('family === "validation"'), "API route should expose validation endpoints.");
 assert(financialPulse.includes("treasuryValidation.gates"), "Financial Pulse UI should render Treasury validation gates.");
+assert(financialPulse.includes("Missing schema fields"), "Financial Pulse UI should render missing schema fields.");
 assert(dataQuality.includes("annexureValidation.gates"), "Data Quality UI should render annexure validation gates.");
 
 console.log(`Validation gates verified: ${unresolved.length} unresolved annexure mapping(s), Treasury locked.`);

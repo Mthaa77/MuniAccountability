@@ -42,6 +42,9 @@ jobs:
       - name: Verify annexure overlay contract
         run: npm run test:annexure-overlay
 
+      - name: Verify Treasury validation contract
+        run: npm run test:treasury-validation
+
       - name: Verify workflow persistence boundary
         run: npm run test:workflow-persistence
 

@@ -58,6 +58,14 @@ The command updates `data/agsa/generated/annexure-import-manifest.json`. Review 
 
 `data/treasury/validation/municipal-money-validation-manifest.json` is the unlock record for Financial Pulse. Keep `unlockDecision.status` as `locked` until connector access, reuse permission, schema fingerprint, formula versions and freshness SLA are all validated.
 
+Candidate Financial Pulse formulas live in:
+
+```text
+data/treasury/validation/financial-pulse-formulas.json
+```
+
+These formulas are not publishable while their status is `draft` or their `displayGate` is `blocked_until_validated`. A formula can only contribute to Financial Pulse unlock after the Treasury manifest records the matching validated formula version and the schema fingerprint validates every required field.
+
 ## Publication guardrails
 
 - Keep AGSA source citations, document IDs, page numbers and confidence values with every structured claim.

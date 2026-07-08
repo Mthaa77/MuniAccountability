@@ -1,6 +1,12 @@
 import annexureManifestJson from "@/data/agsa/generated/annexure-import-manifest.json";
 import treasuryManifestJson from "@/data/treasury/validation/municipal-money-validation-manifest.json";
+import financialPulseFormulasJson from "@/data/treasury/validation/financial-pulse-formulas.json";
 import { mappedAuditOutcomes, sourceHealth } from "./pilot-data";
+import {
+  canUnlockFinancialPulse,
+  type FinancialPulseFormulaRegistry,
+  type TreasuryValidationManifest
+} from "./treasury-validation";
 
 export type ValidationGate = {
   id: string;
@@ -39,17 +45,9 @@ const annexureManifest = annexureManifestJson as {
   unmatchedRows: Array<unknown>;
   operatorNotes: string[];
 };
-const treasuryManifest = treasuryManifestJson as {
-  schemaVersion: string;
-  updatedAt: string;
-  status: "blocked" | "ready" | "unlocked";
-  connector: { status: string; baseUrl: string | null; lastProbeAt: string | null; lastProbeStatus: string | null };
-  reuseReview: { status: string; evidenceUrl: string | null; notes: string };
-  schemaFingerprint: { status: string; fingerprint: string | null; requiredFields: string[]; validatedFields: string[] };
-  formulaVersions: Array<{ id: string; metric: string; version: string; expression: string }>;
-  freshness: { status: string; lastPulledAt: string | null; expectedCadence: string | null; staleAfterDays: number | null };
-  unlockDecision: { status: string; decidedBy: string | null; decidedAt: string | null; rationale: string };
-};
+const treasuryManifest = treasuryManifestJson as TreasuryValidationManifest;
+const financialPulseFormulaRegistry = financialPulseFormulasJson as FinancialPulseFormulaRegistry;
+const financialPulseUnlock = canUnlockFinancialPulse(treasuryManifest, financialPulseFormulaRegistry);
 
 export const annexureValidation: ValidationModel & {
   manifest: typeof annexureManifest;
@@ -111,12 +109,18 @@ export const annexureValidation: ValidationModel & {
 export const treasuryValidation: ValidationModel & {
   sourceStatus: string;
   manifest: typeof treasuryManifest;
+  formulas: typeof financialPulseFormulaRegistry;
+  formulaReadiness: typeof financialPulseUnlock.formulaReadiness;
+  unlockEvaluation: typeof financialPulseUnlock;
 } = {
   id: "treasury_municipal_money_validation",
   label: "Treasury / Municipal Money validation",
   status: "blocked",
   summary: "Financial Pulse remains locked until source access, reuse permission, schema, formulas and freshness checks pass.",
   manifest: treasuryManifest,
+  formulas: financialPulseFormulaRegistry,
+  formulaReadiness: financialPulseUnlock.formulaReadiness,
+  unlockEvaluation: financialPulseUnlock,
   sourceStatus: sourceHealth.find((source) => source.sourceId === "municipal_money")?.status ?? "unknown",
   gates: [
     {
@@ -136,19 +140,19 @@ export const treasuryValidation: ValidationModel & {
     {
       id: "schema_fingerprint",
       label: "Schema fingerprint",
-      status: treasuryManifest.schemaFingerprint.status === "validated" ? "passed" : "not_started",
+      status: financialPulseUnlock.gates.schema ? "passed" : "not_started",
       evidence: treasuryManifest.schemaFingerprint.fingerprint
         ? `Validated schema fingerprint ${treasuryManifest.schemaFingerprint.fingerprint}.`
-        : "No validated Municipal Money schema snapshot has been committed.",
+        : `No validated Municipal Money schema snapshot has been committed. Missing fields: ${financialPulseUnlock.formulaReadiness.missingSchemaFields.join(", ") || "none"}.`,
       requiredForUnlock: true
     },
     {
       id: "formula_version",
       label: "Formula versioning",
-      status: treasuryManifest.formulaVersions.length ? "in_progress" : "not_started",
-      evidence: treasuryManifest.formulaVersions.length
-        ? `${treasuryManifest.formulaVersions.length} formula version(s) registered.`
-        : "Financial Pulse formulas are not versioned against Treasury fields yet.",
+      status: financialPulseUnlock.gates.formulas ? "passed" : treasuryManifest.formulaVersions.length ? "in_progress" : "not_started",
+      evidence: financialPulseUnlock.gates.formulas
+        ? `${financialPulseUnlock.formulaReadiness.validatedFormulaCount} formula version(s) validated.`
+        : `Financial Pulse formulas are not publishable. Missing validated metrics: ${financialPulseUnlock.formulaReadiness.missingFormulaMetrics.join(", ")}.`,
       requiredForUnlock: true
     },
     {

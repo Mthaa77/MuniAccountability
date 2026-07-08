@@ -806,6 +806,24 @@ export function FinancialValidationPanel() {
           </article>
         ))}
       </div>
+      <div className="breakdown-list">
+        <article>
+          <div>
+            <strong>Formula readiness</strong>
+            <span>{treasuryValidation.formulaReadiness.validatedFormulaCount}/{treasuryValidation.formulaReadiness.requiredFormulaCount}</span>
+          </div>
+          <p>
+            Missing validated metrics: {treasuryValidation.formulaReadiness.missingFormulaMetrics.join(", ") || "none"}.
+          </p>
+        </article>
+        <article>
+          <div>
+            <strong>Missing schema fields</strong>
+            <span>{treasuryValidation.formulaReadiness.missingSchemaFields.length}</span>
+          </div>
+          <p>{treasuryValidation.formulaReadiness.missingSchemaFields.join(", ") || "All formula fields validated."}</p>
+        </article>
+      </div>
     </section>
   );
 }

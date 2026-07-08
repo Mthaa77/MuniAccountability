@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "financial-pulse-formulas-v0.1",
+  "updatedAt": "2026-07-08T00:00:00.000Z",
+  "status": "draft",
+  "formulas": [
+    {
+      "id": "cash_runway_v0",
+      "metric": "cash_runway",
+      "label": "Cash runway",
+      "version": "v0",
+      "status": "draft",
+      "expression": "cash_balance / average_monthly_operating_expenditure",
+      "requiredFields": ["municipality_code", "period", "cash_balance", "average_monthly_operating_expenditure"],
+      "unit": "months",
+      "displayGate": "blocked_until_validated",
+      "notes": "Candidate formula only; do not publish until Treasury field mapping and denominator treatment are validated."
+    },
+    {
+      "id": "creditor_pressure_v0",
+      "metric": "creditor_pressure",
+      "label": "Creditor pressure",
+      "version": "v0",
+      "status": "draft",
+      "expression": "creditors / operating_revenue",
+      "requiredFields": ["municipality_code", "period", "creditors", "operating_revenue"],
+      "unit": "ratio",
+      "displayGate": "blocked_until_validated",
+      "notes": "Candidate formula only; validate period alignment before display."
+    },
+    {
+      "id": "capital_delivery_v0",
+      "metric": "capital_delivery",
+      "label": "Capital delivery",
+      "version": "v0",
+      "status": "draft",
+      "expression": "capital_spend / capital_budget",
+      "requiredFields": ["municipality_code", "period", "capital_spend", "capital_budget"],
+      "unit": "percent",
+      "displayGate": "blocked_until_validated",
+      "notes": "Candidate formula only; validate budget basis and year-to-date treatment."
+    },
+    {
+      "id": "revenue_collection_v0",
+      "metric": "revenue_collection",
+      "label": "Revenue collection",
+      "version": "v0",
+      "status": "draft",
+      "expression": "cash_collected / billed_revenue",
+      "requiredFields": ["municipality_code", "period", "cash_collected", "billed_revenue"],
+      "unit": "percent",
+      "displayGate": "blocked_until_validated",
+      "notes": "Candidate formula only; validate source fields and exclusions before display."
+    }
+  ]
+}
