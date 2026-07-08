@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 import sys
+from argparse import ArgumentParser
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -25,8 +26,8 @@ REQUIRED_COLUMNS = [
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
-      for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-          digest.update(chunk)
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
     return digest.hexdigest()
 
 
@@ -48,8 +49,10 @@ def normalize_row(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_manifest(source_path: Path) -> dict[str, Any]:
-    rows = [normalize_row(row) for row in read_rows(source_path)]
-    missing_columns = [column for column in REQUIRED_COLUMNS if rows and column not in rows[0]]
+    raw_rows = read_rows(source_path)
+    source_columns = set(raw_rows[0].keys()) if raw_rows else set()
+    missing_columns = [column for column in REQUIRED_COLUMNS if column not in source_columns]
+    rows = [normalize_row(row) for row in raw_rows]
     unmatched = [row for row in rows if not row["municipality_code"] or not row["audit_outcome"]]
     matched = [
         {
@@ -97,19 +100,28 @@ def build_manifest(source_path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("Usage: python tools/import-mfma-annexures.py <official-annexure.csv|json>", file=sys.stderr)
-        return 2
+    parser = ArgumentParser(description="Build a reviewable MFMA annexure import manifest from an official AGSA CSV/JSON export.")
+    parser.add_argument("source", help="Official MFMA annexure export in CSV or JSON format.")
+    parser.add_argument("--out", default=str(OUT), help="Manifest output path. Defaults to the committed generated-data manifest.")
+    parser.add_argument("--dry-run", action="store_true", help="Validate and print the manifest without writing it.")
+    args = parser.parse_args()
 
-    source_path = Path(sys.argv[1]).resolve()
+    source_path = Path(args.source).resolve()
     if not source_path.exists():
         print(f"Input file not found: {source_path}", file=sys.stderr)
         return 2
 
     manifest = build_manifest(source_path)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {OUT.relative_to(ROOT)} with {manifest['importedRows']} imported row(s).")
+    output_path = Path(args.out).resolve()
+
+    if args.dry_run:
+        print(json.dumps(manifest, indent=2))
+    else:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        label = output_path.relative_to(ROOT) if output_path.is_relative_to(ROOT) else output_path
+        print(f"Wrote {label} with {manifest['importedRows']} imported row(s).")
+
     return 0 if manifest["status"] == "imported" else 1
 
 

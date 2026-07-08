@@ -39,6 +39,9 @@ jobs:
       - name: Verify source manifests
         run: npm run test:source-manifests
 
+      - name: Verify annexure importer
+        run: npm run test:annexure-importer
+
       - name: Verify annexure overlay contract
         run: npm run test:annexure-overlay
 

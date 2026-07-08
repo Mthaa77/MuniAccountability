@@ -54,6 +54,18 @@ python tools/import-mfma-annexures.py path\to\official-mfma-annexure.csv
 
 The command updates `data/agsa/generated/annexure-import-manifest.json`. Review the manifest before promoting any cohort-derived or manual mapping to `exact`.
 
+For a safe preflight that does not mutate committed data:
+
+```powershell
+python tools/import-mfma-annexures.py path\to\official-mfma-annexure.csv --dry-run
+```
+
+To write a review artifact somewhere else first:
+
+```powershell
+python tools/import-mfma-annexures.py path\to\official-mfma-annexure.csv --out data\agsa\generated\annexure-import-manifest.local.json
+```
+
 ## Treasury validation manifest
 
 `data/treasury/validation/municipal-money-validation-manifest.json` is the unlock record for Financial Pulse. Keep `unlockDecision.status` as `locked` until connector access, reuse permission, schema fingerprint, formula versions and freshness SLA are all validated.
