@@ -60,6 +60,9 @@ jobs:
       - name: Verify readiness ledger
         run: npm run test:readiness-ledger
 
+      - name: Verify production readiness preflight
+        run: npm run test:production-readiness
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 

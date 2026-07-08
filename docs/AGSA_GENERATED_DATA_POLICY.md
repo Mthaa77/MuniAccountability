@@ -92,6 +92,22 @@ node tools/build-treasury-validation-manifest.mjs --schema-snapshot path\to\sche
 
 Only write back to `municipal-money-validation-manifest.json` after connector, reuse, schema, formula and freshness evidence has been reviewed.
 
+## Production readiness preflight
+
+Before promoting any source or workflow gate, run the consolidated read-only preflight:
+
+```powershell
+node tools/run-production-readiness-preflight.mjs
+```
+
+To create a local evidence artifact without committing it:
+
+```powershell
+node tools/run-production-readiness-preflight.mjs --out data\agsa\generated\production-readiness-preflight.local.json
+```
+
+The committed baseline should continue to report `productionReady: false` until the official MFMA annexure, Treasury validation evidence and hosted workflow database migration evidence are all present.
+
 ## Publication guardrails
 
 - Keep AGSA source citations, document IDs, page numbers and confidence values with every structured claim.

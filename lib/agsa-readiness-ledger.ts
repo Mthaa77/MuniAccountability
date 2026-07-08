@@ -85,10 +85,11 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
     status: annexureValidation.unresolvedCount === 0 ? "complete" : "ready_for_input",
     evidence: [
       "tools/import-mfma-annexures.py",
+      "tools/run-production-readiness-preflight.mjs",
       "data/agsa/generated/annexure-import-manifest.json",
       "lib/annexure-overlays.ts"
     ],
-    verification: ["npm run test:annexure-overlay", "npm run test:source-manifests"],
+    verification: ["npm run test:annexure-overlay", "npm run test:source-manifests", "npm run test:production-readiness"],
     remainingDependency:
       annexureValidation.unresolvedCount === 0
         ? undefined
@@ -101,9 +102,10 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
     evidence: [
       "data/treasury/validation/municipal-money-validation-manifest.json",
       "data/treasury/validation/financial-pulse-formulas.json",
+      "tools/run-production-readiness-preflight.mjs",
       "lib/treasury-validation.ts"
     ],
-    verification: ["npm run test:treasury-validation", "npm run test:validation-gates"],
+    verification: ["npm run test:treasury-validation", "npm run test:validation-gates", "npm run test:production-readiness"],
     remainingDependency:
       treasuryValidation.unlockEvaluation.unlocked
         ? undefined
@@ -116,9 +118,10 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
     evidence: [
       "db/workflow/001_workflow_persistence.sql",
       "tools/build-workflow-backfill-manifest.mjs",
+      "tools/run-production-readiness-preflight.mjs",
       "docs/WORKFLOW_PERSISTENCE_MIGRATION.md"
     ],
-    verification: ["npm run test:workflow-persistence", "npm run test:workflow-migration"],
+    verification: ["npm run test:workflow-persistence", "npm run test:workflow-migration", "npm run test:production-readiness"],
     remainingDependency:
       workflowPersistence.productionReady
         ? undefined
@@ -130,10 +133,11 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
     status: "complete",
     evidence: [
       "lib/source-validation.ts",
+      "tools/run-production-readiness-preflight.mjs",
       "app/financial-pulse/page.tsx",
       "app/admin/data-quality/page.tsx"
     ],
-    verification: ["npm run test:validation-gates", "npm run build"]
+    verification: ["npm run test:validation-gates", "npm run test:production-readiness", "npm run build"]
   }
 ];
 
