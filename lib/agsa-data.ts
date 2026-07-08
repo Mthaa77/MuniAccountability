@@ -555,8 +555,12 @@ export const muniDataEndpoints = [
   { method: "GET", path: "/v1/intervention-queue", access: "Institutional", description: "Ranked AGSA-derived risks with evidence references." },
   { method: "GET", path: "/v1/agsa/documents", access: "Public safe", description: "Ingested AGSA report inventory and metadata." },
   { method: "GET", path: "/v1/agsa/findings", access: "Institutional", description: "Structured AGSA findings with citation IDs." },
+  { method: "GET", path: "/v1/findings", access: "Institutional", description: "Finding summaries with citations, review status and related workflow records." },
+  { method: "GET", path: "/v1/findings/{id}", access: "Institutional", description: "Single AGSA finding detail with citation and related queue/action context." },
   { method: "GET", path: "/v1/material-irregularities", access: "Institutional", description: "MI lifecycle records extracted from AGSA reporting." },
   { method: "GET", path: "/v1/initiatives", access: "Institutional", description: "Special-report initiative datasets including water and disaster relief." },
+  { method: "GET", path: "/v1/agsa/review-decisions", access: "Institutional", description: "Persisted AGSA extraction review decisions and review-state counts." },
+  { method: "GET", path: "/v1/actions/drafts", access: "Institutional", description: "Draft remediation actions generated from findings and queue items." },
   { method: "GET", path: "/v1/data-freshness", access: "Public safe", description: "Source status, freshness records and extraction exceptions." },
   { method: "POST", path: "/v1/assistant/query", access: "Institutional", description: "Source-locked answer policy endpoint." }
 ];
@@ -583,3 +587,25 @@ export function getRecommendationsForMunicipality(municipalityId: string) {
       source: citationToSource(recommendation.citationId)
     }));
 }
+
+export function getFindingDetail(findingId: string) {
+  const finding = agsaFindings.find((candidate) => candidate.findingId === findingId);
+  if (!finding) return null;
+
+  const source = citationToSource(finding.citationId);
+  const relatedMunicipalities =
+    finding.auditeeId === "LOCAL_GOVERNMENT"
+      ? municipalities.filter((municipality) => municipality.id !== "ZA_WC_CPT")
+      : municipalities.filter((municipality) => municipality.id === finding.auditeeId);
+  const relatedQueueItems = queueItems.filter((item) => item.reasonSummary === finding.description || item.title === finding.subtheme);
+
+  return {
+    ...finding,
+    source,
+    relatedMunicipalities,
+    relatedQueueItems,
+    methodologyNote: "AGSA source-published evidence is used as an oversight workflow signal, not as a platform legal finding."
+  };
+}
+
+export const findingDetails = agsaFindings.map((finding) => getFindingDetail(finding.findingId)).filter(Boolean);

@@ -14,13 +14,27 @@ import {
   sourceFreshnessEvents,
   sourceHealth
 } from "@/lib/pilot-data";
-import type { Action, AgsaReviewDecision, AgsaReviewDecisionStatus, QueueItem, Severity, SourceHealth } from "@/lib/types";
+import type { Action, AgsaReviewDecision, AgsaReviewDecisionStatus, DraftAction, QueueItem, Severity, SourceHealth } from "@/lib/types";
 import { Badge, actionLabel, severityLabel } from "./ui";
 
 type QueueRiskType = QueueItem["riskType"];
+type GovernedSource = SourceHealth & {
+  reviewStats?: {
+    totalIssues: number;
+    open: number;
+    accepted: number;
+    correction: number;
+    excluded: number;
+    blockers: number;
+  };
+};
 
 function municipalityName(id: string) {
   return municipalities.find((municipality) => municipality.id === id)?.commonName ?? id;
+}
+
+function findingPathFromQueueItem(item: QueueItem) {
+  return item.id.startsWith("qi_finding_") ? `/findings/${item.id.replace("qi_finding_", "")}` : null;
 }
 
 export function MunicipalityDirectory() {
@@ -68,7 +82,8 @@ export function MunicipalityDirectory() {
 export function QueueWorkspace() {
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [riskType, setRiskType] = useState<QueueRiskType | "all">("all");
-  const [draftActions, setDraftActions] = useState<Action[]>([]);
+  const [draftActions, setDraftActions] = useState<DraftAction[]>([]);
+  const [draftMessage, setDraftMessage] = useState("Draft actions persist to the local workflow store.");
   const riskTypes = Array.from(new Set(queueItems.map((item) => item.riskType)));
   const filtered = queueItems.filter((item) => {
     const matchesSeverity = severity === "all" || item.severity === severity;
@@ -78,26 +93,62 @@ export function QueueWorkspace() {
   const [selectedId, setSelectedId] = useState(filtered[0]?.id ?? queueItems[0].id);
   const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? queueItems[0];
 
-  function createActionFromFinding(item: QueueItem) {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDrafts() {
+      try {
+        const response = await fetch("/api/v1/actions/drafts", { cache: "no-store" });
+        if (!response.ok) throw new Error("Could not load draft actions.");
+        const payload = (await response.json()) as { data?: { actions?: DraftAction[] } };
+        if (!cancelled) setDraftActions(payload.data?.actions ?? []);
+      } catch {
+        if (!cancelled) setDraftMessage("Draft action store is unavailable.");
+      }
+    }
+
+    loadDrafts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function createActionFromFinding(item: QueueItem) {
     const exists = draftActions.some((action) => action.id === `draft_${item.id}`);
     if (exists) return;
 
-    setDraftActions((current) => [
-      {
-        id: `draft_${item.id}`,
-        municipalityId: item.municipalityId,
-        title: `Resolve: ${item.title}`,
-        linkedFinding: item.reasonSummary,
-        owner: item.owner,
-        reviewer: "Oversight reviewer",
-        dueDate: item.dueDate,
-        status: "not_started",
-        requiredEvidence: ["Management response", "Owner assignment", "AGSA source citation", "Reviewer sign-off"],
-        escalationRule: "Escalate if evidence is not submitted by the queue due date.",
-        sourceRefs: item.evidenceRefs
-      },
-      ...current
-    ]);
+    const draft = {
+      id: `draft_${item.id}`,
+      sourceQueueItemId: item.id,
+      sourceFindingId: item.id.startsWith("qi_finding_") ? item.id.replace("qi_finding_", "") : undefined,
+      municipalityId: item.municipalityId,
+      title: `Resolve: ${item.title}`,
+      linkedFinding: item.reasonSummary,
+      owner: item.owner,
+      reviewer: "Oversight reviewer",
+      dueDate: item.dueDate,
+      status: "not_started",
+      requiredEvidence: ["Management response", "Owner assignment", "AGSA source citation", "Reviewer sign-off"],
+      escalationRule: "Escalate if evidence is not submitted by the queue due date.",
+      sourceRefs: item.evidenceRefs
+    };
+
+    setDraftMessage("Saving draft action...");
+    const response = await fetch("/api/v1/actions/drafts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(draft)
+    });
+
+    if (!response.ok) {
+      setDraftMessage("Could not persist draft action.");
+      return;
+    }
+
+    const payload = (await response.json()) as { data?: { action?: DraftAction } };
+    setDraftActions((current) => [payload.data?.action, ...current].filter(Boolean) as DraftAction[]);
+    setDraftMessage(`Saved draft action for ${municipalityName(item.municipalityId)}.`);
   }
 
   return (
@@ -139,7 +190,14 @@ export function QueueWorkspace() {
                 <tr className={selected.id === item.id ? "selected-row" : ""} key={item.id} onClick={() => setSelectedId(item.id)}>
                   <td><strong>#{item.rank}</strong><span className="score">{item.priorityScore}</span></td>
                   <td>{municipalityName(item.municipalityId)}</td>
-                  <td><strong>{item.title}</strong><span>{item.reasonSummary}</span></td>
+                  <td>
+                    {findingPathFromQueueItem(item) ? (
+                      <Link href={findingPathFromQueueItem(item) ?? "#"}><strong>{item.title}</strong></Link>
+                    ) : (
+                      <strong>{item.title}</strong>
+                    )}
+                    <span>{item.reasonSummary}</span>
+                  </td>
                   <td><Badge tone={item.severity}>{severityLabel[item.severity]}</Badge></td>
                   <td>{item.requiredNextStep}</td>
                   <td>{item.owner}</td>
@@ -170,7 +228,9 @@ export function QueueWorkspace() {
               ))}
             </div>
           </section>
-        ) : null}
+        ) : (
+          <p className="lead">{draftMessage}</p>
+        )}
       </div>
       <EvidenceDrawer item={selected} onCreateAction={createActionFromFinding} />
     </section>
@@ -208,6 +268,8 @@ export function EvidenceDrawer({ item, onCreateAction }: { item: QueueItem; onCr
 }
 
 export function ActionKanban({ scopedActions = actions }: { scopedActions?: Action[] }) {
+  const [draftActions, setDraftActions] = useState<DraftAction[]>([]);
+  const boardActions = [...scopedActions, ...draftActions.filter((draft) => scopedActions === actions || scopedActions.some((action) => action.municipalityId === draft.municipalityId))];
   const columns = [
     { id: "overdue", label: "Overdue" },
     { id: "in_progress", label: "In progress" },
@@ -215,15 +277,36 @@ export function ActionKanban({ scopedActions = actions }: { scopedActions?: Acti
     { id: "approved", label: "Approved" }
   ] as const;
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDrafts() {
+      try {
+        const response = await fetch("/api/v1/actions/drafts", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { data?: { actions?: DraftAction[] } };
+        if (!cancelled) setDraftActions(payload.data?.actions ?? []);
+      } catch {
+        if (!cancelled) setDraftActions([]);
+      }
+    }
+
+    loadDrafts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="kanban">
       {columns.map((column) => (
         <div className="kanban-column" key={column.id}>
           <div className="kanban-header">
             <strong>{column.label}</strong>
-            <span>{scopedActions.filter((action) => action.status === column.id).length}</span>
+            <span>{boardActions.filter((action) => action.status === column.id).length}</span>
           </div>
-          {scopedActions.filter((action) => action.status === column.id).map((action) => (
+          {boardActions.filter((action) => action.status === column.id).map((action) => (
             <article className="kanban-card" key={action.id}>
               <strong>{action.title}</strong>
               <span>{municipalityName(action.municipalityId)}</span>
@@ -278,7 +361,37 @@ export function BriefingWorkspace() {
 
 export function SourceHealthTabs() {
   const [status, setStatus] = useState<SourceHealth["status"] | "all">("all");
-  const filtered = status === "all" ? sourceHealth : sourceHealth.filter((source) => source.status === status);
+  const [governedSources, setGovernedSources] = useState<GovernedSource[]>(sourceHealth);
+  const [governedEvents, setGovernedEvents] = useState(sourceFreshnessEvents);
+  const filtered = status === "all" ? governedSources : governedSources.filter((source) => source.status === status);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSources() {
+      try {
+        const response = await fetch("/api/v1/sources", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = (await response.json()) as {
+          data?: {
+            sources?: GovernedSource[];
+            events?: typeof sourceFreshnessEvents;
+          };
+        };
+        if (cancelled) return;
+        setGovernedSources(payload.data?.sources ?? sourceHealth);
+        setGovernedEvents(payload.data?.events ?? sourceFreshnessEvents);
+      } catch {
+        if (!cancelled) setGovernedSources(sourceHealth);
+      }
+    }
+
+    loadSources();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section className="workspace-split">
@@ -296,6 +409,11 @@ export function SourceHealthTabs() {
               <div>
                 <strong>{source.sourceName}</strong>
                 <span>{source.treatment}</span>
+                {source.reviewStats ? (
+                  <span>
+                    Review: {source.reviewStats.open} open / {source.reviewStats.accepted} accepted / {source.reviewStats.correction} correction / {source.reviewStats.excluded} excluded
+                  </span>
+                ) : null}
               </div>
               <Badge tone={source.status}>{source.status}</Badge>
             </article>
@@ -306,7 +424,7 @@ export function SourceHealthTabs() {
         <p className="eyeless">Freshness events</p>
         <h2>Source timeline</h2>
         <div className="timeline">
-          {sourceFreshnessEvents.map((event) => (
+          {governedEvents.map((event) => (
             <article key={`${event.sourceId}-${event.event}`}>
               <span>{event.date}</span>
               <strong>{event.event}</strong>
@@ -570,15 +688,49 @@ export function FinancialValidationPanel() {
 }
 
 export function AdminConsole() {
-  const stats = useMemo(
-    () => [
-      ["Open quality exceptions", "3"],
-      ["Publication approvals", "2"],
-      ["Audit-log events", "128"],
-      ["Restricted fields hidden", "100%"]
-    ],
-    []
-  );
+  const [stats, setStats] = useState([
+    ["Open quality exceptions", String(extractionIssues.length)],
+    ["Review blockers", "0"],
+    ["Accepted reviews", "0"],
+    ["Restricted fields hidden", "100%"]
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStats() {
+      try {
+        const response = await fetch("/api/v1/sources", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = (await response.json()) as {
+          data?: {
+            review?: {
+              open: number;
+              blockers: number;
+              accepted: number;
+            };
+          };
+        };
+        if (cancelled || !payload.data?.review) return;
+        setStats([
+          ["Open quality exceptions", String(payload.data.review.open)],
+          ["Review blockers", String(payload.data.review.blockers)],
+          ["Accepted reviews", String(payload.data.review.accepted)],
+          ["Restricted fields hidden", "100%"]
+        ]);
+      } catch {
+        if (!cancelled) {
+          setStats((current) => current);
+        }
+      }
+    }
+
+    loadStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section className="admin-grid">

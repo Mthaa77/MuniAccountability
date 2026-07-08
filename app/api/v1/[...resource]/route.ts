@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { apiDatasets, apiResponse, getCaseFile, getMunicipality } from "@/lib/api";
-import { listAgsaReviewDecisions, saveAgsaReviewDecision } from "@/lib/agsa-review-store";
+import {
+  getAgsaReviewGovernance,
+  getDecisionForCitation,
+  isCitationPublicSafe,
+  listAgsaReviewDecisions,
+  saveAgsaReviewDecision
+} from "@/lib/agsa-review-store";
+import { listDraftActions, patchDraftAction, saveDraftAction } from "@/lib/draft-action-store";
+import { getFindingDetail } from "@/lib/pilot-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +26,67 @@ function notFound(resource: string[]) {
       status: 404
     }
   );
+}
+
+function governedSourcePayload() {
+  const governance = getAgsaReviewGovernance(apiDatasets.extractionIssues.length);
+  const sources = apiDatasets.sourceHealth.map((source) => {
+    if (source.sourceId !== "agsa_corpus" && source.sourceId !== "agsa_extraction") return source;
+
+    return {
+      ...source,
+      status: governance.stats.blockers ? "degraded" : governance.stats.open ? "degraded" : "healthy",
+      openExceptions: governance.stats.open + governance.stats.blockers,
+      reviewStats: governance.stats,
+      treatment:
+        governance.stats.blockers > 0
+          ? "Review blockers require correction before derived assertions are published"
+          : source.treatment
+    };
+  });
+  const events = [
+    ...apiDatasets.sourceFreshnessEvents,
+    {
+      sourceId: "agsa_review",
+      event: `${governance.stats.accepted} accepted, ${governance.stats.correction} correction, ${governance.stats.excluded} excluded review decision(s)`,
+      status: governance.stats.blockers ? "degraded" : "healthy",
+      date: governance.updatedAt
+    }
+  ];
+
+  return { sources, events, review: governance.stats };
+}
+
+function publicSafeProfiles() {
+  return apiDatasets.publicProfiles
+    .filter((profile) => !profile.citation?.id || isCitationPublicSafe(profile.citation.id))
+    .map((profile) => ({
+      municipalityId: profile.municipalityId,
+      name: profile.name,
+      plainLanguageStatus: profile.plainLanguageStatus,
+      auditOutcome: profile.auditOutcome,
+      sourcePeriod: profile.sourcePeriod,
+      citation: profile.citation,
+      publicFields: profile.publicFields,
+      methodology: [
+        "AGSA source-published evidence only.",
+        "Platform priority scores are workflow aids, not legal findings.",
+        "Treasury telemetry remains pending validation."
+      ],
+      reviewStatus: profile.citation?.id ? getDecisionForCitation(profile.citation.id)?.status ?? "not_reviewed" : "not_reviewed"
+    }));
+}
+
+function findingWithGovernance(findingId: string) {
+  const detail = getFindingDetail(findingId);
+  if (!detail) return null;
+  const reviewDecision = getDecisionForCitation(detail.citationId);
+
+  return {
+    ...detail,
+    reviewStatus: reviewDecision?.status ?? "not_reviewed",
+    reviewDecision
+  };
 }
 
 export async function GET(request: Request, context: Context) {
@@ -78,8 +147,9 @@ export async function GET(request: Request, context: Context) {
   }
 
   if (family === "municipalities" && id && child === "actions") {
+    const drafts = listDraftActions().actions.filter((action) => action.municipalityId === id);
     return NextResponse.json(
-      apiResponse(apiDatasets.actions.filter((action) => action.municipalityId === id), { id })
+      apiResponse([...apiDatasets.actions.filter((action) => action.municipalityId === id), ...drafts], { id })
     );
   }
 
@@ -95,6 +165,10 @@ export async function GET(request: Request, context: Context) {
   }
 
   if (family === "actions") {
+    if (id === "drafts" && !child) {
+      return NextResponse.json(apiResponse(listDraftActions()));
+    }
+
     return NextResponse.json(apiResponse(apiDatasets.actions));
   }
 
@@ -133,6 +207,23 @@ export async function GET(request: Request, context: Context) {
 
   if (family === "recommendations") {
     return NextResponse.json(apiResponse(apiDatasets.agsaRecommendations));
+  }
+
+  if (family === "findings" && !id) {
+    return NextResponse.json(
+      apiResponse(
+        apiDatasets.agsaFindings.map((finding) => ({
+          ...finding,
+          detailPath: `/findings/${finding.findingId}`,
+          reviewStatus: getDecisionForCitation(finding.citationId)?.status ?? "not_reviewed"
+        }))
+      )
+    );
+  }
+
+  if (family === "findings" && id) {
+    const finding = findingWithGovernance(id);
+    return finding ? NextResponse.json(apiResponse(finding, { id })) : notFound(resource);
   }
 
   if (family === "risk-signals") {
@@ -193,7 +284,7 @@ export async function GET(request: Request, context: Context) {
   }
 
   if (family === "sources" || family === "data-freshness") {
-    return NextResponse.json(apiResponse({ sources: apiDatasets.sourceHealth, events: apiDatasets.sourceFreshnessEvents }));
+    return NextResponse.json(apiResponse(governedSourcePayload()));
   }
 
   if (family === "recovery") {
@@ -201,11 +292,22 @@ export async function GET(request: Request, context: Context) {
   }
 
   if (family === "municheck") {
-    return NextResponse.json(apiResponse(apiDatasets.publicProfiles));
+    return NextResponse.json(apiResponse(publicSafeProfiles()));
   }
 
   if (family === "munidata") {
-    return NextResponse.json(apiResponse(apiDatasets.muniDataEndpoints));
+    return NextResponse.json(
+      apiResponse({
+        endpoints: apiDatasets.muniDataEndpoints,
+        reviewAware: true,
+        schemas: ["agsa-extract-v0.1", "agsa-review-decisions-v0.1", "draft-actions-v0.1"],
+        caveats: [
+          "AGSA records are extracted from local docs/ reports with page citations and confidence flags.",
+          "Platform risk scores are workflow prioritisation aids, not legal findings.",
+          "Treasury/Municipal Money telemetry is marked pending validation and is not presented as live."
+        ]
+      })
+    );
   }
 
   if (family === "changes") {
@@ -231,6 +333,20 @@ export async function POST(request: Request, context: Context) {
   const body = await request.json().catch(() => ({}));
   const resource = context.params.resource ?? [];
   const [family, id, child] = resource;
+
+  if (family === "actions" && id === "drafts") {
+    try {
+      return NextResponse.json(apiResponse(saveDraftAction(body)), { status: 201 });
+    } catch (error) {
+      return NextResponse.json(
+        apiResponse({
+          accepted: false,
+          error: error instanceof Error ? error.message : "Invalid draft action payload"
+        }),
+        { status: 400 }
+      );
+    }
+  }
 
   if (family === "agsa" && id === "review-decisions") {
     try {
@@ -277,7 +393,21 @@ export async function POST(request: Request, context: Context) {
 export async function PATCH(request: Request, context: Context) {
   const body = await request.json().catch(() => ({}));
   const resource = context.params.resource ?? [];
-  const [family, id] = resource;
+  const [family, id, child] = resource;
+
+  if (family === "actions" && id === "drafts" && child) {
+    try {
+      return NextResponse.json(apiResponse(patchDraftAction(child, body)), { status: 202 });
+    } catch (error) {
+      return NextResponse.json(
+        apiResponse({
+          accepted: false,
+          error: error instanceof Error ? error.message : "Invalid draft action update"
+        }),
+        { status: 404 }
+      );
+    }
+  }
 
   if (family === "actions" && id) {
     return NextResponse.json(

@@ -2,7 +2,7 @@ import "server-only";
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { AgsaReviewDecision, AgsaReviewDecisionStatus, AgsaReviewDecisionStore } from "./types";
+import type { AgsaReviewDecision, AgsaReviewDecisionStatus, AgsaReviewDecisionStore, AgsaReviewStats } from "./types";
 
 const storePath = path.join(process.cwd(), "data", "agsa", "generated", "agsa-review-decisions.json");
 
@@ -62,6 +62,44 @@ export function listAgsaReviewDecisions() {
       byStatus
     }
   };
+}
+
+export function getAgsaReviewGovernance(totalIssues: number) {
+  const store = readStore();
+  const stats = store.decisions.reduce<AgsaReviewStats>(
+    (counts, decision) => {
+      counts[decision.status] += 1;
+      return counts;
+    },
+    {
+      totalIssues,
+      open: totalIssues,
+      accepted: 0,
+      correction: 0,
+      excluded: 0,
+      blockers: 0
+    }
+  );
+  const resolved = stats.accepted + stats.correction + stats.excluded;
+
+  return {
+    updatedAt: store.updatedAt,
+    decisions: store.decisions,
+    stats: {
+      ...stats,
+      open: Math.max(0, totalIssues - resolved),
+      blockers: stats.correction
+    }
+  };
+}
+
+export function getDecisionForCitation(citationId: string) {
+  return readStore().decisions.find((decision) => decision.citationIds.includes(citationId));
+}
+
+export function isCitationPublicSafe(citationId: string) {
+  const decision = getDecisionForCitation(citationId);
+  return !decision || decision.status === "accepted";
 }
 
 export function saveAgsaReviewDecision(input: unknown) {

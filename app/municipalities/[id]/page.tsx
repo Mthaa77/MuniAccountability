@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { ActionKanban, EvidenceDrawer } from "@/components/interactive";
 import { Badge, MunicipalityPreview, PageHeader } from "@/components/ui";
 import {
@@ -87,7 +88,7 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
             {scopedFindings.slice(0, 4).map((finding) => (
               <article key={finding.findingId} className="source-card">
                 <span>{finding.findingFamily}</span>
-                <strong>{finding.subtheme}</strong>
+                <Link className="primary-link" href={`/findings/${finding.findingId}`}>{finding.subtheme}</Link>
                 <p>{finding.description}</p>
                 <small>{finding.source.location}</small>
               </article>

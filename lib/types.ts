@@ -101,6 +101,19 @@ export type Action = {
   sourceRefs: SourceReference[];
 };
 
+export type DraftAction = Action & {
+  sourceQueueItemId?: string;
+  sourceFindingId?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DraftActionStore = {
+  schemaVersion: "draft-actions-v0.1";
+  updatedAt: string;
+  actions: DraftAction[];
+};
+
 export type Briefing = {
   id: string;
   title: string;
@@ -278,6 +291,15 @@ export type AgsaReviewDecisionStore = {
   schemaVersion: "agsa-review-decisions-v0.1";
   updatedAt: string;
   decisions: AgsaReviewDecision[];
+};
+
+export type AgsaReviewStats = {
+  totalIssues: number;
+  open: number;
+  accepted: number;
+  correction: number;
+  excluded: number;
+  blockers: number;
 };
 
 export type AgsaExtract = {
