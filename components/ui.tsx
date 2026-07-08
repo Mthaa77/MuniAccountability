@@ -88,11 +88,11 @@ export function RiskMap() {
       <div className="panel-header">
         <div>
           <p className="eyeless">Map with table fallback</p>
-          <h2>Gauteng Risk View</h2>
+          <h2>Pilot Risk View</h2>
         </div>
-        <Badge tone="under_review">Boundary version pending</Badge>
+        <Badge tone="under_review">Schematic view</Badge>
       </div>
-      <div className="map-canvas" aria-label="Schematic Gauteng municipality risk map">
+      <div className="map-canvas" aria-label="Schematic pilot municipality risk map">
         <div className="province-shape" />
         {municipalities.map((municipality) => (
           <Link

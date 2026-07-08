@@ -1,10 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { actions, briefingTemplates, municipalities, queueItems, sourceFreshnessEvents, sourceHealth } from "@/lib/pilot-data";
-import type { Action, QueueItem, Severity, SourceHealth } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import {
+  actions,
+  agsaDocuments,
+  agsaExtract,
+  agsaPageCitations,
+  briefingTemplates,
+  extractionIssues,
+  municipalities,
+  queueItems,
+  sourceFreshnessEvents,
+  sourceHealth
+} from "@/lib/pilot-data";
+import type { Action, AgsaReviewDecision, AgsaReviewDecisionStatus, QueueItem, Severity, SourceHealth } from "@/lib/types";
 import { Badge, actionLabel, severityLabel } from "./ui";
+
+type QueueRiskType = QueueItem["riskType"];
 
 function municipalityName(id: string) {
   return municipalities.find((municipality) => municipality.id === id)?.commonName ?? id;
@@ -29,6 +42,7 @@ export function MunicipalityDirectory() {
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="watch">Watch</option>
+          <option value="resolved">Resolved</option>
         </select>
       </div>
       <div className="directory-grid">
@@ -53,9 +67,38 @@ export function MunicipalityDirectory() {
 
 export function QueueWorkspace() {
   const [severity, setSeverity] = useState<Severity | "all">("all");
-  const filtered = severity === "all" ? queueItems : queueItems.filter((item) => item.severity === severity);
+  const [riskType, setRiskType] = useState<QueueRiskType | "all">("all");
+  const [draftActions, setDraftActions] = useState<Action[]>([]);
+  const riskTypes = Array.from(new Set(queueItems.map((item) => item.riskType)));
+  const filtered = queueItems.filter((item) => {
+    const matchesSeverity = severity === "all" || item.severity === severity;
+    const matchesRiskType = riskType === "all" || item.riskType === riskType;
+    return matchesSeverity && matchesRiskType;
+  });
   const [selectedId, setSelectedId] = useState(filtered[0]?.id ?? queueItems[0].id);
   const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? queueItems[0];
+
+  function createActionFromFinding(item: QueueItem) {
+    const exists = draftActions.some((action) => action.id === `draft_${item.id}`);
+    if (exists) return;
+
+    setDraftActions((current) => [
+      {
+        id: `draft_${item.id}`,
+        municipalityId: item.municipalityId,
+        title: `Resolve: ${item.title}`,
+        linkedFinding: item.reasonSummary,
+        owner: item.owner,
+        reviewer: "Oversight reviewer",
+        dueDate: item.dueDate,
+        status: "not_started",
+        requiredEvidence: ["Management response", "Owner assignment", "AGSA source citation", "Reviewer sign-off"],
+        escalationRule: "Escalate if evidence is not submitted by the queue due date.",
+        sourceRefs: item.evidenceRefs
+      },
+      ...current
+    ]);
+  }
 
   return (
     <section className="workspace-split">
@@ -67,6 +110,12 @@ export function QueueWorkspace() {
             <option value="high">High</option>
             <option value="medium">Medium</option>
             <option value="watch">Watch</option>
+          </select>
+          <select value={riskType} onChange={(event) => setRiskType(event.target.value as QueueRiskType | "all")}>
+            <option value="all">All risk types</option>
+            {riskTypes.map((type) => (
+              <option key={type} value={type}>{type.replaceAll("_", " ")}</option>
+            ))}
           </select>
           <button className="secondary-action">Assign selected</button>
           <button className="secondary-action">Add to briefing</button>
@@ -100,13 +149,35 @@ export function QueueWorkspace() {
             </tbody>
           </table>
         </div>
+        {draftActions.length ? (
+          <section className="draft-action-panel">
+            <div className="panel-header">
+              <div>
+                <p className="eyeless">Created from findings</p>
+                <h2>Draft action queue</h2>
+              </div>
+              <Badge tone="watch">{draftActions.length} draft</Badge>
+            </div>
+            <div className="compact-list">
+              {draftActions.map((action) => (
+                <article key={action.id}>
+                  <div>
+                    <strong>{action.title}</strong>
+                    <span>{municipalityName(action.municipalityId)} - due {action.dueDate}</span>
+                  </div>
+                  <Badge tone={action.status}>{actionLabel[action.status]}</Badge>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
-      <EvidenceDrawer item={selected} />
+      <EvidenceDrawer item={selected} onCreateAction={createActionFromFinding} />
     </section>
   );
 }
 
-export function EvidenceDrawer({ item }: { item: QueueItem }) {
+export function EvidenceDrawer({ item, onCreateAction }: { item: QueueItem; onCreateAction?: (item: QueueItem) => void }) {
   return (
     <aside className="panel evidence-drawer">
       <div className="panel-header">
@@ -122,9 +193,16 @@ export function EvidenceDrawer({ item }: { item: QueueItem }) {
         <div><dt>Risk signal</dt><dd>{item.riskType.replaceAll("_", " ")}</dd></div>
         <div><dt>What changed</dt><dd>{item.whatChanged}</dd></div>
         <div><dt>Required action</dt><dd>{item.requiredNextStep}</dd></div>
-        <div><dt>Source</dt><dd>{item.evidenceRefs[0].label}</dd></div>
+        <div>
+          <dt>Source</dt>
+          <dd>
+            <Link href={item.evidenceRefs[0].url ?? "/sources"}>{item.evidenceRefs[0].label}</Link>
+          </dd>
+        </div>
+        <div><dt>Page/section</dt><dd>{item.evidenceRefs[0].location}</dd></div>
       </dl>
-      <button className="primary-action drawer-action">Add to briefing</button>
+      <button className="secondary-action drawer-action">Add to briefing</button>
+      <button className="primary-action drawer-action" onClick={() => onCreateAction?.(item)}>Create action from finding</button>
     </aside>
   );
 }
@@ -237,6 +315,211 @@ export function SourceHealthTabs() {
           ))}
         </div>
       </div>
+    </section>
+  );
+}
+
+export function AgsaExtractionReview() {
+  const [statusByKey, setStatusByKey] = useState<Record<string, AgsaReviewDecisionStatus | "open">>({});
+  const [confidence, setConfidence] = useState<"all" | "needs_review" | "low" | "medium" | "high">("all");
+  const [documentId, setDocumentId] = useState("all");
+  const [reviewState, setReviewState] = useState<"loading" | "ready" | "saving" | "error">("loading");
+  const [reviewMessage, setReviewMessage] = useState("Loading persisted review decisions.");
+
+  const documentsById = useMemo(() => new Map(agsaDocuments.map((document) => [document.documentId, document])), []);
+  const citationsByPage = useMemo(() => {
+    const map = new Map<string, typeof agsaPageCitations>();
+    for (const citation of agsaPageCitations) {
+      const key = `${citation.documentId}:${citation.pageNumber}`;
+      map.set(key, [...(map.get(key) ?? []), citation]);
+    }
+    return map;
+  }, []);
+
+  const reviewItems = useMemo(() => {
+    const issueItems = extractionIssues.map((issue) => {
+      const page = agsaExtract.pagesByDocument[issue.documentId]?.find((candidate) => candidate.pageNumber === issue.pageNumber);
+      const citations = citationsByPage.get(`${issue.documentId}:${issue.pageNumber}`) ?? [];
+      return {
+        key: `${issue.documentId}:${issue.pageNumber}:${issue.issue}`,
+        documentId: issue.documentId,
+        pageNumber: issue.pageNumber,
+        issue: issue.issue,
+        sectionTitle: page?.sectionTitle ?? citations[0]?.sectionTitle ?? "Unsectioned page",
+        confidence: page?.extractionConfidence ?? citations[0]?.extractionConfidence ?? "needs_review",
+        textSample: page?.textSample ?? citations[0]?.quoteSnippet ?? "No text sample available.",
+        citations
+      };
+    });
+
+    return issueItems.filter((item) => {
+      const matchesConfidence = confidence === "all" || item.confidence === confidence;
+      const matchesDocument = documentId === "all" || item.documentId === documentId;
+      return matchesConfidence && matchesDocument;
+    });
+  }, [citationsByPage, confidence, documentId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDecisions() {
+      try {
+        const response = await fetch("/api/v1/agsa/review-decisions", { cache: "no-store" });
+        if (!response.ok) throw new Error("Could not load review decisions.");
+        const payload = (await response.json()) as { data?: { decisions?: AgsaReviewDecision[] } };
+        if (cancelled) return;
+        setStatusByKey(
+          Object.fromEntries((payload.data?.decisions ?? []).map((decision) => [decision.decisionKey, decision.status]))
+        );
+        setReviewState("ready");
+        setReviewMessage(`${payload.data?.decisions?.length ?? 0} persisted review decision(s) loaded.`);
+      } catch (error) {
+        if (cancelled) return;
+        setReviewState("error");
+        setReviewMessage(error instanceof Error ? error.message : "Could not load review decisions.");
+      }
+    }
+
+    loadDecisions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const linkedDocumentId = new URLSearchParams(window.location.search).get("documentId");
+    if (linkedDocumentId) setDocumentId(linkedDocumentId);
+  }, []);
+
+  const reviewStats = useMemo(() => {
+    const total = extractionIssues.length;
+    const accepted = Object.values(statusByKey).filter((status) => status === "accepted").length;
+    const correction = Object.values(statusByKey).filter((status) => status === "correction").length;
+    const excluded = Object.values(statusByKey).filter((status) => status === "excluded").length;
+    return [
+      ["Open exceptions", String(Math.max(0, total - accepted - correction - excluded))],
+      ["Accepted", String(accepted)],
+      ["Needs correction", String(correction)],
+      ["Excluded", String(excluded)]
+    ];
+  }, [statusByKey]);
+
+  async function setDecision(
+    item: {
+      key: string;
+      documentId: string;
+      pageNumber: number;
+      issue: string;
+      citations: typeof agsaPageCitations;
+    },
+    decision: AgsaReviewDecisionStatus
+  ) {
+    setReviewState("saving");
+    setReviewMessage(`Saving ${decision.replaceAll("_", " ")} decision...`);
+    setStatusByKey((current) => ({ ...current, [item.key]: decision }));
+
+    try {
+      const response = await fetch("/api/v1/agsa/review-decisions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          decisionKey: item.key,
+          documentId: item.documentId,
+          pageNumber: item.pageNumber,
+          issue: item.issue,
+          status: decision,
+          reviewer: "prototype-reviewer",
+          citationIds: item.citations.map((citation) => citation.citationId)
+        })
+      });
+
+      if (!response.ok) throw new Error("Could not persist review decision.");
+      setReviewState("ready");
+      setReviewMessage(`Saved ${decision.replaceAll("_", " ")} decision for page ${item.pageNumber}.`);
+    } catch (error) {
+      setReviewState("error");
+      setReviewMessage(error instanceof Error ? error.message : "Could not persist review decision.");
+    }
+  }
+
+  return (
+    <section className="review-workspace">
+      <div className="admin-grid">
+        {reviewStats.map(([label, value]) => (
+          <article className="metric-card tone-neutral" key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+            <p>Persisted to the local AGSA review decision store.</p>
+          </article>
+        ))}
+      </div>
+
+      <section className="panel wide">
+        <div className="toolbar">
+          <select value={documentId} onChange={(event) => setDocumentId(event.target.value)}>
+            <option value="all">All AGSA reports</option>
+            {agsaDocuments.map((document) => (
+              <option key={document.documentId} value={document.documentId}>
+                {document.reportYear} - {document.title}
+              </option>
+            ))}
+          </select>
+          <select value={confidence} onChange={(event) => setConfidence(event.target.value as typeof confidence)}>
+            <option value="all">All confidence levels</option>
+            <option value="needs_review">Needs review</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <Link className="secondary-action" href="/sources">
+            Source health
+          </Link>
+        </div>
+        <div className="review-save-state">
+          <Badge tone={reviewState === "error" ? "risk" : reviewState === "saving" || reviewState === "loading" ? "watch" : "healthy"}>
+            {reviewState}
+          </Badge>
+          <span>{reviewMessage}</span>
+        </div>
+        <div className="review-list">
+          {reviewItems.map((item) => {
+            const document = documentsById.get(item.documentId);
+            const status = statusByKey[item.key] ?? "open";
+            return (
+              <article className="review-card" key={item.key}>
+                <div className="review-card-top">
+                  <div>
+                    <span>{document?.reportFamily ?? "AGSA"} / {document?.reportYear ?? "unknown"}</span>
+                    <strong>{document?.title ?? item.documentId}</strong>
+                    <p>{document?.fileName}, page {item.pageNumber} - {item.sectionTitle}</p>
+                  </div>
+                  <div className="review-badges">
+                    <Badge tone={item.confidence}>{item.confidence.replaceAll("_", " ")}</Badge>
+                    <Badge tone={status === "open" ? "watch" : status}>{status.replaceAll("_", " ")}</Badge>
+                  </div>
+                </div>
+                <p className="review-issue">{item.issue}</p>
+                <blockquote>{item.textSample}</blockquote>
+                <div className="review-citations">
+                  {item.citations.length ? (
+                    item.citations.map((citation) => (
+                      <span key={citation.citationId}>{citation.citationId}</span>
+                    ))
+                  ) : (
+                    <span>No citation generated for this page yet</span>
+                  )}
+                </div>
+                <div className="review-actions">
+                  <button className="secondary-action" onClick={() => setDecision(item, "accepted")}>Accept</button>
+                  <button className="secondary-action" onClick={() => setDecision(item, "correction")}>Needs correction</button>
+                  <button className="secondary-action" onClick={() => setDecision(item, "excluded")}>Exclude</button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
     </section>
   );
 }

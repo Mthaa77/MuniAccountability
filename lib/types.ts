@@ -65,7 +65,17 @@ export type QueueItem = {
   rank: number;
   municipalityId: string;
   title: string;
-  riskType: "audit" | "financial" | "grant" | "infrastructure" | "recovery" | "action_overdue" | "data_quality";
+  riskType:
+    | "audit"
+    | "financial"
+    | "grant"
+    | "infrastructure"
+    | "recovery"
+    | "action_overdue"
+    | "data_quality"
+    | "material_irregularity"
+    | "water"
+    | "disaster_relief";
   severity: Severity;
   priorityScore: number;
   reasonSummary: string;
@@ -112,4 +122,176 @@ export type SourceHealth = {
   publishedRecords: number;
   openExceptions: number;
   treatment: string;
+};
+
+export type AgsaQualityState = "verified" | "source_published" | "under_review" | "needs_review";
+export type AgsaReportFamily = "PFMA" | "MFMA" | "special" | "citizens";
+export type AgsaFindingFamily =
+  | "audit"
+  | "compliance"
+  | "financial"
+  | "financial_reporting"
+  | "procurement"
+  | "infrastructure"
+  | "governance"
+  | "performance"
+  | "ict"
+  | "environmental"
+  | "consequence_management"
+  | "water"
+  | "disaster_relief";
+
+export type AgsaSourceDocument = {
+  documentId: string;
+  reportFamily: AgsaReportFamily;
+  reportYear: string;
+  tabledDate: string | null;
+  title: string;
+  issuer: string;
+  fileName: string;
+  filePath: string;
+  pageCount: number;
+  scope: string;
+  theme: string;
+  priority: "P0" | "P1" | "P2" | "P3" | "P4";
+  qualityState: AgsaQualityState;
+  sha256: string;
+  pdfTitle: string;
+};
+
+export type AgsaPageSample = {
+  pageNumber: number;
+  sectionTitle: string | null;
+  textSample: string;
+  keywordHit: boolean;
+  extractionConfidence: "high" | "medium" | "low" | "needs_review";
+};
+
+export type AgsaPageCitation = {
+  citationId: string;
+  documentId: string;
+  pageNumber: number;
+  sectionTitle: string | null;
+  quoteSnippet: string | null;
+  extractionConfidence: "high" | "medium" | "low" | "needs_review";
+};
+
+export type AgsaAuditee = {
+  auditeeId: string;
+  canonicalName: string;
+  commonName: string;
+  sphere: string;
+  province: string | null;
+  category: string;
+  sector: string | null;
+  highImpact: boolean;
+  canonicalCode: string | null;
+};
+
+export type AgsaAuditOutcome = {
+  auditeeId: string;
+  financialYear: string;
+  opinion: string;
+  movement: string;
+  budgetAmount: number | null;
+  cleanAuditFlag: boolean;
+  correctedMisstatements: boolean | null;
+  notes: string;
+  citationId: string;
+};
+
+export type AgsaFinding = {
+  findingId: string;
+  auditeeId: string;
+  financialYear: string;
+  findingFamily: AgsaFindingFamily;
+  subtheme: string;
+  severity: Exclude<Severity, "resolved">;
+  description: string;
+  impact: string;
+  valueAtRisk: number | null;
+  repeatFlag: boolean;
+  citationId: string;
+};
+
+export type AgsaMaterialIrregularity = {
+  miId: string;
+  auditeeId: string;
+  notifiedDate: string | null;
+  category: "financial_loss" | "public_harm" | "resource_misuse" | "compliance";
+  description: string;
+  estimatedLoss: number | null;
+  status: string;
+  recoveredAmount: number | null;
+  preventedAmount: number | null;
+  referralBody: string | null;
+  citationId: string;
+};
+
+export type AgsaInitiative = {
+  initiativeId: string;
+  reportId: string;
+  initiativeType: "water" | "disaster_relief" | "material_irregularity" | "infrastructure" | "service_delivery" | "other";
+  name: string;
+  location: string;
+  budget: number | null;
+  progressStatus: "not_started" | "delayed" | "in_progress" | "complete" | "under_review";
+  delayMonths: number | null;
+  qualityIssues: string[];
+  beneficiaries: number | null;
+  responsibleEntities: string[];
+};
+
+export type AgsaRecommendation = {
+  recommendationId: string;
+  reportId: string;
+  auditeeId: string | null;
+  ownerRole: string;
+  action: string;
+  deadline: string | null;
+  priority: "p0" | "p1" | "p2" | "p3";
+  citationId: string;
+};
+
+export type AgsaExtractionIssue = {
+  documentId: string;
+  pageNumber: number;
+  issue: string;
+};
+
+export type AgsaReviewDecisionStatus = "accepted" | "correction" | "excluded";
+
+export type AgsaReviewDecision = {
+  decisionKey: string;
+  documentId: string;
+  pageNumber: number;
+  issue: string;
+  status: AgsaReviewDecisionStatus;
+  reviewer: string;
+  decidedAt: string;
+  citationIds: string[];
+  rationale?: string;
+  replacementText?: string;
+};
+
+export type AgsaReviewDecisionStore = {
+  schemaVersion: "agsa-review-decisions-v0.1";
+  updatedAt: string;
+  decisions: AgsaReviewDecision[];
+};
+
+export type AgsaExtract = {
+  schemaVersion: string;
+  generatedAt: string;
+  sourceRoot: string;
+  documents: AgsaSourceDocument[];
+  pagesByDocument: Record<string, AgsaPageSample[]>;
+  pageCitations: AgsaPageCitation[];
+  auditees: AgsaAuditee[];
+  auditOutcomes: AgsaAuditOutcome[];
+  findings: AgsaFinding[];
+  materialIrregularities: AgsaMaterialIrregularity[];
+  initiatives: AgsaInitiative[];
+  recommendations: AgsaRecommendation[];
+  extractionIssues: AgsaExtractionIssue[];
 };

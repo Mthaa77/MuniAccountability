@@ -1,7 +1,15 @@
 import { notFound } from "next/navigation";
 import { ActionKanban, EvidenceDrawer } from "@/components/interactive";
 import { Badge, MunicipalityPreview, PageHeader } from "@/components/ui";
-import { actions, auditTimeline, evidenceChecklist, ipiComponents, municipalities, queueItems } from "@/lib/pilot-data";
+import {
+  actions,
+  evidenceChecklist,
+  getAuditTimelineForMunicipality,
+  getFindingsForMunicipality,
+  getIpiComponentsForMunicipality,
+  municipalities,
+  queueItems
+} from "@/lib/pilot-data";
 
 export function generateStaticParams() {
   return municipalities.map((municipality) => ({ id: municipality.id }));
@@ -13,6 +21,9 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
 
   const scopedActions = actions.filter((action) => action.municipalityId === municipality.id);
   const scopedQueue = queueItems.find((item) => item.municipalityId === municipality.id) ?? queueItems[0];
+  const scopedTimeline = getAuditTimelineForMunicipality(municipality.id);
+  const scopedIpiComponents = getIpiComponentsForMunicipality(municipality.id);
+  const scopedFindings = getFindingsForMunicipality(municipality.id);
 
   return (
     <>
@@ -34,7 +45,7 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
             <Badge tone="healthy">AGSA verified</Badge>
           </div>
           <div className="timeline">
-            {auditTimeline.map((event) => (
+            {scopedTimeline.map((event) => (
               <article key={event.year}>
                 <span>{event.year}</span>
                 <strong>{event.outcome}</strong>
@@ -52,7 +63,7 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
             <Badge tone="watch">agsa-first-v0.1</Badge>
           </div>
           <div className="breakdown-list">
-            {ipiComponents.map((component) => (
+            {scopedIpiComponents.map((component) => (
               <article key={component.label}>
                 <div>
                   <strong>{component.label}</strong>
@@ -60,6 +71,25 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
                 </div>
                 <div className="mini-bar"><span style={{ width: `${(component.score / component.max) * 100}%` }} /></div>
                 <p>{component.explanation}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="panel wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyeless">AGSA findings</p>
+              <h2>Cited risk signals</h2>
+            </div>
+            <Badge tone="healthy">Page cited</Badge>
+          </div>
+          <div className="source-grid">
+            {scopedFindings.slice(0, 4).map((finding) => (
+              <article key={finding.findingId} className="source-card">
+                <span>{finding.findingFamily}</span>
+                <strong>{finding.subtheme}</strong>
+                <p>{finding.description}</p>
+                <small>{finding.source.location}</small>
               </article>
             ))}
           </div>

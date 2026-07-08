@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { apiDatasets, apiResponse, getCaseFile, getMunicipality } from "@/lib/api";
+import { listAgsaReviewDecisions, saveAgsaReviewDecision } from "@/lib/agsa-review-store";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type Context = {
   params: {
@@ -48,11 +52,7 @@ export async function GET(request: Request, context: Context) {
             {
               municipalityId: id,
               outcome: municipality.auditOutcome,
-              timeline: ["2020-21", "2021-22", "2022-23", "2023-24", "2024-25"].map((year) => ({
-                year,
-                outcome: municipality.auditOutcome,
-                source: "agsa_mfma"
-              }))
+              timeline: apiDatasets.auditTimelines[id] ?? []
             },
             { id }
           )
@@ -96,6 +96,43 @@ export async function GET(request: Request, context: Context) {
 
   if (family === "actions") {
     return NextResponse.json(apiResponse(apiDatasets.actions));
+  }
+
+  if (family === "agsa" && id === "documents") {
+    return NextResponse.json(apiResponse(apiDatasets.agsaDocuments));
+  }
+
+  if (family === "agsa" && id === "findings") {
+    return NextResponse.json(apiResponse(apiDatasets.agsaFindings));
+  }
+
+  if (family === "agsa" && id === "citations") {
+    return NextResponse.json(apiResponse(apiDatasets.agsaPageCitations));
+  }
+
+  if (family === "agsa" && id === "extraction-issues") {
+    return NextResponse.json(apiResponse(apiDatasets.extractionIssues));
+  }
+
+  if (family === "agsa" && id === "extract") {
+    return NextResponse.json(apiResponse(apiDatasets.agsaExtract));
+  }
+
+  if (family === "initiatives") {
+    const initiativeType = searchParams.get("type");
+    const data = initiativeType
+      ? apiDatasets.agsaInitiatives.filter((initiative) => initiative.initiativeType === initiativeType)
+      : apiDatasets.agsaInitiatives;
+
+    return NextResponse.json(apiResponse(data, { type: initiativeType }));
+  }
+
+  if (family === "material-irregularities") {
+    return NextResponse.json(apiResponse(apiDatasets.agsaMaterialIrregularities));
+  }
+
+  if (family === "recommendations") {
+    return NextResponse.json(apiResponse(apiDatasets.agsaRecommendations));
   }
 
   if (family === "risk-signals") {
@@ -151,6 +188,10 @@ export async function GET(request: Request, context: Context) {
     );
   }
 
+  if (family === "agsa" && id === "review-decisions") {
+    return NextResponse.json(apiResponse(listAgsaReviewDecisions()));
+  }
+
   if (family === "sources" || family === "data-freshness") {
     return NextResponse.json(apiResponse({ sources: apiDatasets.sourceHealth, events: apiDatasets.sourceFreshnessEvents }));
   }
@@ -174,9 +215,9 @@ export async function GET(request: Request, context: Context) {
         changes: [
           {
             id: "chg_001",
-            type: "pilot_seed",
-            summary: "Static AGSA-first pilot data published.",
-            changedAt: "2026-07-06T02:30:00+02:00"
+            type: "agsa_extract",
+            summary: "AGSA PDF extract published as the platform data backbone.",
+            changedAt: apiDatasets.agsaExtract.generatedAt
           }
         ]
       })
@@ -190,6 +231,20 @@ export async function POST(request: Request, context: Context) {
   const body = await request.json().catch(() => ({}));
   const resource = context.params.resource ?? [];
   const [family, id, child] = resource;
+
+  if (family === "agsa" && id === "review-decisions") {
+    try {
+      return NextResponse.json(apiResponse(saveAgsaReviewDecision(body)), { status: 201 });
+    } catch (error) {
+      return NextResponse.json(
+        apiResponse({
+          accepted: false,
+          error: error instanceof Error ? error.message : "Invalid review decision payload"
+        }),
+        { status: 400 }
+      );
+    }
+  }
 
   if (family === "actions" || family === "briefings" || family === "assistant") {
     return NextResponse.json(
