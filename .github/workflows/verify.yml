@@ -42,6 +42,9 @@ jobs:
       - name: Verify workflow persistence boundary
         run: npm run test:workflow-persistence
 
+      - name: Verify workflow migration artifacts
+        run: npm run test:workflow-migration
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 

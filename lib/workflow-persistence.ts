@@ -10,6 +10,7 @@ export type WorkflowPersistenceProvider = {
   storePaths: string[];
   limitations: string[];
   migrationGates: string[];
+  migrationArtifacts?: string[];
 };
 
 const generatedDataRoot = path.join(process.cwd(), "data", "agsa", "generated");
@@ -40,6 +41,11 @@ export const workflowPersistence = {
         "Add tenant/user audit columns",
         "Backfill current JSON records",
         "Run API parity checks before disabling local JSON writes"
+      ],
+      migrationArtifacts: [
+        "db/workflow/001_workflow_persistence.sql",
+        "tools/build-workflow-backfill-manifest.mjs",
+        "data/agsa/generated/workflow-backfill-manifest.json"
       ]
     },
     {
@@ -54,6 +60,10 @@ export const workflowPersistence = {
         "Migrations applied",
         "Write path switched behind the store adapter",
         "Smoke tests verify review decisions, draft actions, transitions and evidence attachments"
+      ],
+      migrationArtifacts: [
+        "db/workflow/001_workflow_persistence.sql",
+        "data/agsa/generated/workflow-backfill-manifest.json"
       ]
     }
   ] satisfies WorkflowPersistenceProvider[]

@@ -7,13 +7,14 @@
     "build": "next build",
     "start": "next start -H 127.0.0.1 -p 3000",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run test:agsa-fixtures && npm run test:governance-fixtures && npm run test:source-search-fixtures && npm run test:validation-gates && npm run test:source-manifests && npm run test:workflow-persistence && npm run typecheck && npm run build",
+    "verify": "npm run test:agsa-fixtures && npm run test:governance-fixtures && npm run test:source-search-fixtures && npm run test:validation-gates && npm run test:source-manifests && npm run test:workflow-persistence && npm run test:workflow-migration && npm run typecheck && npm run build",
     "test:agsa-fixtures": "node scripts/verify-agsa-fixtures.mjs",
     "test:governance-fixtures": "node scripts/verify-governance-fixtures.mjs",
     "test:source-search-fixtures": "node scripts/verify-source-search-fixtures.mjs",
     "test:validation-gates": "node scripts/verify-validation-gates.mjs",
     "test:source-manifests": "node scripts/verify-source-manifests.mjs",
-    "test:workflow-persistence": "node scripts/verify-workflow-persistence.mjs"
+    "test:workflow-persistence": "node scripts/verify-workflow-persistence.mjs",
+    "test:workflow-migration": "node scripts/verify-workflow-migration.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
