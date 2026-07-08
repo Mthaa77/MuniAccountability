@@ -12,6 +12,7 @@ import { getPublicMuniCheckProfile, listPublicMuniCheckProfiles } from "@/lib/pu
 import { answerSourceLockedQuery, searchAgsaEvidence } from "@/lib/source-search";
 import { annexureValidation, sourceValidationSummary, treasuryValidation } from "@/lib/source-validation";
 import { workflowPersistence } from "@/lib/workflow-persistence";
+import { agsaReadinessSummary } from "@/lib/agsa-readiness-ledger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -303,6 +304,10 @@ export async function GET(request: Request, context: Context) {
 
   if (family === "workflow" && id === "persistence") {
     return NextResponse.json(apiResponse(workflowPersistence));
+  }
+
+  if (family === "readiness") {
+    return NextResponse.json(apiResponse(agsaReadinessSummary));
   }
 
   if (family === "compare") {

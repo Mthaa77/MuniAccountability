@@ -51,6 +51,9 @@ jobs:
       - name: Verify workflow migration artifacts
         run: npm run test:workflow-migration
 
+      - name: Verify readiness ledger
+        run: npm run test:readiness-ledger
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 

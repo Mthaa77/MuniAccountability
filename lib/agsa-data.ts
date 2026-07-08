@@ -590,6 +590,7 @@ export const muniDataEndpoints = [
   { method: "POST", path: "/v1/actions/drafts/{id}/transition", access: "Institutional", description: "Record an auditable draft action status transition with reviewer and reason." },
   { method: "POST", path: "/v1/actions/drafts/{id}/evidence", access: "Institutional", description: "Attach an evidence reference to a draft action and move it into evidence-submitted state where appropriate." },
   { method: "GET", path: "/v1/workflow/persistence", access: "Institutional", description: "Current workflow persistence provider, durability limitations and database migration gates." },
+  { method: "GET", path: "/v1/readiness", access: "Institutional", description: "Ten-slice AGSA integration readiness ledger with evidence, verification commands and external dependencies." },
   { method: "GET", path: "/v1/validation", access: "Institutional", description: "Validation summary for exact-annexure and Treasury/Municipal Money unlock gates." },
   { method: "GET", path: "/v1/validation/annexures", access: "Institutional", description: "MFMA annexure mapping gates and unresolved municipality outcome mappings." },
   { method: "GET", path: "/v1/validation/treasury", access: "Institutional", description: "Treasury/Municipal Money source, reuse, schema, formula and freshness gates before Financial Pulse unlock." },
