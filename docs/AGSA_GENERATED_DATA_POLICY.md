@@ -78,6 +78,20 @@ data/treasury/validation/financial-pulse-formulas.json
 
 These formulas are not publishable while their status is `draft` or their `displayGate` is `blocked_until_validated`. A formula can only contribute to Financial Pulse unlock after the Treasury manifest records the matching validated formula version and the schema fingerprint validates every required field.
 
+To build a review artifact without mutating the committed locked manifest:
+
+```powershell
+node tools/build-treasury-validation-manifest.mjs --schema-snapshot path\to\schema.json --connector-status validated --dry-run
+```
+
+To write a local review artifact:
+
+```powershell
+node tools/build-treasury-validation-manifest.mjs --schema-snapshot path\to\schema.json --out data\treasury\validation\municipal-money-validation-manifest.local.json
+```
+
+Only write back to `municipal-money-validation-manifest.json` after connector, reuse, schema, formula and freshness evidence has been reviewed.
+
 ## Publication guardrails
 
 - Keep AGSA source citations, document IDs, page numbers and confidence values with every structured claim.

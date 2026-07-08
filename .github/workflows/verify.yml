@@ -48,6 +48,9 @@ jobs:
       - name: Verify Treasury validation contract
         run: npm run test:treasury-validation
 
+      - name: Verify Treasury manifest builder
+        run: npm run test:treasury-manifest-builder
+
       - name: Verify workflow persistence boundary
         run: npm run test:workflow-persistence
 
