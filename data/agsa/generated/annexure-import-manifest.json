@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "mfma-annexure-import-v0.1",
+  "updatedAt": "2026-07-08T00:00:00.000Z",
+  "status": "blocked",
+  "sourceFiles": [],
+  "expectedInputs": [
+    {
+      "id": "mfma_2024_25_municipality_outcomes",
+      "label": "MFMA 2024-25 municipality-level audit outcome annexure",
+      "acceptedFormats": ["csv", "json"],
+      "requiredColumns": ["municipality_code", "municipality_name", "financial_year", "audit_outcome", "movement", "source_document", "source_page"],
+      "status": "missing",
+      "notes": "Export the official AGSA annexure table to CSV or JSON before import."
+    }
+  ],
+  "importedRows": 0,
+  "matchedOutcomes": [],
+  "unmatchedRows": [],
+  "operatorNotes": [
+    "No machine-readable municipality-level MFMA annexure export is currently present.",
+    "Current cohort-derived or manual outcomes must remain marked as not exact until this manifest is regenerated from official annexure data."
+  ]
+}

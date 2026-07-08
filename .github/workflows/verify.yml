@@ -36,6 +36,9 @@ jobs:
       - name: Verify validation gates
         run: npm run test:validation-gates
 
+      - name: Verify source manifests
+        run: npm run test:source-manifests
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 
