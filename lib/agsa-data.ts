@@ -1,4 +1,5 @@
 import extractJson from "@/data/agsa/generated/agsa-report-extract.json";
+import annexureImportManifestJson from "@/data/agsa/generated/annexure-import-manifest.json";
 import type {
   Action,
   AgsaAuditOutcome,
@@ -19,6 +20,17 @@ import type {
 } from "./types";
 
 export const agsaExtract = extractJson as AgsaExtract;
+const annexureImportManifest = annexureImportManifestJson as {
+  matchedOutcomes?: Array<{
+    municipalityCode?: string;
+    municipalityName?: string;
+    financialYear?: string;
+    auditOutcome?: string;
+    movement?: string;
+    sourceDocument?: string;
+    sourcePage?: string | number;
+  }>;
+};
 export const agsaDocuments = agsaExtract.documents;
 export const agsaFindings = agsaExtract.findings;
 export const agsaInitiatives = agsaExtract.initiatives;
@@ -139,11 +151,60 @@ function confidenceForOutcome(outcome: AgsaAuditOutcome): { mappingConfidence: A
   };
 }
 
-export const mappedAuditOutcomes: AgsaMappedAuditOutcome[] = agsaExtract.auditOutcomes.map((outcome) => ({
-  ...outcome,
-  ...confidenceForOutcome(outcome),
-  source: citationToSource(outcome.citationId)
-}));
+function annexureCitationId(row: NonNullable<typeof annexureImportManifest.matchedOutcomes>[number], fallbackCitationId: string) {
+  const pageNumber = Number(row.sourcePage);
+  const document = agsaDocuments.find(
+    (candidate) => candidate.documentId === row.sourceDocument || candidate.fileName === row.sourceDocument
+  );
+  const citation = document && Number.isFinite(pageNumber)
+    ? agsaPageCitations.find((candidate) => candidate.documentId === document.documentId && candidate.pageNumber === pageNumber)
+    : undefined;
+
+  return citation?.citationId ?? fallbackCitationId;
+}
+
+function annexureOutcomeFor(outcome: AgsaAuditOutcome) {
+  const auditee = auditeeById.get(outcome.auditeeId);
+  return annexureImportManifest.matchedOutcomes?.find((row) => {
+    const code = row.municipalityCode?.toLowerCase();
+    const year = row.financialYear;
+    return Boolean(code) && year === outcome.financialYear && (
+      code === outcome.auditeeId.toLowerCase() ||
+      code === auditee?.canonicalCode?.toLowerCase() ||
+      code === auditee?.commonName.toLowerCase()
+    );
+  });
+}
+
+function mapAuditOutcome(outcome: AgsaAuditOutcome): AgsaMappedAuditOutcome {
+  const annexureOutcome = annexureOutcomeFor(outcome);
+  const citationId = annexureOutcome ? annexureCitationId(annexureOutcome, outcome.citationId) : outcome.citationId;
+
+  if (annexureOutcome?.auditOutcome) {
+    return {
+      ...outcome,
+      opinion: annexureOutcome.auditOutcome,
+      movement: annexureOutcome.movement || outcome.movement,
+      notes:
+        `Exact municipality-level outcome imported from official MFMA annexure manifest. ` +
+        `Original extracted note: ${outcome.notes}`,
+      citationId,
+      mappingConfidence: "exact",
+      mappingRationale:
+        `Outcome promoted from ${confidenceForOutcome(outcome).mappingConfidence.replaceAll("_", " ")} ` +
+        "using the official MFMA annexure import manifest.",
+      source: citationToSource(citationId)
+    };
+  }
+
+  return {
+    ...outcome,
+    ...confidenceForOutcome(outcome),
+    source: citationToSource(citationId)
+  };
+}
+
+export const mappedAuditOutcomes: AgsaMappedAuditOutcome[] = agsaExtract.auditOutcomes.map(mapAuditOutcome);
 
 function auditeeFindings(auditeeId: string) {
   return agsaFindings.filter((finding) => finding.auditeeId === auditeeId || finding.auditeeId === "LOCAL_GOVERNMENT");

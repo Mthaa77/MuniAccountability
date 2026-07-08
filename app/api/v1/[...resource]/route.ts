@@ -162,7 +162,9 @@ export async function GET(request: Request, context: Context) {
               municipalityId: id,
               status: "pending_validation",
               message: "Treasury/Municipal Money telemetry is reserved for Phase 2 validation.",
-              metrics: municipality.metrics.filter((metric) => metric.id === "financial_pulse")
+              metrics: municipality.metrics.filter((metric) => metric.id === "financial_pulse"),
+              validation: treasuryValidation,
+              unlockRule: "Financial Pulse remains unavailable until every required Treasury validation gate passes."
             },
             { id }
           )
