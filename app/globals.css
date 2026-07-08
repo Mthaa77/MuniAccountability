@@ -1163,6 +1163,41 @@ tbody tr:hover {
   line-height: 1.45;
 }
 
+.search-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.search-panel label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.search-panel div {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.search-panel input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(31, 57, 84, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  font: inherit;
+  padding: 0.85rem 1rem;
+}
+
+.search-panel input:focus {
+  border-color: rgba(15, 89, 117, 0.45);
+  box-shadow: 0 0 0 4px rgba(15, 89, 117, 0.1);
+  outline: none;
+}
+
 .review-workspace,
 .review-list {
   display: grid;

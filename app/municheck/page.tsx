@@ -1,15 +1,9 @@
 import Link from "next/link";
 import { Badge, PageHeader } from "@/components/ui";
-import { publicProfiles } from "@/lib/pilot-data";
-import { getDecisionForCitation, isCitationPublicSafe } from "@/lib/agsa-review-store";
+import { listPublicMuniCheckProfiles } from "@/lib/public-municheck";
 
 export default function MuniCheckPage() {
-  const profiles = publicProfiles
-    .filter((profile) => !profile.citation?.id || isCitationPublicSafe(profile.citation.id))
-    .map((profile) => ({
-      ...profile,
-      reviewStatus: profile.citation?.id ? getDecisionForCitation(profile.citation.id)?.status ?? "not_reviewed" : "not_reviewed"
-    }));
+  const profiles = listPublicMuniCheckProfiles();
 
   return (
     <>
@@ -34,6 +28,7 @@ export default function MuniCheckPage() {
               <span>Platform scores are not legal findings</span>
               <span>Treasury telemetry pending validation</span>
             </div>
+            <Link className="primary-link" href={`/municheck/${profile.municipalityId}`}>View public profile</Link>
             <Link className="primary-link" href={`/municipalities/${profile.municipalityId}`}>View institutional case</Link>
           </article>
         ))}

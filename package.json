@@ -8,7 +8,8 @@
     "start": "next start -H 127.0.0.1 -p 3000",
     "typecheck": "tsc --noEmit",
     "test:agsa-fixtures": "node scripts/verify-agsa-fixtures.mjs",
-    "test:governance-fixtures": "node scripts/verify-governance-fixtures.mjs"
+    "test:governance-fixtures": "node scripts/verify-governance-fixtures.mjs",
+    "test:source-search-fixtures": "node scripts/verify-source-search-fixtures.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

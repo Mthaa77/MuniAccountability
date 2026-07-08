@@ -37,6 +37,7 @@ const navGroups = [
       { href: "/recovery", label: "Recovery War Room", icon: BriefcaseBusiness },
       { href: "/financial-pulse", label: "Financial Pulse", icon: BarChart3 },
       { href: "/briefings", label: "Briefings", icon: FileText },
+      { href: "/search", label: "Evidence Search", icon: Search },
       { href: "/sources", label: "Sources", icon: Database }
     ]
   },

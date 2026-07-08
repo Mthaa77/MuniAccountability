@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { apiDatasets, apiResponse, getCaseFile, getMunicipality } from "@/lib/api";
 import {
   getAgsaReviewGovernance,
-  getDecisionForCitation,
-  isCitationPublicSafe,
   listAgsaReviewDecisions,
   saveAgsaReviewDecision
 } from "@/lib/agsa-review-store";
 import { listDraftActions, patchDraftAction, saveDraftAction } from "@/lib/draft-action-store";
 import { getFindingDetail } from "@/lib/pilot-data";
+import { applyReviewOverlay, applyReviewOverlays } from "@/lib/review-overlays";
+import { getPublicMuniCheckProfile, listPublicMuniCheckProfiles } from "@/lib/public-municheck";
+import { answerSourceLockedQuery, searchAgsaEvidence } from "@/lib/source-search";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,35 +58,54 @@ function governedSourcePayload() {
   return { sources, events, review: governance.stats };
 }
 
-function publicSafeProfiles() {
-  return apiDatasets.publicProfiles
-    .filter((profile) => !profile.citation?.id || isCitationPublicSafe(profile.citation.id))
-    .map((profile) => ({
-      municipalityId: profile.municipalityId,
-      name: profile.name,
-      plainLanguageStatus: profile.plainLanguageStatus,
-      auditOutcome: profile.auditOutcome,
-      sourcePeriod: profile.sourcePeriod,
-      citation: profile.citation,
-      publicFields: profile.publicFields,
-      methodology: [
-        "AGSA source-published evidence only.",
-        "Platform priority scores are workflow aids, not legal findings.",
-        "Treasury telemetry remains pending validation."
-      ],
-      reviewStatus: profile.citation?.id ? getDecisionForCitation(profile.citation.id)?.status ?? "not_reviewed" : "not_reviewed"
-    }));
-}
-
 function findingWithGovernance(findingId: string) {
   const detail = getFindingDetail(findingId);
   if (!detail) return null;
-  const reviewDecision = getDecisionForCitation(detail.citationId);
 
   return {
-    ...detail,
-    reviewStatus: reviewDecision?.status ?? "not_reviewed",
-    reviewDecision
+    ...applyReviewOverlay(detail),
+    source: detail.source,
+    relatedMunicipalities: detail.relatedMunicipalities,
+    relatedQueueItems: detail.relatedQueueItems,
+    methodologyNote: detail.methodologyNote
+  };
+}
+
+function municipalityWithGovernance(id: string) {
+  const municipality = getMunicipality(id);
+  if (!municipality) return null;
+
+  const auditSource = municipality.metrics.find((metric) => metric.id === "audit_trajectory")?.sources[0];
+  const reviewed = auditSource?.id
+    ? applyReviewOverlay({ citationId: auditSource.id, auditOutcome: municipality.auditOutcome })
+    : null;
+
+  return {
+    ...municipality,
+    auditOutcome: reviewed?.auditOutcome ?? municipality.auditOutcome,
+    reviewStatus: reviewed?.reviewStatus ?? "not_reviewed",
+    publicationState: reviewed?.publicationState ?? "needs_review"
+  };
+}
+
+function caseFileWithGovernance(id: string) {
+  const caseFile = getCaseFile(id);
+  if (!caseFile) return null;
+
+  return {
+    ...caseFile,
+    municipality: municipalityWithGovernance(id) ?? caseFile.municipality,
+    findings: caseFile.findings.map((finding) => applyReviewOverlay(finding)),
+    materialIrregularities: caseFile.materialIrregularities.map((mi) => applyReviewOverlay(mi)),
+    recommendations: caseFile.recommendations.map((recommendation) => applyReviewOverlay(recommendation)),
+    auditHistory: caseFile.auditHistory.map((entry) =>
+      entry.source?.id
+        ? applyReviewOverlay({
+            citationId: entry.source.id,
+            ...entry
+          })
+        : entry
+    )
   };
 }
 
@@ -100,16 +120,16 @@ export async function GET(request: Request, context: Context) {
       ? apiDatasets.municipalities.filter((municipality) => municipality.province.toLowerCase() === province.toLowerCase())
       : apiDatasets.municipalities;
 
-    return NextResponse.json(apiResponse(data, { province }));
+    return NextResponse.json(apiResponse(data.map((municipality) => municipalityWithGovernance(municipality.id) ?? municipality), { province }));
   }
 
   if (family === "municipalities" && id && !child) {
-    const municipality = getMunicipality(id);
+    const municipality = municipalityWithGovernance(id);
     return municipality ? NextResponse.json(apiResponse(municipality, { id })) : notFound(resource);
   }
 
   if (family === "municipalities" && id && child === "case-file") {
-    const caseFile = getCaseFile(id);
+    const caseFile = caseFileWithGovernance(id);
     return caseFile ? NextResponse.json(apiResponse(caseFile, { id })) : notFound(resource);
   }
 
@@ -121,7 +141,9 @@ export async function GET(request: Request, context: Context) {
             {
               municipalityId: id,
               outcome: municipality.auditOutcome,
-              timeline: apiDatasets.auditTimelines[id] ?? []
+              timeline: (apiDatasets.auditTimelines[id] ?? []).map((entry) =>
+                entry.source?.id ? applyReviewOverlay({ citationId: entry.source.id, ...entry }) : entry
+              )
             },
             { id }
           )
@@ -182,11 +204,11 @@ export async function GET(request: Request, context: Context) {
   }
 
   if (family === "agsa" && id === "findings") {
-    return NextResponse.json(apiResponse(apiDatasets.agsaFindings));
+    return NextResponse.json(apiResponse(applyReviewOverlays(apiDatasets.agsaFindings)));
   }
 
   if (family === "agsa" && id === "outcomes") {
-    return NextResponse.json(apiResponse(apiDatasets.mappedAuditOutcomes));
+    return NextResponse.json(apiResponse(applyReviewOverlays(apiDatasets.mappedAuditOutcomes)));
   }
 
   if (family === "agsa" && id === "citations") {
@@ -222,9 +244,9 @@ export async function GET(request: Request, context: Context) {
     return NextResponse.json(
       apiResponse(
         apiDatasets.agsaFindings.map((finding) => ({
-          ...finding,
+          ...applyReviewOverlay(finding),
           detailPath: `/findings/${finding.findingId}`,
-          reviewStatus: getDecisionForCitation(finding.citationId)?.status ?? "not_reviewed"
+          source: apiDatasets.agsaPageCitations.find((citation) => citation.citationId === finding.citationId)
         }))
       )
     );
@@ -288,6 +310,17 @@ export async function GET(request: Request, context: Context) {
     );
   }
 
+  if (family === "search") {
+    const query = searchParams.get("q") ?? "";
+    const limit = Number(searchParams.get("limit") ?? 8);
+
+    return NextResponse.json(apiResponse({
+      query,
+      results: searchAgsaEvidence(query, Number.isFinite(limit) ? limit : 8),
+      refusalRule: "No source means no assertion."
+    }, { q: query }));
+  }
+
   if (family === "agsa" && id === "review-decisions") {
     return NextResponse.json(apiResponse(listAgsaReviewDecisions()));
   }
@@ -301,7 +334,12 @@ export async function GET(request: Request, context: Context) {
   }
 
   if (family === "municheck") {
-    return NextResponse.json(apiResponse(publicSafeProfiles()));
+    if (id) {
+      const profile = getPublicMuniCheckProfile(id);
+      return profile ? NextResponse.json(apiResponse(profile, { id })) : notFound(resource);
+    }
+
+    return NextResponse.json(apiResponse(listPublicMuniCheckProfiles()));
   }
 
   if (family === "munidata") {
@@ -369,6 +407,12 @@ export async function POST(request: Request, context: Context) {
         { status: 400 }
       );
     }
+  }
+
+  if (family === "assistant" && id === "query") {
+    const query = typeof body.query === "string" ? body.query : typeof body.question === "string" ? body.question : "";
+
+    return NextResponse.json(apiResponse(answerSourceLockedQuery(query)), { status: 200 });
   }
 
   if (family === "actions" || family === "briefings" || family === "assistant") {

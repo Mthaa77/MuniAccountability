@@ -591,6 +591,7 @@ export const muniDataEndpoints = [
   { method: "GET", path: "/v1/municipalities/{id}/case-file", access: "Institutional", description: "Source-backed case file with citations, queue and actions." },
   { method: "GET", path: "/v1/municipalities/{id}/audit-history", access: "Public safe", description: "Year-specific AGSA audit outcomes where mapped." },
   { method: "GET", path: "/v1/intervention-queue", access: "Institutional", description: "Ranked AGSA-derived risks with evidence references." },
+  { method: "GET", path: "/v1/search?q={query}", access: "Institutional", description: "Source-locked AGSA evidence search across findings, outcomes, citations, documents, queue items and initiatives." },
   { method: "GET", path: "/v1/agsa/documents", access: "Public safe", description: "Ingested AGSA report inventory and metadata." },
   { method: "GET", path: "/v1/agsa/documents/{id}", access: "Institutional", description: "Source document detail with page samples, citations and linked extracted records." },
   { method: "GET", path: "/v1/agsa/outcomes", access: "Institutional", description: "Audit outcomes with exact/cohort/manual/needs-review mapping confidence." },
@@ -599,11 +600,13 @@ export const muniDataEndpoints = [
   { method: "GET", path: "/v1/findings/{id}", access: "Institutional", description: "Single AGSA finding detail with citation and related queue/action context." },
   { method: "GET", path: "/v1/material-irregularities", access: "Institutional", description: "MI lifecycle records extracted from AGSA reporting." },
   { method: "GET", path: "/v1/initiatives", access: "Institutional", description: "Special-report initiative datasets including water and disaster relief." },
+  { method: "GET", path: "/v1/municheck", access: "Public safe", description: "Public-safe plain-language municipal profiles with internal workflow fields removed." },
+  { method: "GET", path: "/v1/municheck/{id}", access: "Public safe", description: "Single public MuniCheck profile with source-backed timeline, findings and methodology notes." },
   { method: "GET", path: "/v1/agsa/review-decisions", access: "Institutional", description: "Persisted AGSA extraction review decisions and review-state counts." },
   { method: "GET", path: "/v1/actions/drafts", access: "Institutional", description: "Draft remediation actions generated from findings and queue items." },
   { method: "GET", path: "/v1/data-freshness", access: "Public safe", description: "Source status, freshness records and extraction exceptions." },
   { method: "GET", path: "/admin/data-quality", access: "Institutional UI", description: "Data quality and publication-readiness dashboard." },
-  { method: "POST", path: "/v1/assistant/query", access: "Institutional", description: "Source-locked answer policy endpoint." }
+  { method: "POST", path: "/v1/assistant/query", access: "Institutional", description: "Source-locked assistant response over AGSA evidence only; unsupported questions return no-assertion refusal." }
 ];
 
 export function getFindingsForMunicipality(municipalityId: string) {
