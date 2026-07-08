@@ -3,6 +3,7 @@ import { Badge, PageHeader } from "@/components/ui";
 import { getAgsaReviewGovernance } from "@/lib/agsa-review-store";
 import { agsaDocuments, extractionIssues, mappedAuditOutcomes } from "@/lib/pilot-data";
 import { annexureValidation } from "@/lib/source-validation";
+import { workflowPersistence } from "@/lib/workflow-persistence";
 
 export default function DataQualityPage() {
   const governance = getAgsaReviewGovernance(extractionIssues.length);
@@ -101,6 +102,32 @@ export default function DataQualityPage() {
                 <span>{gate.status.replaceAll("_", " ")}</span>
               </div>
               <p>{gate.evidence}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel wide">
+        <div className="panel-header">
+          <div>
+            <p className="eyeless">Workflow persistence</p>
+            <h2>Storage provider boundary</h2>
+          </div>
+          <Badge tone={workflowPersistence.productionReady ? "healthy" : "watch"}>
+            {workflowPersistence.productionReady ? "production ready" : "prototype local"}
+          </Badge>
+        </div>
+        <p className="lead">
+          Active provider: {workflowPersistence.providers.find((provider) => provider.id === workflowPersistence.activeProvider)?.label}.
+        </p>
+        <div className="breakdown-list">
+          {workflowPersistence.providers.map((provider) => (
+            <article key={provider.id}>
+              <div>
+                <strong>{provider.label}</strong>
+                <span>{provider.status.replaceAll("_", " ")}</span>
+              </div>
+              <p>{provider.migrationGates.join(" / ")}</p>
             </article>
           ))}
         </div>

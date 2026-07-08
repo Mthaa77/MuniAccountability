@@ -11,6 +11,7 @@ import { applyReviewOverlay, applyReviewOverlays } from "@/lib/review-overlays";
 import { getPublicMuniCheckProfile, listPublicMuniCheckProfiles } from "@/lib/public-municheck";
 import { answerSourceLockedQuery, searchAgsaEvidence } from "@/lib/source-search";
 import { annexureValidation, sourceValidationSummary, treasuryValidation } from "@/lib/source-validation";
+import { workflowPersistence } from "@/lib/workflow-persistence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -296,6 +297,10 @@ export async function GET(request: Request, context: Context) {
     }
 
     return NextResponse.json(apiResponse(sourceValidationSummary));
+  }
+
+  if (family === "workflow" && id === "persistence") {
+    return NextResponse.json(apiResponse(workflowPersistence));
   }
 
   if (family === "compare") {

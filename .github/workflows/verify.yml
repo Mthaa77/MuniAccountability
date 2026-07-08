@@ -39,6 +39,9 @@ jobs:
       - name: Verify source manifests
         run: npm run test:source-manifests
 
+      - name: Verify workflow persistence boundary
+        run: npm run test:workflow-persistence
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 
