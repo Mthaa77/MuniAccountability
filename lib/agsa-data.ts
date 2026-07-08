@@ -1,12 +1,12 @@
 import extractJson from "@/data/agsa/generated/agsa-report-extract.json";
 import annexureImportManifestJson from "@/data/agsa/generated/annexure-import-manifest.json";
+import { mapAuditOutcomeWithAnnexure, type AnnexureOutcomeRow } from "./annexure-overlays";
 import type {
   Action,
   AgsaAuditOutcome,
   AgsaExtract,
   AgsaFinding,
   AgsaMappedAuditOutcome,
-  AgsaOutcomeMappingConfidence,
   AgsaMaterialIrregularity,
   AgsaPageCitation,
   AgsaRecommendation,
@@ -21,15 +21,7 @@ import type {
 
 export const agsaExtract = extractJson as AgsaExtract;
 const annexureImportManifest = annexureImportManifestJson as {
-  matchedOutcomes?: Array<{
-    municipalityCode?: string;
-    municipalityName?: string;
-    financialYear?: string;
-    auditOutcome?: string;
-    movement?: string;
-    sourceDocument?: string;
-    sourcePage?: string | number;
-  }>;
+  matchedOutcomes?: AnnexureOutcomeRow[];
 };
 export const agsaDocuments = agsaExtract.documents;
 export const agsaFindings = agsaExtract.findings;
@@ -123,85 +115,14 @@ function latestOutcome(auditeeId: string) {
     .sort((a, b) => b.financialYear.localeCompare(a.financialYear))[0];
 }
 
-function confidenceForOutcome(outcome: AgsaAuditOutcome): { mappingConfidence: AgsaOutcomeMappingConfidence; mappingRationale: string } {
-  if (outcome.opinion.includes("cohort") || outcome.notes.toLowerCase().includes("cohort")) {
-    return {
-      mappingConfidence: "cohort_derived",
-      mappingRationale: "Outcome is derived from AGSA metro/province cohort text and awaits municipality-level annexure validation."
-    };
-  }
-
-  if (outcome.notes.toLowerCase().includes("annexure validation") || outcome.notes.toLowerCase().includes("support case")) {
-    return {
-      mappingConfidence: "needs_review",
-      mappingRationale: "Outcome is mapped from available report context but requires municipality-specific annexure confirmation."
-    };
-  }
-
-  if (outcome.cleanAuditFlag || outcome.financialYear !== "2024-25") {
-    return {
-      mappingConfidence: "exact",
-      mappingRationale: "Outcome is linked to a municipality-specific AGSA statement in the extracted report corpus."
-    };
-  }
-
-  return {
-    mappingConfidence: "manual",
-    mappingRationale: "Outcome was manually mapped from the local AGSA source pack and should remain reviewable."
-  };
-}
-
-function annexureCitationId(row: NonNullable<typeof annexureImportManifest.matchedOutcomes>[number], fallbackCitationId: string) {
-  const pageNumber = Number(row.sourcePage);
-  const document = agsaDocuments.find(
-    (candidate) => candidate.documentId === row.sourceDocument || candidate.fileName === row.sourceDocument
-  );
-  const citation = document && Number.isFinite(pageNumber)
-    ? agsaPageCitations.find((candidate) => candidate.documentId === document.documentId && candidate.pageNumber === pageNumber)
-    : undefined;
-
-  return citation?.citationId ?? fallbackCitationId;
-}
-
-function annexureOutcomeFor(outcome: AgsaAuditOutcome) {
-  const auditee = auditeeById.get(outcome.auditeeId);
-  return annexureImportManifest.matchedOutcomes?.find((row) => {
-    const code = row.municipalityCode?.toLowerCase();
-    const year = row.financialYear;
-    return Boolean(code) && year === outcome.financialYear && (
-      code === outcome.auditeeId.toLowerCase() ||
-      code === auditee?.canonicalCode?.toLowerCase() ||
-      code === auditee?.commonName.toLowerCase()
-    );
-  });
-}
-
 function mapAuditOutcome(outcome: AgsaAuditOutcome): AgsaMappedAuditOutcome {
-  const annexureOutcome = annexureOutcomeFor(outcome);
-  const citationId = annexureOutcome ? annexureCitationId(annexureOutcome, outcome.citationId) : outcome.citationId;
-
-  if (annexureOutcome?.auditOutcome) {
-    return {
-      ...outcome,
-      opinion: annexureOutcome.auditOutcome,
-      movement: annexureOutcome.movement || outcome.movement,
-      notes:
-        `Exact municipality-level outcome imported from official MFMA annexure manifest. ` +
-        `Original extracted note: ${outcome.notes}`,
-      citationId,
-      mappingConfidence: "exact",
-      mappingRationale:
-        `Outcome promoted from ${confidenceForOutcome(outcome).mappingConfidence.replaceAll("_", " ")} ` +
-        "using the official MFMA annexure import manifest.",
-      source: citationToSource(citationId)
-    };
-  }
-
-  return {
-    ...outcome,
-    ...confidenceForOutcome(outcome),
-    source: citationToSource(citationId)
-  };
+  return mapAuditOutcomeWithAnnexure(outcome, {
+    auditee: auditeeById.get(outcome.auditeeId),
+    annexureRows: annexureImportManifest.matchedOutcomes,
+    documents: agsaDocuments,
+    citations: agsaPageCitations,
+    citationToSource
+  });
 }
 
 export const mappedAuditOutcomes: AgsaMappedAuditOutcome[] = agsaExtract.auditOutcomes.map(mapAuditOutcome);
