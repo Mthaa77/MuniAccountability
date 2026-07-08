@@ -443,6 +443,7 @@ export function AgsaExtractionReview() {
   const [documentId, setDocumentId] = useState("all");
   const [reviewState, setReviewState] = useState<"loading" | "ready" | "saving" | "error">("loading");
   const [reviewMessage, setReviewMessage] = useState("Loading persisted review decisions.");
+  const [correctionDrafts, setCorrectionDrafts] = useState<Record<string, { replacementField: string; replacementValue: string; rationale: string }>>({});
 
   const documentsById = useMemo(() => new Map(agsaDocuments.map((document) => [document.documentId, document])), []);
   const citationsByPage = useMemo(() => {
@@ -548,7 +549,10 @@ export function AgsaExtractionReview() {
           issue: item.issue,
           status: decision,
           reviewer: "prototype-reviewer",
-          citationIds: item.citations.map((citation) => citation.citationId)
+          citationIds: item.citations.map((citation) => citation.citationId),
+          replacementField: correctionDrafts[item.key]?.replacementField,
+          replacementValue: correctionDrafts[item.key]?.replacementValue,
+          rationale: correctionDrafts[item.key]?.rationale
         })
       });
 
@@ -559,6 +563,18 @@ export function AgsaExtractionReview() {
       setReviewState("error");
       setReviewMessage(error instanceof Error ? error.message : "Could not persist review decision.");
     }
+  }
+
+  function updateCorrectionDraft(key: string, patch: Partial<{ replacementField: string; replacementValue: string; rationale: string }>) {
+    setCorrectionDrafts((current) => ({
+      ...current,
+      [key]: {
+        replacementField: current[key]?.replacementField ?? "",
+        replacementValue: current[key]?.replacementValue ?? "",
+        rationale: current[key]?.rationale ?? "",
+        ...patch
+      }
+    }));
   }
 
   return (
@@ -627,6 +643,23 @@ export function AgsaExtractionReview() {
                   ) : (
                     <span>No citation generated for this page yet</span>
                   )}
+                </div>
+                <div className="correction-grid">
+                  <input
+                    value={correctionDrafts[item.key]?.replacementField ?? ""}
+                    onChange={(event) => updateCorrectionDraft(item.key, { replacementField: event.target.value })}
+                    placeholder="Field to correct, e.g. auditOutcome"
+                  />
+                  <input
+                    value={correctionDrafts[item.key]?.replacementValue ?? ""}
+                    onChange={(event) => updateCorrectionDraft(item.key, { replacementValue: event.target.value })}
+                    placeholder="Corrected value"
+                  />
+                  <input
+                    value={correctionDrafts[item.key]?.rationale ?? ""}
+                    onChange={(event) => updateCorrectionDraft(item.key, { rationale: event.target.value })}
+                    placeholder="Reviewer rationale"
+                  />
                 </div>
                 <div className="review-actions">
                   <button className="secondary-action" onClick={() => setDecision(item, "accepted")}>Accept</button>

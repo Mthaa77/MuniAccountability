@@ -19,7 +19,9 @@ import {
   getIpiComponentsForMunicipality,
   getMaterialIrregularitiesForMunicipality,
   getRecommendationsForMunicipality,
+  getSourceDocumentDetail,
   ipiComponents,
+  mappedAuditOutcomes,
   municipalities,
   muniDataEndpoints,
   publicProfiles,
@@ -95,6 +97,7 @@ export const apiDatasets = {
   agsaMaterialIrregularities,
   agsaRecommendations,
   agsaPageCitations,
+  mappedAuditOutcomes,
   extractionIssues,
   auditTimeline,
   auditTimelines,
@@ -104,5 +107,6 @@ export const apiDatasets = {
   sourceFreshnessEvents,
   briefingTemplates,
   publicProfiles,
-  muniDataEndpoints
+  muniDataEndpoints,
+  getSourceDocumentDetail
 };

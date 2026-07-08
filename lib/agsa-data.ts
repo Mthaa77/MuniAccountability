@@ -4,6 +4,8 @@ import type {
   AgsaAuditOutcome,
   AgsaExtract,
   AgsaFinding,
+  AgsaMappedAuditOutcome,
+  AgsaOutcomeMappingConfidence,
   AgsaMaterialIrregularity,
   AgsaPageCitation,
   AgsaRecommendation,
@@ -104,10 +106,44 @@ function citationToSource(citationId: string): SourceReference {
 }
 
 function latestOutcome(auditeeId: string) {
-  return agsaExtract.auditOutcomes
+  return mappedAuditOutcomes
     .filter((outcome) => outcome.auditeeId === auditeeId)
     .sort((a, b) => b.financialYear.localeCompare(a.financialYear))[0];
 }
+
+function confidenceForOutcome(outcome: AgsaAuditOutcome): { mappingConfidence: AgsaOutcomeMappingConfidence; mappingRationale: string } {
+  if (outcome.opinion.includes("cohort") || outcome.notes.toLowerCase().includes("cohort")) {
+    return {
+      mappingConfidence: "cohort_derived",
+      mappingRationale: "Outcome is derived from AGSA metro/province cohort text and awaits municipality-level annexure validation."
+    };
+  }
+
+  if (outcome.notes.toLowerCase().includes("annexure validation") || outcome.notes.toLowerCase().includes("support case")) {
+    return {
+      mappingConfidence: "needs_review",
+      mappingRationale: "Outcome is mapped from available report context but requires municipality-specific annexure confirmation."
+    };
+  }
+
+  if (outcome.cleanAuditFlag || outcome.financialYear !== "2024-25") {
+    return {
+      mappingConfidence: "exact",
+      mappingRationale: "Outcome is linked to a municipality-specific AGSA statement in the extracted report corpus."
+    };
+  }
+
+  return {
+    mappingConfidence: "manual",
+    mappingRationale: "Outcome was manually mapped from the local AGSA source pack and should remain reviewable."
+  };
+}
+
+export const mappedAuditOutcomes: AgsaMappedAuditOutcome[] = agsaExtract.auditOutcomes.map((outcome) => ({
+  ...outcome,
+  ...confidenceForOutcome(outcome),
+  source: citationToSource(outcome.citationId)
+}));
 
 function auditeeFindings(auditeeId: string) {
   return agsaFindings.filter((finding) => finding.auditeeId === auditeeId || finding.auditeeId === "LOCAL_GOVERNMENT");
@@ -197,7 +233,7 @@ export const municipalities: Municipality[] = municipalityAuditeeIds.map((audite
         id: "audit_trajectory",
         label: "Audit trajectory",
         value: outcome?.movement ?? "Under review",
-        change: outcome?.opinion ?? "Awaiting AGSA mapping",
+        change: outcome ? `${outcome.opinion} (${outcome.mappingConfidence.replaceAll("_", " ")})` : "Awaiting AGSA mapping",
         tone: toneForOutcome(outcome),
         definition: "Ordered audit outcome movement based on AGSA outcome taxonomy.",
         freshness: freshness("AGSA", periodLabel(outcome?.financialYear ?? "2024-25")),
@@ -385,7 +421,7 @@ export const apiMeta = {
 };
 
 export function getAuditTimelineForMunicipality(municipalityId: string) {
-  const direct = agsaExtract.auditOutcomes
+  const direct = mappedAuditOutcomes
     .filter((outcome) => outcome.auditeeId === municipalityId)
     .sort((a, b) => a.financialYear.localeCompare(b.financialYear))
     .map((outcome) => ({
@@ -393,6 +429,8 @@ export function getAuditTimelineForMunicipality(municipalityId: string) {
       outcome: outcome.opinion,
       movement: outcome.movement,
       note: outcome.notes,
+      mappingConfidence: outcome.mappingConfidence,
+      mappingRationale: outcome.mappingRationale,
       source: citationToSource(outcome.citationId)
     }));
 
@@ -554,6 +592,8 @@ export const muniDataEndpoints = [
   { method: "GET", path: "/v1/municipalities/{id}/audit-history", access: "Public safe", description: "Year-specific AGSA audit outcomes where mapped." },
   { method: "GET", path: "/v1/intervention-queue", access: "Institutional", description: "Ranked AGSA-derived risks with evidence references." },
   { method: "GET", path: "/v1/agsa/documents", access: "Public safe", description: "Ingested AGSA report inventory and metadata." },
+  { method: "GET", path: "/v1/agsa/documents/{id}", access: "Institutional", description: "Source document detail with page samples, citations and linked extracted records." },
+  { method: "GET", path: "/v1/agsa/outcomes", access: "Institutional", description: "Audit outcomes with exact/cohort/manual/needs-review mapping confidence." },
   { method: "GET", path: "/v1/agsa/findings", access: "Institutional", description: "Structured AGSA findings with citation IDs." },
   { method: "GET", path: "/v1/findings", access: "Institutional", description: "Finding summaries with citations, review status and related workflow records." },
   { method: "GET", path: "/v1/findings/{id}", access: "Institutional", description: "Single AGSA finding detail with citation and related queue/action context." },
@@ -562,6 +602,7 @@ export const muniDataEndpoints = [
   { method: "GET", path: "/v1/agsa/review-decisions", access: "Institutional", description: "Persisted AGSA extraction review decisions and review-state counts." },
   { method: "GET", path: "/v1/actions/drafts", access: "Institutional", description: "Draft remediation actions generated from findings and queue items." },
   { method: "GET", path: "/v1/data-freshness", access: "Public safe", description: "Source status, freshness records and extraction exceptions." },
+  { method: "GET", path: "/admin/data-quality", access: "Institutional UI", description: "Data quality and publication-readiness dashboard." },
   { method: "POST", path: "/v1/assistant/query", access: "Institutional", description: "Source-locked answer policy endpoint." }
 ];
 
@@ -609,3 +650,20 @@ export function getFindingDetail(findingId: string) {
 }
 
 export const findingDetails = agsaFindings.map((finding) => getFindingDetail(finding.findingId)).filter(Boolean);
+
+export function getSourceDocumentDetail(documentId: string) {
+  const document = documentById.get(documentId);
+  if (!document) return null;
+
+  const pageSamples = agsaExtract.pagesByDocument[documentId] ?? [];
+  const citations = agsaPageCitations.filter((citation) => citation.documentId === documentId);
+
+  return {
+    document,
+    pageSamples,
+    citations,
+    lowConfidencePages: pageSamples.filter((page) => page.extractionConfidence === "low" || page.extractionConfidence === "needs_review"),
+    relatedFindings: agsaFindings.filter((finding) => citations.some((citation) => citation.citationId === finding.citationId)),
+    relatedOutcomes: mappedAuditOutcomes.filter((outcome) => citations.some((citation) => citation.citationId === outcome.citationId))
+  };
+}

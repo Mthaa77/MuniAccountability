@@ -213,6 +213,14 @@ export type AgsaAuditOutcome = {
   citationId: string;
 };
 
+export type AgsaOutcomeMappingConfidence = "exact" | "cohort_derived" | "manual" | "needs_review";
+
+export type AgsaMappedAuditOutcome = AgsaAuditOutcome & {
+  mappingConfidence: AgsaOutcomeMappingConfidence;
+  mappingRationale: string;
+  source: SourceReference;
+};
+
 export type AgsaFinding = {
   findingId: string;
   auditeeId: string;
@@ -285,6 +293,8 @@ export type AgsaReviewDecision = {
   citationIds: string[];
   rationale?: string;
   replacementText?: string;
+  replacementField?: string;
+  replacementValue?: string;
 };
 
 export type AgsaReviewDecisionStore = {

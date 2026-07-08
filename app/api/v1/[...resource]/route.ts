@@ -173,11 +173,20 @@ export async function GET(request: Request, context: Context) {
   }
 
   if (family === "agsa" && id === "documents") {
+    if (child) {
+      const document = apiDatasets.getSourceDocumentDetail(child);
+      return document ? NextResponse.json(apiResponse(document, { id: child })) : notFound(resource);
+    }
+
     return NextResponse.json(apiResponse(apiDatasets.agsaDocuments));
   }
 
   if (family === "agsa" && id === "findings") {
     return NextResponse.json(apiResponse(apiDatasets.agsaFindings));
+  }
+
+  if (family === "agsa" && id === "outcomes") {
+    return NextResponse.json(apiResponse(apiDatasets.mappedAuditOutcomes));
   }
 
   if (family === "agsa" && id === "citations") {

@@ -22,6 +22,7 @@ export default function AdminPage() {
           </Link>
         </div>
         <p className="lead">Inspect low-confidence pages, citation mapping and publication decisions before using extracted records in public or institutional outputs.</p>
+        <Link className="primary-link" href="/admin/data-quality">Open data quality dashboard</Link>
       </section>
       <AdminConsole />
       <SourceHealthTabs />

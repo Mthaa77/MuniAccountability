@@ -130,7 +130,9 @@ export function saveAgsaReviewDecision(input: unknown) {
     decidedAt: now,
     citationIds: asStringArray(body.citationIds),
     rationale: asString(body.rationale) || undefined,
-    replacementText: asString(body.replacementText) || undefined
+    replacementText: asString(body.replacementText) || undefined,
+    replacementField: asString(body.replacementField) || undefined,
+    replacementValue: asString(body.replacementValue) || undefined
   };
   const store = readStore();
   const existingIndex = store.decisions.findIndex((item) => item.decisionKey === decision.decisionKey);

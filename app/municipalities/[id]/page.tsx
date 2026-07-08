@@ -51,6 +51,9 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
                 <span>{event.year}</span>
                 <strong>{event.outcome}</strong>
                 <p>{event.note}</p>
+                {"mappingConfidence" in event ? (
+                  <small>{String(event.mappingConfidence).replaceAll("_", " ")} - {"mappingRationale" in event ? String(event.mappingRationale) : ""}</small>
+                ) : null}
               </article>
             ))}
           </div>

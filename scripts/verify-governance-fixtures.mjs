@@ -49,7 +49,10 @@ const sampleDecisions = [
     status: "correction",
     reviewer: "fixture",
     decidedAt: "2026-07-08T00:00:00.000Z",
-    citationIds: []
+    citationIds: [],
+    replacementField: "auditOutcome",
+    replacementValue: "qualified_with_findings",
+    rationale: "Fixture-level field correction"
   }
 ];
 const stats = governanceStats(extract.extractionIssues.length, sampleDecisions);
@@ -57,6 +60,19 @@ const excludedCitationIds = new Set(sampleDecisions.filter((decision) => decisio
 const cptOutcome = extract.auditOutcomes.find((outcome) => outcome.auditeeId === "ZA_WC_CPT");
 const publicSafe = !excludedCitationIds.has(cptOutcome.citationId);
 const finding = extract.findings[0];
+const mappingConfidence = (outcome) => {
+  if (outcome.opinion.includes("cohort") || outcome.notes.toLowerCase().includes("cohort")) return "cohort_derived";
+  if (outcome.notes.toLowerCase().includes("annexure validation") || outcome.notes.toLowerCase().includes("support case")) return "needs_review";
+  if (outcome.cleanAuditFlag || outcome.financialYear !== "2024-25") return "exact";
+  return "manual";
+};
+const confidenceCounts = extract.auditOutcomes.reduce((counts, outcome) => {
+  const key = mappingConfidence(outcome);
+  counts[key] = (counts[key] ?? 0) + 1;
+  return counts;
+}, {});
+const sourceDocument = extract.documents.find((document) => document.documentId === "doc_mfma_2024_25_overall_audit_outcomes_tabling_24_june_2026");
+const sourceDocumentCitations = extract.pageCitations.filter((citation) => citation.documentId === sourceDocument.documentId);
 const draftAction = {
   id: `draft_qi_finding_${finding.findingId}`,
   sourceFindingId: finding.findingId,
@@ -70,6 +86,12 @@ assert(draftStore.schemaVersion === "draft-actions-v0.1", "Unexpected draft-acti
 assert(stats.open === extract.extractionIssues.length - 3, "Review decisions should reduce open exception counts.");
 assert(stats.blockers === 1, "Correction decisions should count as blockers.");
 assert(publicSafe === false, "Excluded citation should not be public safe.");
+assert(sampleDecisions[2].replacementField === "auditOutcome", "Correction decision should carry a replacement field.");
+assert(sampleDecisions[2].replacementValue === "qualified_with_findings", "Correction decision should carry a replacement value.");
+assert((confidenceCounts.exact ?? 0) >= 1, "Expected at least one exact outcome mapping.");
+assert((confidenceCounts.cohort_derived ?? 0) >= 1, "Expected at least one cohort-derived outcome mapping.");
+assert((confidenceCounts.needs_review ?? 0) >= 1, "Expected at least one needs-review outcome mapping.");
+assert(sourceDocument && sourceDocumentCitations.length > 0, "Source document detail should have citations.");
 assert(draftAction.sourceFindingId === finding.findingId, "Draft action should preserve source finding id.");
 assert(finding.citationId, "Finding detail fixture should include citation id.");
 
