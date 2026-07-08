@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start -H 127.0.0.1 -p 3000",
     "typecheck": "tsc --noEmit",
+    "verify": "npm run test:agsa-fixtures && npm run test:governance-fixtures && npm run test:source-search-fixtures && npm run typecheck && npm run build",
     "test:agsa-fixtures": "node scripts/verify-agsa-fixtures.mjs",
     "test:governance-fixtures": "node scripts/verify-governance-fixtures.mjs",
     "test:source-search-fixtures": "node scripts/verify-source-search-fixtures.mjs"
