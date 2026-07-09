@@ -12,12 +12,7 @@ export const localJsonWorkflowStore: WorkflowStore = {
       provider: "local_json",
       productionReady: false,
       writable: true,
-      limitations: [
-        "Prototype-only local JSON writes",
-        "No tenant isolation beyond namespacing metadata",
-        "No concurrent write protection",
-        "No hosted backup or retention policy"
-      ]
+      limitations: ["Prototype-only JSON writes", "Single workspace", "No concurrent write lock"]
     };
   },
 
@@ -38,10 +33,10 @@ export const localJsonWorkflowStore: WorkflowStore = {
   },
 
   async listGateReviews(_context: WorkflowTenantContext) {
-    return listProductionGateReviews().reviews as GateReview[];
+    return listProductionGateReviews().decisions as GateReview[];
   },
 
   async saveGateReview(_context: WorkflowTenantContext, review: GateReview) {
-    return saveProductionGateReview(review).review as GateReview;
+    return saveProductionGateReview(review).decision as GateReview;
   }
 };
