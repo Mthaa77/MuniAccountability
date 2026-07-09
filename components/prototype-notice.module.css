@@ -1,0 +1,23 @@
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(44, 79, 69, 0.16);
+  background: rgba(255, 253, 248, 0.92);
+  color: #12201d;
+  font-size: 0.86rem;
+  font-weight: 720;
+}
+
+.notice a {
+  color: #0c6b5a;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.notice a:hover {
+  text-decoration: underline;
+}
