@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { PrototypeNotice } from "@/components/prototype-notice";
 import "./globals.css";
 import "@/components/atlas/atlas.css";
+import "@/components/atlas/atlas-pages.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",
