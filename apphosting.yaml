@@ -1,0 +1,35 @@
+# Firebase App Hosting preparation for the Next.js runtime.
+# Use this only after a billing-enabled Firebase/GCP project is created.
+# Keep minInstances at 0 to stay cheap during pilots.
+
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 80
+  timeoutSeconds: 60
+
+env:
+  - variable: NEXT_PUBLIC_DEMO_MODE
+    value: "true"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_REQUIRE_AUTH
+    value: "false"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: WORKFLOW_STORE_PROVIDER
+    value: "local_json"
+    availability:
+      - RUNTIME
+  - variable: WORKFLOW_TENANT_ID
+    value: "prototype"
+    availability:
+      - RUNTIME
+  - variable: DISABLE_EXPENSIVE_JOBS
+    value: "true"
+    availability:
+      - RUNTIME
