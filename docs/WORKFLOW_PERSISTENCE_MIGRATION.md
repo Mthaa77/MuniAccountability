@@ -6,6 +6,7 @@ The current workflow store is intentionally local JSON. It is useful for prototy
 
 - Provider: `local_json`
 - Review decisions: `data/agsa/generated/agsa-review-decisions.json`
+- Production gate reviews: `data/agsa/generated/production-gate-reviews.json`
 - Draft actions: `data/agsa/generated/draft-actions.json`
 - Status: active for prototype use only
 
@@ -20,6 +21,7 @@ db/workflow/001_workflow_persistence.sql
 It defines:
 
 - `workflow_review_decisions`
+- `workflow_production_gate_reviews`
 - `workflow_draft_actions`
 - `workflow_persistence_migrations`
 
@@ -46,6 +48,7 @@ The manifest records source file hashes, row counts, normalized rows and require
 - Backfill review decisions and draft actions from `workflow-backfill-manifest.json`.
 - Run parity checks for:
   - `/api/v1/agsa/review-decisions`
+  - `/api/v1/production-evidence/reviews`
   - `/api/v1/actions/drafts`
   - `/api/v1/actions/drafts/{id}/transition`
   - `/api/v1/actions/drafts/{id}/evidence`

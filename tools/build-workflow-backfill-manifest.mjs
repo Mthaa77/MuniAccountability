@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 const root = process.cwd();
 const generatedDir = path.join(root, "data", "agsa", "generated");
 const reviewPath = path.join(generatedDir, "agsa-review-decisions.json");
+const productionGateReviewPath = path.join(generatedDir, "production-gate-reviews.json");
 const draftPath = path.join(generatedDir, "draft-actions.json");
 const outPath = path.join(generatedDir, "workflow-backfill-manifest.json");
 
@@ -67,9 +68,26 @@ function normalizeReviewDecision(decision) {
   };
 }
 
+function normalizeProductionGateReview(decision) {
+  return {
+    decisionKey: decision.decisionKey,
+    tenantId: "prototype",
+    gateId: decision.gateId,
+    status: decision.status,
+    reviewer: decision.reviewer,
+    decidedAt: decision.decidedAt,
+    evidenceRefs: decision.evidenceRefs ?? [],
+    rationale: decision.rationale ?? null,
+    correctionRequired: decision.correctionRequired ?? null,
+    sourceStoreSchema: "production-gate-reviews-v0.1"
+  };
+}
+
 const reviewStore = readJson(reviewPath);
+const productionGateReviewStore = readJson(productionGateReviewPath);
 const draftStore = readJson(draftPath);
 const reviewRows = (reviewStore.decisions ?? []).map(normalizeReviewDecision);
+const productionGateReviewRows = (productionGateReviewStore.decisions ?? []).map(normalizeProductionGateReview);
 const draftRows = (draftStore.actions ?? []).map(normalizeDraftAction);
 
 const manifest = {
@@ -83,6 +101,11 @@ const manifest = {
       schemaVersion: reviewStore.schemaVersion,
       sha256: sha256(reviewPath)
     },
+    productionGateReviews: {
+      path: "data/agsa/generated/production-gate-reviews.json",
+      schemaVersion: productionGateReviewStore.schemaVersion,
+      sha256: sha256(productionGateReviewPath)
+    },
     draftActions: {
       path: "data/agsa/generated/draft-actions.json",
       schemaVersion: draftStore.schemaVersion,
@@ -91,17 +114,20 @@ const manifest = {
   },
   rowCounts: {
     reviewDecisions: reviewRows.length,
+    productionGateReviews: productionGateReviewRows.length,
     draftActions: draftRows.length
   },
   parityChecks: [
     "GET /api/v1/agsa/review-decisions returns the same decision count before and after migration.",
+    "GET /api/v1/production-evidence/reviews returns the same decision count before and after migration.",
     "GET /api/v1/actions/drafts returns the same draft action count before and after migration.",
     "POST /api/v1/actions/drafts/{id}/transition appends exactly one status history entry.",
     "POST /api/v1/actions/drafts/{id}/evidence preserves source references and moves not_started/in_progress drafts to evidence_submitted."
   ],
   reviewDecisionRows: reviewRows,
+  productionGateReviewRows,
   draftActionRows: draftRows
 };
 
 fs.writeFileSync(outPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
-console.log(`Wrote ${path.relative(root, outPath)} with ${reviewRows.length} review row(s) and ${draftRows.length} draft row(s).`);
+console.log(`Wrote ${path.relative(root, outPath)} with ${reviewRows.length} review row(s), ${productionGateReviewRows.length} production gate review row(s) and ${draftRows.length} draft row(s).`);

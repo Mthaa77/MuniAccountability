@@ -14,6 +14,7 @@ import { annexureValidation, sourceValidationSummary, treasuryValidation } from 
 import { workflowPersistence } from "@/lib/workflow-persistence";
 import { agsaReadinessSummary } from "@/lib/agsa-readiness-ledger";
 import { buildProductionEvidencePack, buildProductionReadinessPreflight } from "@/lib/production-evidence";
+import { listProductionGateReviews, saveProductionGateReview } from "@/lib/production-gate-review-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -315,6 +316,10 @@ export async function GET(request: Request, context: Context) {
     return NextResponse.json(apiResponse(buildProductionReadinessPreflight()));
   }
 
+  if (family === "production-evidence" && id === "reviews") {
+    return NextResponse.json(apiResponse(listProductionGateReviews()));
+  }
+
   if (family === "production-evidence") {
     return NextResponse.json(apiResponse(buildProductionEvidencePack()));
   }
@@ -472,6 +477,20 @@ export async function POST(request: Request, context: Context) {
         apiResponse({
           accepted: false,
           error: error instanceof Error ? error.message : "Invalid review decision payload"
+        }),
+        { status: 400 }
+      );
+    }
+  }
+
+  if (family === "production-evidence" && id === "reviews") {
+    try {
+      return NextResponse.json(apiResponse(saveProductionGateReview(body)), { status: 201 });
+    } catch (error) {
+      return NextResponse.json(
+        apiResponse({
+          accepted: false,
+          error: error instanceof Error ? error.message : "Invalid production gate review payload"
         }),
         { status: 400 }
       );

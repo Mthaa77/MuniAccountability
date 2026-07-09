@@ -36,6 +36,8 @@ The default output directory is `data\agsa\generated\production-gate-inputs.loca
 
 The import and manifest-builder tools intentionally reject these templates while they still contain sample rows or `REPLACE_WITH` placeholders. This prevents local scaffolding from being promoted as official evidence.
 
+Evidence review decisions are recorded separately through `/v1/production-evidence/reviews`. Accepted reviews require at least one evidence reference, but they do not unlock a gate unless the underlying source, validation and infrastructure checks also pass.
+
 ```powershell
 node tools/build-production-evidence-pack.mjs
 ```

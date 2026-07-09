@@ -10,6 +10,7 @@ const muniData = fs.readFileSync(path.join(root, "lib", "agsa-data.ts"), "utf8")
 
 assert(persistenceSource.includes('activeProvider: "local_json"'), "Active provider should remain explicit local JSON.");
 assert(persistenceSource.includes("productionReady: false"), "Local JSON workflow storage must not be marked production-ready.");
+assert(persistenceSource.includes("production-gate-reviews.json"), "Persistence model should include production gate review local store.");
 assert(persistenceSource.includes("No tenant isolation"), "Persistence model should document tenant isolation limitation.");
 assert(persistenceSource.includes("Backfill current JSON records"), "Persistence model should include database migration gates.");
 assert(apiRoute.includes('family === "workflow" && id === "persistence"'), "API should expose workflow persistence state.");

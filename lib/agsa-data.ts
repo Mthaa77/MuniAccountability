@@ -593,6 +593,8 @@ export const muniDataEndpoints = [
   { method: "GET", path: "/v1/readiness", access: "Institutional", description: "Ten-slice AGSA integration readiness ledger with evidence, verification commands and external dependencies." },
   { method: "GET", path: "/v1/production-readiness", access: "Institutional", description: "Read-only production preflight across MFMA annexure, Treasury unlock and workflow database gates." },
   { method: "GET", path: "/v1/production-evidence", access: "Institutional", description: "Operator evidence pack with required inputs, safe validation commands, promotion commands and guardrails." },
+  { method: "GET", path: "/v1/production-evidence/reviews", access: "Institutional", description: "Production gate evidence review decisions grouped by gate and review status." },
+  { method: "POST", path: "/v1/production-evidence/reviews", access: "Institutional", description: "Record a governed evidence review decision before promoting any production gate." },
   { method: "GET", path: "/v1/validation", access: "Institutional", description: "Validation summary for exact-annexure and Treasury/Municipal Money unlock gates." },
   { method: "GET", path: "/v1/validation/annexures", access: "Institutional", description: "MFMA annexure mapping gates and unresolved municipality outcome mappings." },
   { method: "GET", path: "/v1/validation/treasury", access: "Institutional", description: "Treasury/Municipal Money source, reuse, schema, formula and freshness gates before Financial Pulse unlock." },

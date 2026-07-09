@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 
 const root = process.cwd();
 const preflightTool = path.join(root, "tools", "run-production-readiness-preflight.mjs");
+const reviewStorePath = path.join(root, "data", "agsa", "generated", "production-gate-reviews.json");
 
 function parseArgs(argv) {
   const args = { outDir: null };
@@ -49,6 +50,29 @@ function runPreflight() {
     cwd: root,
     encoding: "utf8"
   }));
+}
+
+function listProductionGateReviews() {
+  const empty = {
+    schemaVersion: "production-gate-reviews-v0.1",
+    updatedAt: new Date().toISOString(),
+    decisions: []
+  };
+  const store = fs.existsSync(reviewStorePath)
+    ? JSON.parse(fs.readFileSync(reviewStorePath, "utf8"))
+    : empty;
+  const decisions = Array.isArray(store.decisions) ? store.decisions : [];
+  const statuses = ["accepted", "needs_correction", "excluded"];
+
+  return {
+    ...empty,
+    ...store,
+    decisions,
+    stats: {
+      total: decisions.length,
+      byStatus: Object.fromEntries(statuses.map((status) => [status, decisions.filter((decision) => decision.status === status).length]))
+    }
+  };
 }
 
 function basePack(preflight) {
@@ -130,7 +154,8 @@ function basePack(preflight) {
       "Attach official source evidence and generated local artifacts to the release review.",
       "Confirm Financial Pulse no longer exposes pending_validation only after Treasury unlock is approved.",
       "Confirm workflow writes use the durable store before multi-user or tenant pilots."
-    ]
+    ],
+    reviewGovernance: listProductionGateReviews()
   };
 }
 

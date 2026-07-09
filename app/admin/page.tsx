@@ -67,6 +67,11 @@ export default function AdminPage() {
         <p className="lead">
           These gates are deliberately read-only until official files, validation proof or hosted infrastructure evidence is supplied.
         </p>
+        <div className="case-meta">
+          <span>{productionEvidencePack.reviewGovernance.stats.byStatus.accepted} accepted evidence review(s)</span>
+          <span>{productionEvidencePack.reviewGovernance.stats.byStatus.needs_correction} correction required</span>
+          <span>{productionEvidencePack.reviewGovernance.stats.byStatus.excluded} excluded</span>
+        </div>
         <div className="breakdown-list">
           {productionEvidencePack.intakeRequirements.map((requirement) => (
             <article key={requirement.gateId}>
@@ -75,6 +80,11 @@ export default function AdminPage() {
                 <span>{requirement.status.replaceAll("_", " ")}</span>
               </div>
               <p>{requirement.requiredEvidence[0]}</p>
+              {requirement.latestReview ? (
+                <small>
+                  Latest review: {requirement.latestReview.status.replaceAll("_", " ")} by {requirement.latestReview.reviewer}
+                </small>
+              ) : null}
               <small>{requirement.promotionGuardrail}</small>
             </article>
           ))}

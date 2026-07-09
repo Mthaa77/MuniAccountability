@@ -1,6 +1,6 @@
 {
   "schemaVersion": "workflow-backfill-manifest-v0.1",
-  "generatedAt": "2026-07-08T20:32:04.245Z",
+  "generatedAt": "2026-07-09T03:57:34.241Z",
   "sourceProvider": "local_json",
   "targetProvider": "database",
   "sourceSnapshot": {
@@ -8,6 +8,11 @@
       "path": "data/agsa/generated/agsa-review-decisions.json",
       "schemaVersion": "agsa-review-decisions-v0.1",
       "sha256": "5c20950d633c3b2180403eeac2f28563431c967dd56b7f1890bb6b1149a6ce72"
+    },
+    "productionGateReviews": {
+      "path": "data/agsa/generated/production-gate-reviews.json",
+      "schemaVersion": "production-gate-reviews-v0.1",
+      "sha256": "932906bfdbf10343bb608561f1e43a59135023c57aca2971f23ff4d9b851ccb8"
     },
     "draftActions": {
       "path": "data/agsa/generated/draft-actions.json",
@@ -17,14 +22,17 @@
   },
   "rowCounts": {
     "reviewDecisions": 0,
+    "productionGateReviews": 0,
     "draftActions": 0
   },
   "parityChecks": [
     "GET /api/v1/agsa/review-decisions returns the same decision count before and after migration.",
+    "GET /api/v1/production-evidence/reviews returns the same decision count before and after migration.",
     "GET /api/v1/actions/drafts returns the same draft action count before and after migration.",
     "POST /api/v1/actions/drafts/{id}/transition appends exactly one status history entry.",
     "POST /api/v1/actions/drafts/{id}/evidence preserves source references and moves not_started/in_progress drafts to evidence_submitted."
   ],
   "reviewDecisionRows": [],
+  "productionGateReviewRows": [],
   "draftActionRows": []
 }

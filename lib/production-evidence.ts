@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { annexureValidation, treasuryValidation } from "./source-validation";
 import { workflowPersistence } from "./workflow-persistence";
+import { latestProductionGateReview, listProductionGateReviews, type ProductionGateReviewDecision } from "./production-gate-review-store";
 
 export type ProductionGateStatus = "pass" | "ready_for_input" | "blocked";
 
@@ -50,8 +51,10 @@ export type ProductionEvidencePack = {
     safeValidationCommands: string[];
     promotionCommand: string;
     promotionGuardrail: string;
+    latestReview?: ProductionGateReviewDecision;
   }>;
   releaseChecklist: string[];
+  reviewGovernance: ReturnType<typeof listProductionGateReviews>;
 };
 
 function summarizeGate(
@@ -287,7 +290,8 @@ export function buildProductionEvidencePack(): ProductionEvidencePack {
           "npm run test:annexure-overlay"
         ],
         promotionCommand: "python tools/import-mfma-annexures.py path\\to\\official-mfma-annexure.csv",
-        promotionGuardrail: "Only promote after the dry-run manifest shows expected row counts and unmatched rows are reviewed."
+        promotionGuardrail: "Only promote after the dry-run manifest shows expected row counts and unmatched rows are reviewed.",
+        latestReview: latestProductionGateReview("mfma_annexure_mapping") as ProductionGateReviewDecision | undefined
       },
       {
         gateId: "treasury_financial_pulse_unlock",
@@ -309,7 +313,8 @@ export function buildProductionEvidencePack(): ProductionEvidencePack {
           "npm run test:treasury-manifest-builder"
         ],
         promotionCommand: "Review and intentionally write data\\treasury\\validation\\municipal-money-validation-manifest.json only after every Treasury gate passes.",
-        promotionGuardrail: "Financial Pulse must remain gated while any connector, reuse, schema, formula or freshness check is incomplete."
+        promotionGuardrail: "Financial Pulse must remain gated while any connector, reuse, schema, formula or freshness check is incomplete.",
+        latestReview: latestProductionGateReview("treasury_financial_pulse_unlock") as ProductionGateReviewDecision | undefined
       },
       {
         gateId: "durable_workflow_store",
@@ -330,7 +335,8 @@ export function buildProductionEvidencePack(): ProductionEvidencePack {
           "npm run test:workflow-persistence"
         ],
         promotionCommand: "Switch workflowPersistence.activeProvider to database only after migration, backfill and parity checks pass.",
-        promotionGuardrail: "Do not mark workflowPersistence.productionReady true while local_json remains active."
+        promotionGuardrail: "Do not mark workflowPersistence.productionReady true while local_json remains active.",
+        latestReview: latestProductionGateReview("durable_workflow_store") as ProductionGateReviewDecision | undefined
       }
     ],
     releaseChecklist: [
@@ -339,6 +345,7 @@ export function buildProductionEvidencePack(): ProductionEvidencePack {
       "Attach official source evidence and generated local artifacts to the release review.",
       "Confirm Financial Pulse no longer exposes pending_validation only after Treasury unlock is approved.",
       "Confirm workflow writes use the durable store before multi-user or tenant pilots."
-    ]
+    ],
+    reviewGovernance: listProductionGateReviews()
   };
 }

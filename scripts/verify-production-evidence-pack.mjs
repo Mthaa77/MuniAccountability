@@ -22,6 +22,8 @@ const pack = JSON.parse(stdout);
 assert.equal(pack.schemaVersion, "production-evidence-pack-v0.1", "Evidence pack schema version should be stable.");
 assert.equal(pack.productionReady, false, "Committed baseline evidence pack should remain locked without external evidence.");
 assert.equal(pack.preflight.schemaVersion, "production-readiness-preflight-v0.1", "Evidence pack should embed the preflight report.");
+assert.equal(pack.reviewGovernance.schemaVersion, "production-gate-reviews-v0.1", "Evidence pack should include production gate review governance.");
+assert.equal(pack.reviewGovernance.stats.total, 0, "Committed baseline should have no production gate review decisions.");
 assert.equal(pack.intakeRequirements.length, 3, "Evidence pack should include the three remaining intake gates.");
 
 const gateIds = pack.intakeRequirements.map((requirement) => requirement.gateId);

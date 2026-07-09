@@ -7,6 +7,7 @@ This repository intentionally keeps the first AGSA integration local and reviewa
 - `data/agsa/generated/agsa-report-extract.json`
 - `data/agsa/generated/agsa-review-decisions.json`
 - `data/agsa/generated/draft-actions.json`
+- `data/agsa/generated/production-gate-reviews.json`
 - `data/agsa/generated/annexure-import-manifest.json`
 - `data/treasury/validation/municipal-money-validation-manifest.json`
 

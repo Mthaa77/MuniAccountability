@@ -26,6 +26,7 @@ export const workflowPersistence = {
       durability: "prototype_local",
       storePaths: [
         path.join(generatedDataRoot, "agsa-review-decisions.json"),
+        path.join(generatedDataRoot, "production-gate-reviews.json"),
         path.join(generatedDataRoot, "draft-actions.json")
       ],
       limitations: [
@@ -37,7 +38,7 @@ export const workflowPersistence = {
       ],
       migrationGates: [
         "Choose hosted database provider",
-        "Create review decision and draft action tables",
+        "Create review decision, production gate review and draft action tables",
         "Add tenant/user audit columns",
         "Backfill current JSON records",
         "Run API parity checks before disabling local JSON writes"
@@ -45,6 +46,7 @@ export const workflowPersistence = {
       migrationArtifacts: [
         "db/workflow/001_workflow_persistence.sql",
         "tools/build-workflow-backfill-manifest.mjs",
+        "data/agsa/generated/production-gate-reviews.json",
         "data/agsa/generated/workflow-backfill-manifest.json"
       ]
     },
@@ -63,6 +65,7 @@ export const workflowPersistence = {
       ],
       migrationArtifacts: [
         "db/workflow/001_workflow_persistence.sql",
+        "data/agsa/generated/production-gate-reviews.json",
         "data/agsa/generated/workflow-backfill-manifest.json"
       ]
     }

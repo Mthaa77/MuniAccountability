@@ -1,4 +1,5 @@
--- Workflow persistence schema for AGSA review decisions and draft remediation actions.
+-- Workflow persistence schema for AGSA review decisions, production gate reviews
+-- and draft remediation actions.
 -- This migration is provider-neutral PostgreSQL SQL. Apply it only after tenant and
 -- authentication strategy are selected for the hosted environment.
 
@@ -23,6 +24,30 @@ create table if not exists workflow_review_decisions (
 
 create index if not exists workflow_review_decisions_document_idx
   on workflow_review_decisions (tenant_id, document_id, page_number);
+
+create table if not exists workflow_production_gate_reviews (
+  decision_key text primary key,
+  tenant_id text not null default 'prototype',
+  gate_id text not null check (
+    gate_id in (
+      'mfma_annexure_mapping',
+      'treasury_financial_pulse_unlock',
+      'durable_workflow_store'
+    )
+  ),
+  status text not null check (status in ('accepted', 'needs_correction', 'excluded')),
+  reviewer text not null,
+  decided_at timestamptz not null,
+  evidence_refs jsonb not null default '[]'::jsonb,
+  rationale text,
+  correction_required text,
+  source_store_schema text not null default 'production-gate-reviews-v0.1',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists workflow_production_gate_reviews_gate_idx
+  on workflow_production_gate_reviews (tenant_id, gate_id, status);
 
 create table if not exists workflow_draft_actions (
   id text primary key,
