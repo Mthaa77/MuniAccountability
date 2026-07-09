@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return signedIn() && request.auth.token.role is string ? request.auth.token.role : 'public';
+    }
+
+    function hasAnyRole(allowed) {
+      return signedIn() && role() in allowed;
+    }
+
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasAnyRole(['admin']);
+    }
+
+    match /tenants/{tenantId}/evidence/{allPaths=**} {
+      allow read: if hasAnyRole(['analyst', 'reviewer', 'admin']);
+      allow write: if hasAnyRole(['reviewer', 'admin'])
+        && request.resource.size < 20 * 1024 * 1024;
+    }
+
+    match /tenants/{tenantId}/restricted/{allPaths=**} {
+      allow read, write: if hasAnyRole(['admin']);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
