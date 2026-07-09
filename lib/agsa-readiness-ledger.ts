@@ -86,10 +86,11 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
     evidence: [
       "tools/import-mfma-annexures.py",
       "tools/run-production-readiness-preflight.mjs",
+      "tools/build-production-evidence-pack.mjs",
       "data/agsa/generated/annexure-import-manifest.json",
       "lib/annexure-overlays.ts"
     ],
-    verification: ["npm run test:annexure-overlay", "npm run test:source-manifests", "npm run test:production-readiness"],
+    verification: ["npm run test:annexure-overlay", "npm run test:source-manifests", "npm run test:production-readiness", "npm run test:production-evidence"],
     remainingDependency:
       annexureValidation.unresolvedCount === 0
         ? undefined
@@ -103,9 +104,10 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
       "data/treasury/validation/municipal-money-validation-manifest.json",
       "data/treasury/validation/financial-pulse-formulas.json",
       "tools/run-production-readiness-preflight.mjs",
+      "tools/build-production-evidence-pack.mjs",
       "lib/treasury-validation.ts"
     ],
-    verification: ["npm run test:treasury-validation", "npm run test:validation-gates", "npm run test:production-readiness"],
+    verification: ["npm run test:treasury-validation", "npm run test:validation-gates", "npm run test:production-readiness", "npm run test:production-evidence"],
     remainingDependency:
       treasuryValidation.unlockEvaluation.unlocked
         ? undefined
@@ -119,9 +121,10 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
       "db/workflow/001_workflow_persistence.sql",
       "tools/build-workflow-backfill-manifest.mjs",
       "tools/run-production-readiness-preflight.mjs",
+      "tools/build-production-evidence-pack.mjs",
       "docs/WORKFLOW_PERSISTENCE_MIGRATION.md"
     ],
-    verification: ["npm run test:workflow-persistence", "npm run test:workflow-migration", "npm run test:production-readiness"],
+    verification: ["npm run test:workflow-persistence", "npm run test:workflow-migration", "npm run test:production-readiness", "npm run test:production-evidence"],
     remainingDependency:
       workflowPersistence.productionReady
         ? undefined
@@ -134,10 +137,11 @@ export const agsaReadinessLedger: AgsaReadinessSlice[] = [
     evidence: [
       "lib/source-validation.ts",
       "tools/run-production-readiness-preflight.mjs",
+      "tools/build-production-evidence-pack.mjs",
       "app/financial-pulse/page.tsx",
       "app/admin/data-quality/page.tsx"
     ],
-    verification: ["npm run test:validation-gates", "npm run test:production-readiness", "npm run build"]
+    verification: ["npm run test:validation-gates", "npm run test:production-readiness", "npm run test:production-evidence", "npm run build"]
   }
 ];
 

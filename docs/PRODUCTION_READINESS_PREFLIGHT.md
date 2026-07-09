@@ -16,6 +16,28 @@ node tools/run-production-readiness-preflight.mjs --out data\agsa\generated\prod
 
 The `.local.json` suffix keeps local evidence out of committed generated data unless the team intentionally promotes a compact artifact.
 
+## Build an evidence pack
+
+The evidence pack turns the preflight into an operator checklist with required inputs, safe validation commands, promotion commands and guardrails for each remaining gate.
+
+```powershell
+node tools/build-production-evidence-pack.mjs
+```
+
+To write local evidence artifacts:
+
+```powershell
+node tools/build-production-evidence-pack.mjs --out-dir data\agsa\generated\production-evidence-pack.local
+```
+
+This writes:
+
+- `production-readiness-preflight.json`
+- `production-evidence-pack.json`
+- `production-evidence-checklist.md`
+
+The local evidence-pack directory is ignored by Git. Commit it only if the team intentionally decides that a compact evidence snapshot belongs in release review.
+
 ## Current baseline
 
 The committed baseline should report `productionReady: false`.
@@ -72,6 +94,12 @@ Run the focused verifier:
 
 ```powershell
 npm run test:production-readiness
+```
+
+Run the evidence-pack verifier:
+
+```powershell
+npm run test:production-evidence
 ```
 
 The full verification chain also includes it:

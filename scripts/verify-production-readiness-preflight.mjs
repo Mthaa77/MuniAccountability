@@ -62,7 +62,7 @@ assert(outMessage.includes("Production readiness preflight written"), "--out sho
 assert.deepEqual(JSON.parse(fs.readFileSync(outPath, "utf8")).gates.map((gate) => gate.id), gateIds);
 
 assert(packageJson.includes('"test:production-readiness"'), "package.json should expose the preflight verifier.");
-assert(packageJson.includes("test:production-readiness && npm run typecheck"), "npm run verify should include the preflight before typecheck.");
+assert(packageJson.includes("test:production-readiness && npm run test:production-evidence"), "npm run verify should include the preflight before evidence packaging.");
 assert(workflow.includes("Verify production readiness preflight"), "CI should run the preflight verifier.");
 assert(ledger.includes("tools/run-production-readiness-preflight.mjs"), "Readiness ledger should cite the preflight tool.");
 assert(docs.includes("node tools/run-production-readiness-preflight.mjs"), "Docs should show the preflight command.");

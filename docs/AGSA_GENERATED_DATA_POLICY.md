@@ -19,6 +19,7 @@ Do not commit raw page dumps, experimental extracts, temporary review output, or
 - `data/agsa/generated/*.local.json`
 - `data/agsa/generated/*.tmp.json`
 - `data/agsa/generated/*.ndjson`
+- `data/agsa/generated/production-evidence-pack.local/`
 - `data/agsa/generated/pages/`
 - `data/agsa/generated/raw/`
 
@@ -107,6 +108,14 @@ node tools/run-production-readiness-preflight.mjs --out data\agsa\generated\prod
 ```
 
 The committed baseline should continue to report `productionReady: false` until the official MFMA annexure, Treasury validation evidence and hosted workflow database migration evidence are all present.
+
+To build an operator checklist for those external inputs:
+
+```powershell
+node tools/build-production-evidence-pack.mjs --out-dir data\agsa\generated\production-evidence-pack.local
+```
+
+This writes a local preflight snapshot, JSON evidence pack and Markdown checklist. Keep the directory local unless a compact release evidence snapshot is intentionally approved for commit.
 
 ## Publication guardrails
 

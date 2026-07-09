@@ -63,6 +63,9 @@ jobs:
       - name: Verify production readiness preflight
         run: npm run test:production-readiness
 
+      - name: Verify production evidence pack
+        run: npm run test:production-evidence
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 
