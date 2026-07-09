@@ -1,9 +1,12 @@
 import { AdminConsole, SourceHealthTabs } from "@/components/interactive";
 import { Badge, PageHeader } from "@/components/ui";
 import { agsaReadinessSummary } from "@/lib/agsa-readiness-ledger";
+import { buildProductionEvidencePack } from "@/lib/production-evidence";
 import Link from "next/link";
 
 export default function AdminPage() {
+  const productionEvidencePack = buildProductionEvidencePack();
+
   return (
     <>
       <PageHeader
@@ -50,6 +53,35 @@ export default function AdminPage() {
             </article>
           ))}
         </div>
+      </section>
+      <section className="panel wide">
+        <div className="panel-header">
+          <div>
+            <p className="eyeless">Production evidence intake</p>
+            <h2>Remaining unlock gates</h2>
+          </div>
+          <Badge tone={productionEvidencePack.productionReady ? "healthy" : "pending_validation"}>
+            {productionEvidencePack.productionReady ? "ready" : "evidence required"}
+          </Badge>
+        </div>
+        <p className="lead">
+          These gates are deliberately read-only until official files, validation proof or hosted infrastructure evidence is supplied.
+        </p>
+        <div className="breakdown-list">
+          {productionEvidencePack.intakeRequirements.map((requirement) => (
+            <article key={requirement.gateId}>
+              <div>
+                <strong>{requirement.title}</strong>
+                <span>{requirement.status.replaceAll("_", " ")}</span>
+              </div>
+              <p>{requirement.requiredEvidence[0]}</p>
+              <small>{requirement.promotionGuardrail}</small>
+            </article>
+          ))}
+        </div>
+        <Link className="primary-link" href="/v1/production-evidence">
+          Open production evidence API
+        </Link>
       </section>
       <SourceHealthTabs />
     </>

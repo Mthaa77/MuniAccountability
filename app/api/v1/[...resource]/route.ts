@@ -13,6 +13,7 @@ import { answerSourceLockedQuery, searchAgsaEvidence } from "@/lib/source-search
 import { annexureValidation, sourceValidationSummary, treasuryValidation } from "@/lib/source-validation";
 import { workflowPersistence } from "@/lib/workflow-persistence";
 import { agsaReadinessSummary } from "@/lib/agsa-readiness-ledger";
+import { buildProductionEvidencePack, buildProductionReadinessPreflight } from "@/lib/production-evidence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -310,6 +311,14 @@ export async function GET(request: Request, context: Context) {
     return NextResponse.json(apiResponse(agsaReadinessSummary));
   }
 
+  if (family === "production-readiness") {
+    return NextResponse.json(apiResponse(buildProductionReadinessPreflight()));
+  }
+
+  if (family === "production-evidence") {
+    return NextResponse.json(apiResponse(buildProductionEvidencePack()));
+  }
+
   if (family === "compare") {
     return NextResponse.json(apiResponse(apiDatasets.municipalities.slice(0, 4)));
   }
@@ -372,11 +381,18 @@ export async function GET(request: Request, context: Context) {
       apiResponse({
         endpoints: apiDatasets.muniDataEndpoints,
         reviewAware: true,
-        schemas: ["agsa-extract-v0.1", "agsa-review-decisions-v0.1", "draft-actions-v0.1"],
+        schemas: [
+          "agsa-extract-v0.1",
+          "agsa-review-decisions-v0.1",
+          "draft-actions-v0.1",
+          "production-readiness-preflight-v0.1",
+          "production-evidence-pack-v0.1"
+        ],
         caveats: [
           "AGSA records are extracted from local docs/ reports with page citations and confidence flags.",
           "Platform risk scores are workflow prioritisation aids, not legal findings.",
-          "Treasury/Municipal Money telemetry is marked pending validation and is not presented as live."
+          "Treasury/Municipal Money telemetry is marked pending validation and is not presented as live.",
+          "Production evidence endpoints expose operator readiness requirements, not proof that external gates have passed."
         ]
       })
     );

@@ -66,6 +66,9 @@ jobs:
       - name: Verify production evidence pack
         run: npm run test:production-evidence
 
+      - name: Verify production evidence surface
+        run: npm run test:production-evidence-surface
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 
