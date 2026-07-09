@@ -23,7 +23,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "@/lib/client-api";
 import type { SourceHealth } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Sheet } from "@/components/ui/sheet";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -31,30 +30,43 @@ import { Skeleton } from "@/components/ui/feedback";
 
 const navGroups = [
   {
-    label: "Operate",
+    label: "Command",
     items: [
-      { href: "/", label: "Command Centre", icon: Gauge },
-      { href: "/municipalities", label: "Municipalities", icon: Landmark },
+      { href: "/", label: "Overview", icon: Gauge },
       { href: "/intervention-queue", label: "Intervention Queue", icon: Siren },
-      { href: "/actions", label: "Actions", icon: ClipboardCheck }
+      { href: "/search", label: "Ask the Evidence", icon: Search }
     ]
   },
   {
-    label: "Analyse",
+    label: "Evidence",
     items: [
-      { href: "/recovery", label: "Recovery War Room", icon: BriefcaseBusiness },
-      { href: "/financial-pulse", label: "Financial Pulse", icon: BarChart3 },
-      { href: "/briefings", label: "Briefings", icon: FileText },
-      { href: "/search", label: "Evidence Search", icon: Search },
-      { href: "/sources", label: "Sources", icon: Database }
+      { href: "/municipalities", label: "Municipalities", icon: Landmark },
+      { href: "/findings", label: "Findings", icon: ClipboardCheck },
+      { href: "/sources", label: "Source Vault", icon: Database },
+      { href: "/admin/data-quality", label: "Data Quality", icon: ShieldCheck }
     ]
   },
   {
-    label: "Distribute",
+    label: "Workflow",
+    items: [
+      { href: "/actions", label: "Action Board", icon: ClipboardCheck },
+      { href: "/recovery", label: "Recovery Room", icon: BriefcaseBusiness },
+      { href: "/briefings", label: "Briefings", icon: FileText },
+      { href: "/financial-pulse", label: "Financial Pulse", icon: BarChart3 }
+    ]
+  },
+  {
+    label: "Public",
     items: [
       { href: "/municheck", label: "MuniCheck", icon: ShieldCheck },
-      { href: "/munidata", label: "MuniData", icon: Archive },
-      { href: "/admin", label: "Admin", icon: Layers3 }
+      { href: "/munidata", label: "MuniData", icon: Archive }
+    ]
+  },
+  {
+    label: "System",
+    items: [
+      { href: "/admin", label: "Admin", icon: Layers3 },
+      { href: "/docs-api", label: "API Docs", icon: UsersRound }
     ]
   }
 ];
@@ -63,7 +75,7 @@ const quickActions = [
   { href: "/intervention-queue", label: "Open intervention queue", hint: "Ranked AGSA-backed worklist" },
   { href: "/actions", label: "Review action board", hint: "Workflow and evidence lifecycle" },
   { href: "/briefings", label: "Generate weekly brief", hint: "Source-cited briefing workspace" },
-  { href: "/sources", label: "Inspect source health", hint: "Freshness, gates, and guardrails" },
+  { href: "/sources", label: "Inspect source vault", hint: "Freshness, gates, and guardrails" },
   { href: "/admin/agsa-review", label: "Resolve AGSA review issues", hint: "Publication blockers and corrections" }
 ];
 
@@ -77,10 +89,10 @@ function NavigationContent({ pathname, onNavigate }: { pathname: string; onNavig
     <>
       <div className="sidebar-topline">
         <Link href="/" className="brand-lockup premium-brand" onClick={onNavigate}>
-          <div className="brand-mark">MC</div>
+          <div className="brand-mark">MA</div>
           <div>
-            <strong>MuniCommand</strong>
-            <span>Oversight OS</span>
+            <strong>MuniAtlas</strong>
+            <span>Evidence Command</span>
           </div>
         </Link>
       </div>
@@ -106,8 +118,8 @@ function NavigationContent({ pathname, onNavigate }: { pathname: string; onNavig
         ))}
       </nav>
       <div className="sidebar-card evidence-lock">
-        <strong>Evidence guardrail</strong>
-        <span>No source, no assertion. Treasury telemetry remains pending validation.</span>
+        <strong>Evidence thread</strong>
+        <span>Every publishable claim should trace back to a source, review state and confidence signal.</span>
       </div>
     </>
   );
@@ -156,19 +168,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <main className="premium-shell">
-      <aside className="premium-sidebar" aria-label="Primary navigation">
+    <main className="premium-shell atlas-shell">
+      <aside className="premium-sidebar atlas-sidebar" aria-label="Primary navigation">
         <NavigationContent pathname={pathname} />
       </aside>
 
-      <div className="premium-workspace">
-        <header className="topbar premium-topbar">
+      <div className="premium-workspace atlas-workspace">
+        <header className="topbar premium-topbar atlas-topbar">
           <button className="icon-button mobile-menu" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
             <Menu size={18} />
           </button>
           <div>
-            <p className="eyeless">Provincial Treasury pilot workspace</p>
-            <h1>MuniAccountability Command</h1>
+            <p className="eyeless">Source-backed municipal intelligence</p>
+            <h1>MuniAccountability Atlas</h1>
           </div>
           <div className="top-actions" aria-label="Workspace controls">
             <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}>
@@ -182,7 +194,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <Link className="secondary-action glass-action" href="/sources">
               <PanelRightOpen size={17} />
-              Source gates
+              Source vault
             </Link>
             <Link className="primary-action glass-action" href="/briefings">
               <WandSparkles size={17} />
@@ -193,7 +205,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </div>
 
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="MuniCommand navigation">
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="MuniAtlas navigation">
         <div className="mobile-nav-panel">
           <NavigationContent pathname={pathname} onNavigate={() => setMenuOpen(false)} />
         </div>
