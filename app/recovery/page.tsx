@@ -1,4 +1,5 @@
 import { RecoveryMilestoneList } from "@/components/interactive";
+import { RecoveryCommandCharts } from "@/components/advanced-charts";
 import { Badge, PageHeader } from "@/components/ui";
 import { recoveryMilestones } from "@/lib/pilot-data";
 
@@ -11,6 +12,7 @@ export default function RecoveryPage() {
         description="Milestones, blockers, evidence requirements and next decisions stay visible without claiming recovery before formal sign-off."
         actions={<Badge tone="watch">Controlled narrative</Badge>}
       />
+      <RecoveryCommandCharts milestones={recoveryMilestones} />
       <section className="main-grid">
         <section className="panel wide">
           <RecoveryMilestoneList milestones={recoveryMilestones} />

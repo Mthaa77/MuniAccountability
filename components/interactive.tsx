@@ -16,6 +16,10 @@ import {
 } from "@/lib/pilot-data";
 import { treasuryValidation } from "@/lib/source-validation";
 import type { Action, ActionStatus, AgsaReviewDecision, AgsaReviewDecisionStatus, DraftAction, QueueItem, Severity, SourceHealth } from "@/lib/types";
+import { apiGet, apiPost } from "@/lib/client-api";
+import { ValidationGateMatrix } from "@/components/advanced-charts";
+import { Skeleton } from "@/components/ui/feedback";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge, actionLabel, severityLabel } from "./ui";
 
 type QueueRiskType = QueueItem["riskType"];
@@ -81,30 +85,43 @@ export function MunicipalityDirectory() {
 }
 
 export function QueueWorkspace() {
+  const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [riskType, setRiskType] = useState<QueueRiskType | "all">("all");
   const [draftActions, setDraftActions] = useState<DraftAction[]>([]);
+  const [loadingDrafts, setLoadingDrafts] = useState(true);
   const [draftMessage, setDraftMessage] = useState("Draft actions persist to the local workflow store.");
   const riskTypes = Array.from(new Set(queueItems.map((item) => item.riskType)));
   const filtered = queueItems.filter((item) => {
+    const municipality = municipalityName(item.municipalityId);
+    const matchesQuery = `${municipality} ${item.title} ${item.reasonSummary} ${item.owner}`.toLowerCase().includes(query.toLowerCase());
     const matchesSeverity = severity === "all" || item.severity === severity;
     const matchesRiskType = riskType === "all" || item.riskType === riskType;
-    return matchesSeverity && matchesRiskType;
+    return matchesQuery && matchesSeverity && matchesRiskType;
   });
   const [selectedId, setSelectedId] = useState(filtered[0]?.id ?? queueItems[0].id);
   const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? queueItems[0];
+
+  useEffect(() => {
+    if (!filtered.some((item) => item.id === selectedId)) {
+      setSelectedId(filtered[0]?.id ?? queueItems[0].id);
+    }
+  }, [filtered, selectedId]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadDrafts() {
       try {
-        const response = await fetch("/api/v1/actions/drafts", { cache: "no-store" });
-        if (!response.ok) throw new Error("Could not load draft actions.");
-        const payload = (await response.json()) as { data?: { actions?: DraftAction[] } };
-        if (!cancelled) setDraftActions(payload.data?.actions ?? []);
+        const payload = await apiGet<{ actions?: DraftAction[] }>("/v1/actions/drafts");
+        if (!cancelled) {
+          setDraftActions(payload.data?.actions ?? []);
+          setDraftMessage(`${payload.data?.actions?.length ?? 0} draft action(s) loaded from the workflow store.`);
+        }
       } catch {
         if (!cancelled) setDraftMessage("Draft action store is unavailable.");
+      } finally {
+        if (!cancelled) setLoadingDrafts(false);
       }
     }
 
@@ -136,26 +153,20 @@ export function QueueWorkspace() {
     };
 
     setDraftMessage("Saving draft action...");
-    const response = await fetch("/api/v1/actions/drafts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft)
-    });
-
-    if (!response.ok) {
+    try {
+      const payload = await apiPost<{ action?: DraftAction }>("/v1/actions/drafts", draft);
+      setDraftActions((current) => [payload.data?.action, ...current].filter(Boolean) as DraftAction[]);
+      setDraftMessage(`Saved draft action for ${municipalityName(item.municipalityId)}.`);
+    } catch {
       setDraftMessage("Could not persist draft action.");
-      return;
     }
-
-    const payload = (await response.json()) as { data?: { action?: DraftAction } };
-    setDraftActions((current) => [payload.data?.action, ...current].filter(Boolean) as DraftAction[]);
-    setDraftMessage(`Saved draft action for ${municipalityName(item.municipalityId)}.`);
   }
 
   return (
     <section className="workspace-split">
       <div className="panel wide">
         <div className="toolbar">
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search municipality, owner or risk signal" />
           <select value={severity} onChange={(event) => setSeverity(event.target.value as Severity | "all")}>
             <option value="all">All severities</option>
             <option value="critical">Critical</option>
@@ -172,6 +183,10 @@ export function QueueWorkspace() {
           <button className="secondary-action">Assign selected</button>
           <button className="secondary-action">Add to briefing</button>
           <button className="primary-action">Request update</button>
+        </div>
+        <div className="workflow-state">
+          <Badge tone="under_review">{filtered.length} ranked item(s)</Badge>
+          <span>{draftMessage}</span>
         </div>
         <div className="table-wrap">
           <table>
@@ -208,7 +223,12 @@ export function QueueWorkspace() {
             </tbody>
           </table>
         </div>
-        {draftActions.length ? (
+        {loadingDrafts ? (
+          <section className="draft-action-panel">
+            <Skeleton className="skeleton-line" />
+            <Skeleton className="skeleton-line short" />
+          </section>
+        ) : draftActions.length ? (
           <section className="draft-action-panel">
             <div className="panel-header">
               <div>
@@ -287,9 +307,7 @@ export function ActionKanban({ scopedActions = actions }: { scopedActions?: Acti
 
     async function loadDrafts() {
       try {
-        const response = await fetch("/api/v1/actions/drafts", { cache: "no-store" });
-        if (!response.ok) return;
-        const payload = (await response.json()) as { data?: { actions?: DraftAction[] } };
+        const payload = await apiGet<{ actions?: DraftAction[] }>("/v1/actions/drafts");
         if (!cancelled) setDraftActions(payload.data?.actions ?? []);
       } catch {
         if (!cancelled) setDraftActions([]);
@@ -305,25 +323,18 @@ export function ActionKanban({ scopedActions = actions }: { scopedActions?: Acti
 
   async function transitionDraft(action: DraftAction, status: ActionStatus) {
     setDraftMessage(`Moving ${action.title} to ${actionLabel[status].toLowerCase()}...`);
-    const response = await fetch(`/api/v1/actions/drafts/${action.id}/transition`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const payload = await apiPost<{ action?: DraftAction }>(`/v1/actions/drafts/${action.id}/transition`, {
         status,
         changedBy: "prototype-reviewer",
         reason: "Updated from Actions board"
-      })
-    });
-
-    if (!response.ok) {
+      });
+      if (payload.data?.action) {
+        setDraftActions((current) => current.map((draft) => (draft.id === action.id ? payload.data!.action! : draft)));
+        setDraftMessage(`Saved ${actionLabel[status].toLowerCase()} transition.`);
+      }
+    } catch {
       setDraftMessage("Could not update draft action status.");
-      return;
-    }
-
-    const payload = (await response.json()) as { data?: { action?: DraftAction } };
-    if (payload.data?.action) {
-      setDraftActions((current) => current.map((draft) => (draft.id === action.id ? payload.data!.action! : draft)));
-      setDraftMessage(`Saved ${actionLabel[status].toLowerCase()} transition.`);
     }
   }
 
@@ -335,26 +346,19 @@ export function ActionKanban({ scopedActions = actions }: { scopedActions?: Acti
     }
 
     setDraftMessage(`Attaching evidence to ${action.title}...`);
-    const response = await fetch(`/api/v1/actions/drafts/${action.id}/evidence`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const payload = await apiPost<{ action?: DraftAction }>(`/v1/actions/drafts/${action.id}/evidence`, {
         label,
         submittedBy: "prototype-reviewer",
         note: "Evidence reference captured from Actions board"
-      })
-    });
-
-    if (!response.ok) {
+      });
+      if (payload.data?.action) {
+        setDraftActions((current) => current.map((draft) => (draft.id === action.id ? payload.data!.action! : draft)));
+        setEvidenceDrafts((current) => ({ ...current, [action.id]: "" }));
+        setDraftMessage("Evidence attachment saved.");
+      }
+    } catch {
       setDraftMessage("Could not attach evidence.");
-      return;
-    }
-
-    const payload = (await response.json()) as { data?: { action?: DraftAction } };
-    if (payload.data?.action) {
-      setDraftActions((current) => current.map((draft) => (draft.id === action.id ? payload.data!.action! : draft)));
-      setEvidenceDrafts((current) => ({ ...current, [action.id]: "" }));
-      setDraftMessage("Evidence attachment saved.");
     }
   }
 
@@ -415,7 +419,14 @@ export function ActionKanban({ scopedActions = actions }: { scopedActions?: Acti
 
 export function BriefingWorkspace() {
   const [templateId, setTemplateId] = useState(briefingTemplates[0].id);
+  const [briefingState, setBriefingState] = useState<"draft" | "checking" | "ready">("draft");
   const template = briefingTemplates.find((candidate) => candidate.id === templateId) ?? briefingTemplates[0];
+  const readiness = briefingState === "ready" ? 100 : briefingState === "checking" ? 68 : 34;
+
+  function prepareBriefing() {
+    setBriefingState("checking");
+    window.setTimeout(() => setBriefingState("ready"), 450);
+  }
 
   return (
     <section className="workspace-split">
@@ -427,13 +438,25 @@ export function BriefingWorkspace() {
           </div>
           <Badge tone="review">Review</Badge>
         </div>
-        <div className="template-list">
+        <TabsList className="briefing-tabs">
           {briefingTemplates.map((item) => (
-            <button className={item.id === templateId ? "active" : ""} key={item.id} onClick={() => setTemplateId(item.id)}>
+            <TabsTrigger active={item.id === templateId} key={item.id} onClick={() => setTemplateId(item.id)}>
               <strong>{item.name}</strong>
               <span>{item.audience}</span>
-            </button>
+            </TabsTrigger>
           ))}
+        </TabsList>
+        <div className="briefing-readiness">
+          <div>
+            <span>Source lock</span>
+            <strong>{briefingState === "ready" ? "Ready for reviewer" : "AGSA citations required"}</strong>
+          </div>
+          <div className="ui-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readiness}>
+            <span style={{ width: `${readiness}%` }} />
+          </div>
+          <button className="primary-action" onClick={prepareBriefing}>
+            Prepare source-cited package
+          </button>
         </div>
       </div>
       <div className="panel briefing-preview">
@@ -447,6 +470,10 @@ export function BriefingWorkspace() {
             <p>Uses AGSA verified source references and workflow state. Treasury-derived values remain excluded.</p>
           </article>
         ))}
+        <div className="review-save-state">
+          <Badge tone={briefingState === "ready" ? "healthy" : "under_review"}>{briefingState}</Badge>
+          <span>Municipal Money values are still excluded until validation gates pass.</span>
+        </div>
       </div>
     </section>
   );
@@ -456,6 +483,7 @@ export function SourceHealthTabs() {
   const [status, setStatus] = useState<SourceHealth["status"] | "all">("all");
   const [governedSources, setGovernedSources] = useState<GovernedSource[]>(sourceHealth);
   const [governedEvents, setGovernedEvents] = useState(sourceFreshnessEvents);
+  const [sourceLoadState, setSourceLoadState] = useState<"loading" | "ready" | "error">("loading");
   const filtered = status === "all" ? governedSources : governedSources.filter((source) => source.status === status);
 
   useEffect(() => {
@@ -463,19 +491,19 @@ export function SourceHealthTabs() {
 
     async function loadSources() {
       try {
-        const response = await fetch("/api/v1/sources", { cache: "no-store" });
-        if (!response.ok) return;
-        const payload = (await response.json()) as {
-          data?: {
-            sources?: GovernedSource[];
-            events?: typeof sourceFreshnessEvents;
-          };
-        };
+        const payload = await apiGet<{
+          sources?: GovernedSource[];
+          events?: typeof sourceFreshnessEvents;
+        }>("/v1/sources");
         if (cancelled) return;
         setGovernedSources(payload.data?.sources ?? sourceHealth);
         setGovernedEvents(payload.data?.events ?? sourceFreshnessEvents);
+        setSourceLoadState("ready");
       } catch {
-        if (!cancelled) setGovernedSources(sourceHealth);
+        if (!cancelled) {
+          setGovernedSources(sourceHealth);
+          setSourceLoadState("error");
+        }
       }
     }
 
@@ -489,6 +517,15 @@ export function SourceHealthTabs() {
   return (
     <section className="workspace-split">
       <div className="panel">
+        <div className="source-control-row">
+          <div>
+            <p className="eyeless">Source command</p>
+            <h2>Health and publication gates</h2>
+          </div>
+          <Badge tone={sourceLoadState === "error" ? "degraded" : "under_review"}>
+            {sourceLoadState === "loading" ? "loading" : sourceLoadState}
+          </Badge>
+        </div>
         <div className="toolbar segmented">
           {(["all", "healthy", "degraded", "unknown"] as const).map((item) => (
             <button className={status === item ? "active" : ""} key={item} onClick={() => setStatus(item)}>
@@ -496,6 +533,12 @@ export function SourceHealthTabs() {
             </button>
           ))}
         </div>
+        {sourceLoadState === "loading" ? (
+          <div className="source-stack">
+            <Skeleton className="skeleton-line" />
+            <Skeleton className="skeleton-line short" />
+          </div>
+        ) : null}
         <div className="source-stack">
           {filtered.map((source) => (
             <article key={source.sourceId}>
@@ -576,9 +619,7 @@ export function AgsaExtractionReview() {
 
     async function loadDecisions() {
       try {
-        const response = await fetch("/api/v1/agsa/review-decisions", { cache: "no-store" });
-        if (!response.ok) throw new Error("Could not load review decisions.");
-        const payload = (await response.json()) as { data?: { decisions?: AgsaReviewDecision[] } };
+        const payload = await apiGet<{ decisions?: AgsaReviewDecision[] }>("/v1/agsa/review-decisions");
         if (cancelled) return;
         setStatusByKey(
           Object.fromEntries((payload.data?.decisions ?? []).map((decision) => [decision.decisionKey, decision.status]))
@@ -632,24 +673,18 @@ export function AgsaExtractionReview() {
     setStatusByKey((current) => ({ ...current, [item.key]: decision }));
 
     try {
-      const response = await fetch("/api/v1/agsa/review-decisions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          decisionKey: item.key,
-          documentId: item.documentId,
-          pageNumber: item.pageNumber,
-          issue: item.issue,
-          status: decision,
-          reviewer: "prototype-reviewer",
-          citationIds: item.citations.map((citation) => citation.citationId),
-          replacementField: correctionDrafts[item.key]?.replacementField,
-          replacementValue: correctionDrafts[item.key]?.replacementValue,
-          rationale: correctionDrafts[item.key]?.rationale
-        })
+      await apiPost("/v1/agsa/review-decisions", {
+        decisionKey: item.key,
+        documentId: item.documentId,
+        pageNumber: item.pageNumber,
+        issue: item.issue,
+        status: decision,
+        reviewer: "prototype-reviewer",
+        citationIds: item.citations.map((citation) => citation.citationId),
+        replacementField: correctionDrafts[item.key]?.replacementField,
+        replacementValue: correctionDrafts[item.key]?.replacementValue,
+        rationale: correctionDrafts[item.key]?.rationale
       });
-
-      if (!response.ok) throw new Error("Could not persist review decision.");
       setReviewState("ready");
       setReviewMessage(`Saved ${decision.replaceAll("_", " ")} decision for page ${item.pageNumber}.`);
     } catch (error) {
@@ -806,6 +841,11 @@ export function FinancialValidationPanel() {
           </article>
         ))}
       </div>
+      <ValidationGateMatrix
+        gates={treasuryValidation.gates}
+        formulaReady={treasuryValidation.formulaReadiness.validatedFormulaCount}
+        formulaTotal={treasuryValidation.formulaReadiness.requiredFormulaCount}
+      />
       <div className="breakdown-list">
         <article>
           <div>
@@ -841,17 +881,13 @@ export function AdminConsole() {
 
     async function loadStats() {
       try {
-        const response = await fetch("/api/v1/sources", { cache: "no-store" });
-        if (!response.ok) return;
-        const payload = (await response.json()) as {
-          data?: {
-            review?: {
-              open: number;
-              blockers: number;
-              accepted: number;
-            };
+        const payload = await apiGet<{
+          review?: {
+            open: number;
+            blockers: number;
+            accepted: number;
           };
-        };
+        }>("/v1/sources");
         if (cancelled || !payload.data?.review) return;
         setStats([
           ["Open quality exceptions", String(payload.data.review.open)],

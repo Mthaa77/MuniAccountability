@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import { RiskAtlas } from "@/components/risk-atlas";
 import { municipalities } from "@/lib/pilot-data";
 import type { ActionStatus, Municipality, QueueItem, Severity } from "@/lib/types";
 
@@ -87,25 +88,12 @@ export function RiskMap() {
     <section className="panel map-panel">
       <div className="panel-header">
         <div>
-          <p className="eyeless">Map with table fallback</p>
+          <p className="eyeless">Interactive risk atlas</p>
           <h2>Pilot Risk View</h2>
         </div>
-        <Badge tone="under_review">Schematic view</Badge>
+        <Badge tone="under_review">AGSA-backed cohort</Badge>
       </div>
-      <div className="map-canvas" aria-label="Schematic pilot municipality risk map">
-        <div className="province-shape" />
-        {municipalities.map((municipality) => (
-          <Link
-            href={`/municipalities/${municipality.id}`}
-            className={`map-point ${municipality.interventionPriority}`}
-            key={municipality.id}
-            style={{ left: `${municipality.coordinates.x}%`, top: `${municipality.coordinates.y}%` }}
-            title={`${municipality.commonName}: ${severityLabel[municipality.interventionPriority]}`}
-          >
-            <span>{municipality.commonName.slice(0, 3).toUpperCase()}</span>
-          </Link>
-        ))}
-      </div>
+      <RiskAtlas municipalities={municipalities} />
       <div className="map-list">
         {municipalities.map((municipality) => (
           <Link href={`/municipalities/${municipality.id}`} key={municipality.id}>
