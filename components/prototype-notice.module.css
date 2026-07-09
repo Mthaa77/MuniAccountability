@@ -1,19 +1,37 @@
 .notice {
+  position: relative;
+  z-index: 30;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 18px;
-  border-bottom: 1px solid rgba(44, 79, 69, 0.16);
-  background: rgba(255, 253, 248, 0.92);
-  color: #12201d;
-  font-size: 0.86rem;
-  font-weight: 720;
+  padding: 9px clamp(18px, 2.4vw, 42px);
+  border-bottom: 1px solid rgba(230, 224, 212, 0.82);
+  background:
+    linear-gradient(90deg, rgba(247, 238, 209, 0.72), rgba(255, 255, 255, 0.78), rgba(231, 242, 238, 0.72)),
+    rgba(255, 255, 255, 0.82);
+  color: #111814;
+  font-size: 0.78rem;
+  font-weight: 820;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.notice span::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 9px;
+  border-radius: 999px;
+  background: #c8a24a;
+  box-shadow: 0 0 0 5px rgba(200, 162, 74, 0.14);
+  vertical-align: middle;
 }
 
 .notice a {
-  color: #0c6b5a;
+  color: #0e6f5c;
   font-weight: 900;
   text-decoration: none;
 }
