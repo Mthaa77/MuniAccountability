@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, Clock3, FileText, Gauge } from "lucide-react";
-import { MunicipalityPreview, PageHeader, QueuePreview, RiskMap, MetricCard, Badge } from "@/components/ui";
+import { MunicipalityPreview, QueuePreview, RiskMap, Badge } from "@/components/ui";
+import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { ActionKanban, EvidenceDrawer, SourceHealthTabs } from "@/components/interactive";
 import { actions, municipalities, queueItems } from "@/lib/pilot-data";
 
@@ -10,25 +11,30 @@ export default function CommandCentrePage() {
 
   return (
     <>
-      <PageHeader
-        kicker="Municipal Oversight, Intervention and Recovery Operating System"
-        title="Find the risk. Assign the action. Prove the recovery."
-        description="Phase 1 is AGSA-first: evidence-backed case files, intervention queue, actions, decision logs and cited briefings before live Treasury telemetry is enabled."
-        actions={
+      <AtlasHero
+        kicker="Municipal accountability intelligence"
+        title="Audit risk, recovery evidence and civic oversight"
+        emphasis="in one command room."
+        description="A premium AGSA-first workspace for turning municipal findings into source-backed intervention priorities, action workflows and review-ready briefings before live Treasury telemetry is unlocked."
+        side={
           <>
-            <Badge tone="healthy">AGSA verified</Badge>
-            <Badge tone="under_review">Treasury pending validation</Badge>
-            <Badge tone="decision_required">Decision required</Badge>
+            <AtlasEvidenceChip source="AGSA-backed corpus" />
+            <AtlasEvidenceChip source="Treasury gate locked" state="pending" />
+            <AtlasEvidenceChip source="Prototype persistence" state="locked" />
           </>
         }
-      />
+      >
+        <AtlasStatusPill>Source thread active</AtlasStatusPill>
+        <AtlasStatusPill tone="gold">Validation gates visible</AtlasStatusPill>
+        <AtlasStatusPill tone="risk">Decision queue open</AtlasStatusPill>
+      </AtlasHero>
 
-      <section className="metrics-grid" aria-label="Executive decision cards">
-        <MetricCard title="Municipalities requiring attention" value="4" note="One-province pilot cohort" tone="risk" icon={AlertTriangle} />
-        <MetricCard title="New critical risks" value={String(criticalCount)} note="Since latest AGSA review" tone="risk" icon={Gauge} />
-        <MetricCard title="Overdue corrective actions" value={String(overdueCount)} note="Evidence not accepted" tone="watch" icon={Clock3} />
-        <MetricCard title="Briefings in review" value="1" note="Weekly intervention brief" tone="neutral" icon={FileText} />
-        <MetricCard title="Published source coverage" value="95%" note="MVP target for audit fields" tone="good" icon={CheckCircle2} />
+      <section className="metrics-grid" aria-label="Executive intelligence tiles">
+        <AtlasMetricTile title="Attention cohort" value="4" note="One-province pilot municipalities in the oversight lens" tone="risk" icon={AlertTriangle} />
+        <AtlasMetricTile title="Critical risks" value={String(criticalCount)} note="Highest-priority AGSA-backed intervention items" tone="risk" icon={Gauge} />
+        <AtlasMetricTile title="Overdue actions" value={String(overdueCount)} note="Corrective actions requiring evidence movement" tone="gold" icon={Clock3} />
+        <AtlasMetricTile title="Briefings in review" value="1" note="Executive narrative awaiting final source checks" tone="blue" icon={FileText} />
+        <AtlasMetricTile title="Source coverage" value="95%" note="MVP target for audit-backed fields and citations" tone="good" icon={CheckCircle2} />
       </section>
 
       <section className="command-layout">
