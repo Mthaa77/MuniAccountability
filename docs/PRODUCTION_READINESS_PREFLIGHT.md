@@ -20,6 +20,20 @@ The `.local.json` suffix keeps local evidence out of committed generated data un
 
 The evidence pack turns the preflight into an operator checklist with required inputs, safe validation commands, promotion commands and guardrails for each remaining gate.
 
+Before collecting real evidence, prepare local input templates:
+
+```powershell
+node tools/prepare-production-gate-inputs.mjs
+```
+
+This writes local copies of:
+
+- `docs/templates/mfma-annexure-template.csv`
+- `docs/templates/treasury-schema-snapshot-template.json`
+- `docs/templates/workflow-migration-evidence-template.md`
+
+The default output directory is `data\agsa\generated\production-gate-inputs.local`, which is ignored by Git. Replace the sample values with reviewed official evidence before using the files with any promotion command.
+
 ```powershell
 node tools/build-production-evidence-pack.mjs
 ```
@@ -100,6 +114,12 @@ Run the evidence-pack verifier:
 
 ```powershell
 npm run test:production-evidence
+```
+
+Run the input-template verifier:
+
+```powershell
+npm run test:production-gate-inputs
 ```
 
 The full verification chain also includes it:

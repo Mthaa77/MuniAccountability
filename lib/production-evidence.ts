@@ -274,11 +274,13 @@ export function buildProductionEvidencePack(): ProductionEvidencePack {
         status: preflight.gates.find((gate) => gate.id === "mfma_annexure_mapping")?.status ?? "blocked",
         requiredEvidence: [
           "Official AGSA MFMA municipality-level audit outcome annexure exported to CSV or JSON.",
+          "Start from docs/templates/mfma-annexure-template.csv when preparing a local reviewed input.",
           "Columns: municipality_code, municipality_name, financial_year, audit_outcome, movement, source_document, source_page.",
           "Source filename, row count and checksum retained in the import manifest.",
           "Reviewer resolution notes for unmatched or excluded rows."
         ],
         safeValidationCommands: [
+          "node tools/prepare-production-gate-inputs.mjs",
           "python tools/import-mfma-annexures.py path\\to\\official-mfma-annexure.csv --dry-run",
           "python tools/import-mfma-annexures.py path\\to\\official-mfma-annexure.csv --out data\\agsa\\generated\\annexure-import-manifest.local.json",
           "npm run test:annexure-importer",
@@ -294,11 +296,13 @@ export function buildProductionEvidencePack(): ProductionEvidencePack {
         requiredEvidence: [
           "Successful connector probe timestamp and status.",
           "Reuse and display permission evidence URL or reviewed internal reference.",
+          "Start from docs/templates/treasury-schema-snapshot-template.json when preparing a schema snapshot.",
           "Schema snapshot JSON covering every Financial Pulse formula field.",
           "Validated formula versions with reviewed denominator, period alignment and display gate decisions.",
           "Freshness SLA: expected cadence, stale-after threshold and latest successful pull timestamp."
         ],
         safeValidationCommands: [
+          "node tools/prepare-production-gate-inputs.mjs",
           "node tools/build-treasury-validation-manifest.mjs --schema-snapshot path\\to\\schema.json --connector-status validated --dry-run",
           "node tools/build-treasury-validation-manifest.mjs --schema-snapshot path\\to\\schema.json --out data\\treasury\\validation\\municipal-money-validation-manifest.local.json",
           "npm run test:treasury-validation",
@@ -315,10 +319,12 @@ export function buildProductionEvidencePack(): ProductionEvidencePack {
           "Hosted PostgreSQL-compatible database provider and tenant model selected.",
           "Provider credentials configured outside the repository.",
           "db/workflow/001_workflow_persistence.sql applied successfully.",
+          "Start from docs/templates/workflow-migration-evidence-template.md when recording migration evidence.",
           "Fresh workflow backfill manifest generated from local JSON stores.",
           "Parity smoke evidence for review decisions, draft actions, transitions and evidence attachments."
         ],
         safeValidationCommands: [
+          "node tools/prepare-production-gate-inputs.mjs",
           "node tools/build-workflow-backfill-manifest.mjs",
           "npm run test:workflow-migration",
           "npm run test:workflow-persistence"

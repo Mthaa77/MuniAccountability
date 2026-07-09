@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -H 127.0.0.1 -p 3000",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run test:agsa-fixtures && npm run test:governance-fixtures && npm run test:source-search-fixtures && npm run test:validation-gates && npm run test:source-manifests && npm run test:annexure-importer && npm run test:annexure-overlay && npm run test:treasury-validation && npm run test:treasury-manifest-builder && npm run test:workflow-persistence && npm run test:workflow-migration && npm run test:readiness-ledger && npm run test:production-readiness && npm run test:production-evidence && npm run test:production-evidence-surface && npm run typecheck && npm run build",
+    "verify": "npm run test:agsa-fixtures && npm run test:governance-fixtures && npm run test:source-search-fixtures && npm run test:validation-gates && npm run test:source-manifests && npm run test:annexure-importer && npm run test:annexure-overlay && npm run test:treasury-validation && npm run test:treasury-manifest-builder && npm run test:workflow-persistence && npm run test:workflow-migration && npm run test:readiness-ledger && npm run test:production-gate-inputs && npm run test:production-readiness && npm run test:production-evidence && npm run test:production-evidence-surface && npm run typecheck && npm run build",
     "test:agsa-fixtures": "node scripts/verify-agsa-fixtures.mjs",
     "test:governance-fixtures": "node scripts/verify-governance-fixtures.mjs",
     "test:source-search-fixtures": "node scripts/verify-source-search-fixtures.mjs",
@@ -20,6 +20,7 @@
     "test:workflow-persistence": "node scripts/verify-workflow-persistence.mjs",
     "test:workflow-migration": "node scripts/verify-workflow-migration.mjs",
     "test:readiness-ledger": "node scripts/verify-readiness-ledger.mjs",
+    "test:production-gate-inputs": "node scripts/verify-production-gate-inputs.mjs",
     "test:production-readiness": "node scripts/verify-production-readiness-preflight.mjs",
     "test:production-evidence": "node scripts/verify-production-evidence-pack.mjs",
     "test:production-evidence-surface": "node scripts/verify-production-evidence-surface.mjs"

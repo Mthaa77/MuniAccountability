@@ -12,6 +12,7 @@ build/
 data/agsa/generated/*.local.json
 data/agsa/generated/*.tmp.json
 data/agsa/generated/*.ndjson
+data/agsa/generated/production-gate-inputs.local/
 data/agsa/generated/production-evidence-pack.local/
 data/agsa/generated/pages/
 data/agsa/generated/raw/

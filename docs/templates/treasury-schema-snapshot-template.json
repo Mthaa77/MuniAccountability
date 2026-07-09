@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "municipal-money-schema-snapshot-v0.1",
+  "capturedAt": "2026-07-09T00:00:00.000Z",
+  "source": "National Treasury Municipal Money",
+  "connectorStatus": "validated",
+  "fields": [
+    { "name": "municipality_code", "type": "string", "required": true, "notes": "MDB or Treasury municipality code used for joins." },
+    { "name": "period", "type": "string", "required": true, "notes": "Reporting period for each financial metric." },
+    { "name": "cash_balance", "type": "number", "required": true, "notes": "Cash and cash equivalents for the period." },
+    { "name": "average_monthly_operating_expenditure", "type": "number", "required": true, "notes": "Reviewed denominator for cash runway." },
+    { "name": "creditors", "type": "number", "required": true, "notes": "Outstanding creditors." },
+    { "name": "operating_revenue", "type": "number", "required": true, "notes": "Operating revenue denominator." },
+    { "name": "capital_spend", "type": "number", "required": true, "notes": "Capital expenditure to date." },
+    { "name": "capital_budget", "type": "number", "required": true, "notes": "Reviewed capital budget denominator." },
+    { "name": "cash_collected", "type": "number", "required": true, "notes": "Cash collected for revenue collection metric." },
+    { "name": "billed_revenue", "type": "number", "required": true, "notes": "Billed revenue denominator." }
+  ],
+  "reviewEvidence": {
+    "reusePermissionReference": "REPLACE_WITH_REVIEWED_REFERENCE",
+    "freshnessCadence": "REPLACE_WITH_EXPECTED_CADENCE",
+    "staleAfterDays": null,
+    "lastSuccessfulPullAt": null
+  }
+}
