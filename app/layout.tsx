@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { PrototypeNotice } from "@/components/prototype-notice";
 import "./globals.css";
+import "@/components/atlas/atlas.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",
