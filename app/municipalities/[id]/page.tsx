@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Activity, AlertTriangle, ClipboardCheck, Gauge } from "lucide-react";
 import { ActionKanban, EvidenceDrawer } from "@/components/interactive";
-import { Badge, MunicipalityPreview, PageHeader } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import {
   actions,
   evidenceChecklist,
@@ -25,60 +27,125 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
   const scopedTimeline = getAuditTimelineForMunicipality(municipality.id);
   const scopedIpiComponents = getIpiComponentsForMunicipality(municipality.id);
   const scopedFindings = getFindingsForMunicipality(municipality.id);
+  const openActions = scopedActions.filter((action) => !["approved", "closed_with_residual_risk"].includes(action.status)).length;
 
   return (
-    <>
-      <PageHeader
-        kicker="Municipality 360 case file"
-        title={municipality.name}
+    <div className="atlas-page-stack">
+      <AtlasHero
+        kicker="Municipality 360 dossier"
+        title={municipality.commonName}
+        emphasis="case file."
         description={municipality.situationSummary}
-        actions={<Badge tone={municipality.interventionPriority}>{municipality.interventionPriority}</Badge>}
-      />
-      <section className="case-file-grid">
-        <MunicipalityPreview municipality={municipality} />
-        <EvidenceDrawer item={scopedQueue} />
-        <section className="panel">
+        side={
+          <>
+            <AtlasEvidenceChip source={municipality.auditOutcome} />
+            <AtlasEvidenceChip source={`${municipality.province} ${municipality.category}`} state="pending" />
+            <AtlasEvidenceChip source={municipality.posture} state="locked" />
+          </>
+        }
+      >
+        <AtlasStatusPill tone={municipality.interventionPriority === "critical" ? "risk" : "gold"}>
+          {municipality.interventionPriority} priority
+        </AtlasStatusPill>
+        <AtlasStatusPill>AGSA source trail</AtlasStatusPill>
+        <AtlasStatusPill tone="gold">Reviewer context</AtlasStatusPill>
+      </AtlasHero>
+
+      <section className="atlas-dossier-strip" aria-label="Municipality dossier metrics">
+        <AtlasMetricTile title="IPI score" value={String(municipality.ipi)} note="Prioritisation score used for intervention sequencing" tone="risk" icon={Gauge} />
+        <AtlasMetricTile title="Open actions" value={String(openActions)} note="Active workflow items linked to this municipality" tone="gold" icon={ClipboardCheck} />
+        <AtlasMetricTile title="Risk signals" value={String(scopedFindings.length)} note="AGSA-backed findings surfaced in this dossier" tone="blue" icon={AlertTriangle} />
+        <AtlasMetricTile title="Timeline years" value={String(scopedTimeline.length)} note="Audit movement events available for review" icon={Activity} />
+      </section>
+
+      <section className="atlas-dossier-grid">
+        <section className="panel atlas-dossier-card">
+          <div>
+            <p className="eyeless">Dossier snapshot</p>
+            <h2>{municipality.name}</h2>
+          </div>
+          <p className="lead">{municipality.situationSummary}</p>
+          <div className="atlas-dossier-meta">
+            <Badge tone={municipality.interventionPriority}>{municipality.interventionPriority}</Badge>
+            <Badge tone="healthy">{municipality.auditOutcome}</Badge>
+            <Badge tone="watch">{municipality.householdImpact}</Badge>
+          </div>
+          <div className="atlas-dossier-score">
+            <span className="eyeless">Intervention Priority Index</span>
+            <strong>{municipality.ipi}</strong>
+            <div className="atlas-score-bar" aria-label={`IPI ${municipality.ipi} out of 100`}>
+              <span style={{ width: `${municipality.ipi}%` }} />
+            </div>
+          </div>
+          <div className="atlas-source-thread">
+            <h3>Evidence thread</h3>
+            <p>Every risk statement in this case file should resolve to an AGSA document, a citation location, a review state and an action owner.</p>
+          </div>
+        </section>
+
+        <section className="panel atlas-risk-story atlas-dossier-main">
           <div className="panel-header">
             <div>
-              <p className="eyeless">Audit timeline</p>
-              <h2>Five-year movement</h2>
+              <p className="eyeless">Risk storyline</p>
+              <h2>Why this municipality is in focus</h2>
             </div>
-            <Badge tone="healthy">AGSA verified</Badge>
+            <Badge tone={municipality.interventionPriority}>{municipality.interventionPriority}</Badge>
           </div>
-          <div className="timeline">
+          <p className="lead">{scopedQueue.reasonSummary}</p>
+          <div className="case-meta">
+            <span>{scopedQueue.riskType.replaceAll("_", " ")}</span>
+            <span>{scopedQueue.whatChanged}</span>
+            <span>{scopedQueue.requiredNextStep}</span>
+          </div>
+          <EvidenceDrawer item={scopedQueue} />
+        </section>
+
+        <section className="panel atlas-audit-ribbon-card atlas-dossier-main">
+          <div className="panel-header">
+            <div>
+              <p className="eyeless">Audit movement ribbon</p>
+              <h2>Five-year audit movement</h2>
+            </div>
+            <Badge tone="healthy">AGSA-linked</Badge>
+          </div>
+          <div className="atlas-audit-ribbon">
             {scopedTimeline.map((event) => (
               <article key={event.year}>
-                <span>{event.year}</span>
-                <strong>{event.outcome}</strong>
-                <p>{event.note}</p>
-                {"mappingConfidence" in event ? (
-                  <small>{String(event.mappingConfidence).replaceAll("_", " ")} - {"mappingRationale" in event ? String(event.mappingRationale) : ""}</small>
-                ) : null}
+                <span className="atlas-audit-year">{event.year}</span>
+                <div>
+                  <strong>{event.outcome}</strong>
+                  <p>{event.note}</p>
+                  {"mappingConfidence" in event ? (
+                    <small>{String(event.mappingConfidence).replaceAll("_", " ")} · {"mappingRationale" in event ? String(event.mappingRationale) : "review context pending"}</small>
+                  ) : null}
+                </div>
               </article>
             ))}
           </div>
         </section>
+
         <section className="panel">
           <div className="panel-header">
             <div>
               <p className="eyeless">IPI breakdown</p>
-              <h2>Why this score</h2>
+              <h2>Score drivers</h2>
             </div>
             <Badge tone="watch">agsa-first-v0.1</Badge>
           </div>
-          <div className="breakdown-list">
+          <div className="atlas-breakdown-grid">
             {scopedIpiComponents.map((component) => (
               <article key={component.label}>
                 <div>
                   <strong>{component.label}</strong>
                   <span>{component.score}/{component.max}</span>
                 </div>
-                <div className="mini-bar"><span style={{ width: `${(component.score / component.max) * 100}%` }} /></div>
+                <div className="atlas-mini-bar"><span style={{ width: `${(component.score / component.max) * 100}%` }} /></div>
                 <p>{component.explanation}</p>
               </article>
             ))}
           </div>
         </section>
+
         <section className="panel wide">
           <div className="panel-header">
             <div>
@@ -87,17 +154,18 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
             </div>
             <Badge tone="healthy">Page cited</Badge>
           </div>
-          <div className="source-grid">
+          <div className="atlas-finding-grid">
             {scopedFindings.slice(0, 4).map((finding) => (
-              <article key={finding.findingId} className="source-card">
+              <article key={finding.findingId} className="atlas-finding-card">
                 <span>{finding.findingFamily}</span>
-                <Link className="primary-link" href={`/findings/${finding.findingId}`}>{finding.subtheme}</Link>
+                <Link href={`/findings/${finding.findingId}`}>{finding.subtheme}</Link>
                 <p>{finding.description}</p>
                 <small>{finding.source.location}</small>
               </article>
             ))}
           </div>
         </section>
+
         <section className="panel wide">
           <div className="panel-header">
             <div>
@@ -114,6 +182,6 @@ export default function MunicipalityCaseFilePage({ params }: { params: { id: str
           </div>
         </section>
       </section>
-    </>
+    </div>
   );
 }
