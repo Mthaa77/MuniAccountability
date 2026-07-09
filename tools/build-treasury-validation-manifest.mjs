@@ -62,10 +62,38 @@ function sha256(value) {
 function schemaFieldsFromSnapshot(filePath) {
   const snapshot = readJson(filePath);
   if (Array.isArray(snapshot)) return snapshot.filter((field) => typeof field === "string");
-  if (Array.isArray(snapshot.fields)) return snapshot.fields.filter((field) => typeof field === "string");
-  if (Array.isArray(snapshot.columns)) return snapshot.columns.filter((field) => typeof field === "string");
+  if (Array.isArray(snapshot.fields)) {
+    return snapshot.fields
+      .map((field) => typeof field === "string" ? field : typeof field?.name === "string" ? field.name : null)
+      .filter(Boolean);
+  }
+  if (Array.isArray(snapshot.columns)) {
+    return snapshot.columns
+      .map((field) => typeof field === "string" ? field : typeof field?.name === "string" ? field.name : null)
+      .filter(Boolean);
+  }
   if (snapshot.properties && typeof snapshot.properties === "object") return Object.keys(snapshot.properties);
   throw new Error("Schema snapshot must be an array, {fields}, {columns}, or JSON schema {properties}.");
+}
+
+function assertReviewedSchemaSnapshot(filePath) {
+  const snapshotText = fs.readFileSync(filePath, "utf8");
+  const snapshot = JSON.parse(snapshotText);
+  const markerText = snapshotText.toUpperCase();
+  const reviewEvidence = snapshot.reviewEvidence ?? {};
+  const hasPlaceholderMarker = markerText.includes("REPLACE_WITH") || markerText.includes("SAMPLE_ONLY");
+  const missingFreshnessEvidence = reviewEvidence && (
+    reviewEvidence.lastSuccessfulPullAt === null ||
+    reviewEvidence.staleAfterDays === null ||
+    String(reviewEvidence.reusePermissionReference ?? "").includes("REPLACE_WITH") ||
+    String(reviewEvidence.freshnessCadence ?? "").includes("REPLACE_WITH")
+  );
+
+  if (hasPlaceholderMarker || missingFreshnessEvidence) {
+    throw new Error(
+      "Schema snapshot appears to be a template/sample input. Replace placeholders with reviewed Treasury reuse, freshness and schema evidence before building a validation manifest."
+    );
+  }
 }
 
 function requiredFormulaFields(formulas) {
@@ -109,7 +137,9 @@ function buildManifest(args) {
   if (args.reuseEvidence) next.reuseReview.evidenceUrl = args.reuseEvidence;
 
   if (args.schemaSnapshot) {
-    const fields = schemaFieldsFromSnapshot(path.resolve(args.schemaSnapshot));
+    const schemaSnapshotPath = path.resolve(args.schemaSnapshot);
+    assertReviewedSchemaSnapshot(schemaSnapshotPath);
+    const fields = schemaFieldsFromSnapshot(schemaSnapshotPath);
     const requiredFields = requiredFormulaFields(formulas);
     const missing = requiredFields.filter((field) => !fields.includes(field));
     next.schemaFingerprint.status = missing.length ? "not_started" : "validated";

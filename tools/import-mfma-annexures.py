@@ -21,6 +21,7 @@ REQUIRED_COLUMNS = [
     "source_document",
     "source_page",
 ]
+TEMPLATE_MARKERS = ["EXAMPLE", "REPLACE_WITH", "SAMPLE_ONLY"]
 
 
 def sha256(path: Path) -> str:
@@ -48,12 +49,22 @@ def normalize_row(row: dict[str, Any]) -> dict[str, Any]:
     return {key: str(row.get(key, "")).strip() for key in REQUIRED_COLUMNS}
 
 
+def template_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    flagged: list[dict[str, Any]] = []
+    for row in rows:
+        combined = " ".join(str(value).upper() for value in row.values())
+        if any(marker in combined for marker in TEMPLATE_MARKERS):
+            flagged.append(row)
+    return flagged
+
+
 def build_manifest(source_path: Path) -> dict[str, Any]:
     raw_rows = read_rows(source_path)
     source_columns = set(raw_rows[0].keys()) if raw_rows else set()
     missing_columns = [column for column in REQUIRED_COLUMNS if column not in source_columns]
     rows = [normalize_row(row) for row in raw_rows]
     unmatched = [row for row in rows if not row["municipality_code"] or not row["audit_outcome"]]
+    sample_rows = template_rows(rows)
     matched = [
         {
             "municipalityCode": row["municipality_code"],
@@ -65,13 +76,13 @@ def build_manifest(source_path: Path) -> dict[str, Any]:
             "sourcePage": row["source_page"],
         }
         for row in rows
-        if row not in unmatched
+        if row not in unmatched and row not in sample_rows
     ]
 
     return {
         "schemaVersion": "mfma-annexure-import-v0.1",
         "updatedAt": datetime.now(timezone.utc).isoformat(),
-        "status": "blocked" if missing_columns or unmatched else "imported",
+        "status": "blocked" if missing_columns or unmatched or sample_rows else "imported",
         "sourceFiles": [
             {
                 "path": str(source_path.relative_to(ROOT)) if source_path.is_relative_to(ROOT) else str(source_path),
@@ -85,13 +96,17 @@ def build_manifest(source_path: Path) -> dict[str, Any]:
                 "label": "MFMA 2024-25 municipality-level audit outcome annexure",
                 "acceptedFormats": ["csv", "json"],
                 "requiredColumns": REQUIRED_COLUMNS,
-                "status": "imported" if not missing_columns else "missing",
-                "notes": "Imported from operator-provided official AGSA annexure export." if not missing_columns else f"Missing columns: {', '.join(missing_columns)}",
+                "status": "imported" if not missing_columns and not sample_rows else "missing",
+                "notes": (
+                    "Template/sample rows detected. Replace sample values with reviewed official AGSA annexure evidence before import."
+                    if sample_rows
+                    else "Imported from operator-provided official AGSA annexure export." if not missing_columns else f"Missing columns: {', '.join(missing_columns)}"
+                ),
             }
         ],
         "importedRows": len(rows),
         "matchedOutcomes": matched,
-        "unmatchedRows": unmatched,
+        "unmatchedRows": unmatched + sample_rows,
         "operatorNotes": [
             "Review matched outcomes before promoting cohort-derived mappings to exact.",
             "Every promoted mapping must retain source_document and source_page evidence.",

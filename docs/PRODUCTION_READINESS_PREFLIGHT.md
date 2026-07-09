@@ -34,6 +34,8 @@ This writes local copies of:
 
 The default output directory is `data\agsa\generated\production-gate-inputs.local`, which is ignored by Git. Replace the sample values with reviewed official evidence before using the files with any promotion command.
 
+The import and manifest-builder tools intentionally reject these templates while they still contain sample rows or `REPLACE_WITH` placeholders. This prevents local scaffolding from being promoted as official evidence.
+
 ```powershell
 node tools/build-production-evidence-pack.mjs
 ```

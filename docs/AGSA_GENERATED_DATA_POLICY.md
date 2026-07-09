@@ -119,6 +119,8 @@ node tools/build-production-evidence-pack.mjs --out-dir data\agsa\generated\prod
 
 The input-prep command copies the committed templates from `docs/templates/` into an ignored local workspace. The evidence-pack command writes a local preflight snapshot, JSON evidence pack and Markdown checklist. Keep both directories local unless a compact release evidence snapshot is intentionally approved for commit.
 
+Promotion tools reject template rows and `REPLACE_WITH` placeholders. Replace all sample values with reviewed official evidence before writing to committed manifests.
+
 ## Publication guardrails
 
 - Keep AGSA source citations, document IDs, page numbers and confidence values with every structured claim.

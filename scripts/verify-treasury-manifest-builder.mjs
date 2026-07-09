@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const committedManifestPath = path.join(root, "data", "treasury", "validation", "municipal-money-validation-manifest.json");
@@ -39,6 +39,21 @@ try {
   assert.equal(dryRunManifest.status, "blocked", "Dry-run should stay blocked without reuse, formulas and freshness.");
   assert.equal(dryRunManifest.schemaFingerprint.status, "validated", "Dry-run should validate complete schema snapshot.");
   assert.equal(dryRunManifest.unlockDecision.status, "locked", "Dry-run should not unlock without every gate.");
+
+  const templateRun = spawnSync(
+    process.execPath,
+    [
+      "tools/build-treasury-validation-manifest.mjs",
+      "--schema-snapshot",
+      "docs/templates/treasury-schema-snapshot-template.json",
+      "--connector-status",
+      "validated",
+      "--dry-run"
+    ],
+    { cwd: root, encoding: "utf8" }
+  );
+  assert.equal(templateRun.status, 2, "Treasury template schema should be rejected before manifest build.");
+  assert(templateRun.stderr.includes("template/sample input"), "Treasury template rejection should explain placeholder evidence.");
 
   const formulaRegistry = JSON.parse(
     fs.readFileSync(path.join(root, "data", "treasury", "validation", "financial-pulse-formulas.json"), "utf8")

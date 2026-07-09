@@ -55,6 +55,16 @@ try {
   assert.equal(badManifest.status, "blocked", "Missing-column manifest should be blocked.");
   assert(badManifest.expectedInputs[0].notes.includes("Missing columns"), "Missing-column manifest should name missing columns.");
 
+  const templateRun = spawnSync("python", ["tools/import-mfma-annexures.py", "docs/templates/mfma-annexure-template.csv", "--dry-run"], {
+    cwd: root,
+    encoding: "utf8"
+  });
+  assert.equal(templateRun.status, 1, "Template annexure dry-run should exit with validation failure.");
+  const templateManifest = JSON.parse(templateRun.stdout);
+  assert.equal(templateManifest.status, "blocked", "Template annexure manifest should be blocked.");
+  assert.equal(templateManifest.matchedOutcomes.length, 0, "Template annexure rows should not be treated as matched outcomes.");
+  assert(templateManifest.expectedInputs[0].notes.includes("Template/sample rows detected"), "Template annexure run should explain sample row rejection.");
+
   const committedAfter = fs.readFileSync(committedManifestPath, "utf8");
   assert.equal(committedAfter, committedBefore, "Dry-run and --out fixture runs must not mutate committed manifest.");
 } finally {
