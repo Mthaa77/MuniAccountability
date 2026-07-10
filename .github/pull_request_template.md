@@ -25,9 +25,11 @@ Describe what changed and why.
 - [ ] Lib/domain types
 - [ ] Local stores/persistence
 - [ ] Docs
+- [ ] Tests / verification scripts
 
 ## Verification
 
+- [ ] `npm run test:institutional`
 - [ ] `npm run lint`
 - [ ] `npm run build`
 - [ ] `npm run verify`
@@ -63,6 +65,7 @@ Describe what changed and why.
 - [ ] `docs/API_REFERENCE.md`
 - [ ] `docs/WORKFLOW_MODULES.md`
 - [ ] `docs/CSS_LAYERS.md`
+- [ ] `docs/TESTING_STRATEGY.md`
 - [ ] `docs/NEXT_STEPS.md`
 - [ ] Not applicable
 
