@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, Clock3, FileCheck2 } from "lucide-react";
 import { ActionKanban } from "@/components/interactive";
 import { Badge } from "@/components/ui";
 import { ActionStudio } from "@/components/atlas/action-studio";
+import { EvidenceAttachmentDrawer } from "@/components/atlas/evidence-attachment-drawer";
 import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { actions, evidenceChecklist } from "@/lib/pilot-data";
 
@@ -38,6 +39,7 @@ export default function ActionsPage() {
       </section>
 
       <ActionStudio />
+      <EvidenceAttachmentDrawer />
 
       <section className="workflow-principle-grid">
         <article className="workflow-principle-card">
