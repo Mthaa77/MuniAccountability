@@ -24,6 +24,7 @@ import "@/components/atlas/atlas-evidence-drawer-upgrade.css";
 import "@/components/atlas/atlas-agsa-review-desk.css";
 import "@/components/atlas/atlas-agsa-review-ultra.css";
 import "@/components/atlas/atlas-compact-desktop-rescue.css";
+import "@/components/atlas/atlas-desktop-shell-fix.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",
