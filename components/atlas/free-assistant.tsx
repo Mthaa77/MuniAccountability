@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, CheckCircle2, ExternalLink, LockKeyhole, Search, ShieldCheck, Sparkles, X } from "lucide-react";
-import { FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
+import { Bot, CheckCircle2, ExternalLink, LockKeyhole, RotateCcw, Search, ShieldCheck, Sparkles, X } from "lucide-react";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { apiPost } from "@/lib/client-api";
 
 type AssistantCitation = {
@@ -48,6 +48,7 @@ type ChatTurn = {
   role: "user" | "assistant";
   question?: string;
   answer?: AssistantAnswer;
+  contextUsed?: string;
 };
 
 const starterPrompts = [
@@ -55,6 +56,12 @@ const starterPrompts = [
   "Show evidence for irregular expenditure",
   "Which claims still need review?",
   "What can be safely published?"
+];
+
+const followUpPrompts = [
+  "What source supports this?",
+  "What should I check next?",
+  "Can this be published safely?"
 ];
 
 function confidenceLabel(confidence?: string) {
@@ -80,6 +87,58 @@ function pagePrompt(pathname: string) {
   return "What needs attention today?";
 }
 
+function lastAssistantAnswer(turns: ChatTurn[]) {
+  for (let index = turns.length - 1; index >= 0; index -= 1) {
+    if (turns[index].role === "assistant" && turns[index].answer) return turns[index].answer;
+  }
+  return undefined;
+}
+
+function lastUserQuestion(turns: ChatTurn[]) {
+  for (let index = turns.length - 1; index >= 0; index -= 1) {
+    if (turns[index].role === "user" && turns[index].question) return turns[index].question;
+  }
+  return undefined;
+}
+
+function compactList(values: Array<string | undefined>, limit = 3) {
+  return values.filter(Boolean).slice(0, limit).join("; ");
+}
+
+function buildContextualQuery(question: string, turns: ChatTurn[]) {
+  const previousAnswer = lastAssistantAnswer(turns);
+  const previousQuestion = lastUserQuestion(turns);
+
+  if (!previousAnswer || !turns.length) {
+    return {
+      apiQuery: question,
+      contextUsed: undefined
+    };
+  }
+
+  const resultFocus = compactList(
+    previousAnswer.results?.map((result) => `${result.title} (${result.type.replaceAll("_", " ")}${result.period ? `, ${result.period}` : ""})`) ?? [],
+    4
+  );
+  const citationFocus = compactList(
+    previousAnswer.citations?.map((citation) => `${citation.label ?? citation.source ?? "source"} ${citation.location ?? citation.period ?? ""}`) ?? [],
+    3
+  );
+  const periods = previousAnswer.coverage?.periods?.join(", ");
+
+  const context = [
+    previousQuestion ? `Previous user question: ${previousQuestion}` : undefined,
+    resultFocus ? `Previous evidence focus: ${resultFocus}` : undefined,
+    citationFocus ? `Previous citations: ${citationFocus}` : undefined,
+    periods ? `Previous periods: ${periods}` : undefined
+  ].filter(Boolean).join(". ");
+
+  return {
+    apiQuery: `${question}\n\nUse this previous evidence context for continuity, but still obey the rule that unsupported claims must be refused. ${context}`,
+    contextUsed: resultFocus ? `Following up on: ${resultFocus}` : "Using the previous answer as context"
+  };
+}
+
 export function FreeAssistant() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -87,20 +146,37 @@ export function FreeAssistant() {
   const [loading, setLoading] = useState(false);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const latestAnswer = useMemo(() => turns.findLast((turn) => turn.role === "assistant")?.answer, [turns]);
+  const threadRef = useRef<HTMLDivElement>(null);
+  const latestAnswer = useMemo(() => lastAssistantAnswer(turns), [turns]);
   const prompts = useMemo(() => [pagePrompt(pathname), ...starterPrompts].filter((prompt, index, list) => list.indexOf(prompt) === index).slice(0, 5), [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
+  }, [turns, loading, open]);
 
   async function askAssistant(question: string) {
     const cleaned = question.trim();
     if (!cleaned || loading) return;
 
-    const userTurn: ChatTurn = { id: `user_${Date.now()}`, role: "user", question: cleaned };
+    const context = buildContextualQuery(cleaned, turns);
+    const userTurn: ChatTurn = {
+      id: `user_${Date.now()}`,
+      role: "user",
+      question: cleaned,
+      contextUsed: context.contextUsed
+    };
     setTurns((current) => [...current, userTurn]);
     setQuery("");
     setLoading(true);
 
     try {
-      const payload = await apiPost<AssistantAnswer>("/v1/assistant/query", { query: cleaned, mode: "evidence" });
+      const payload = await apiPost<AssistantAnswer>("/v1/assistant/query", {
+        query: context.apiQuery,
+        displayQuery: cleaned,
+        mode: "evidence",
+        continuity: Boolean(context.contextUsed)
+      });
       const assistantTurn: ChatTurn = {
         id: `assistant_${Date.now()}`,
         role: "assistant",
@@ -143,6 +219,12 @@ export function FreeAssistant() {
     window.setTimeout(() => inputRef.current?.focus(), 80);
   }
 
+  function resetConversation() {
+    setTurns([]);
+    setQuery("");
+    window.setTimeout(() => inputRef.current?.focus(), 80);
+  }
+
   return (
     <>
       <button className="assistant-float-button" aria-label="Open Ask MuniAtlas assistant" onClick={openAssistant}>
@@ -160,11 +242,18 @@ export function FreeAssistant() {
               <div>
                 <p className="eyeless">Free source-locked assistant</p>
                 <h2>Ask MuniAtlas</h2>
-                <span>Evidence Mode uses backend data only. No paid AI credits.</span>
+                <span>Evidence Mode uses backend data only. Follow-ups remember the previous evidence focus.</span>
               </div>
-              <button className="assistant-close" aria-label="Close assistant" onClick={() => setOpen(false)}>
-                <X size={18} />
-              </button>
+              <div className="assistant-header-actions">
+                {turns.length ? (
+                  <button className="assistant-icon-action" aria-label="Start a new assistant topic" onClick={resetConversation}>
+                    <RotateCcw size={16} />
+                  </button>
+                ) : null}
+                <button className="assistant-close" aria-label="Close assistant" onClick={() => setOpen(false)}>
+                  <X size={18} />
+                </button>
+              </div>
             </header>
 
             <section className="assistant-mode-panel" aria-label="Assistant mode">
@@ -194,10 +283,10 @@ export function FreeAssistant() {
               </section>
             ) : null}
 
-            <div className="assistant-thread" aria-live="polite">
+            <div className="assistant-thread" aria-live="polite" ref={threadRef}>
               {!turns.length ? (
                 <section className="assistant-empty-state">
-                  <div>
+                  <div className="assistant-empty-icon">
                     <Sparkles size={22} />
                   </div>
                   <h3>Ask before you claim.</h3>
@@ -216,6 +305,7 @@ export function FreeAssistant() {
                     <>
                       <span>You asked</span>
                       <p>{turn.question}</p>
+                      {turn.contextUsed ? <small className="assistant-context-note">{turn.contextUsed}</small> : null}
                     </>
                   ) : turn.answer ? (
                     <>
@@ -280,6 +370,12 @@ export function FreeAssistant() {
                           {turn.answer.suggestedFollowUpActions.map((action) => <span key={action}>{action}</span>)}
                         </section>
                       ) : null}
+
+                      <section className="assistant-inline-prompts" aria-label="Follow-up questions">
+                        {followUpPrompts.map((prompt) => (
+                          <button key={prompt} type="button" onClick={() => askAssistant(prompt)}>{prompt}</button>
+                        ))}
+                      </section>
                     </>
                   ) : null}
                 </article>
@@ -306,7 +402,7 @@ export function FreeAssistant() {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={onKeyDown}
-                  placeholder="Ask about a municipality, finding, risk, source or public claim..."
+                  placeholder={latestAnswer ? "Ask a follow-up about the same evidence..." : "Ask about a municipality, finding, risk, source or public claim..."}
                   rows={3}
                 />
                 <button className="primary-action" type="submit" disabled={loading || !query.trim()}>
