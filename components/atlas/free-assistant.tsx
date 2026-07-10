@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Bot, CheckCircle2, ExternalLink, LockKeyhole, MessageSquareText, Search, ShieldCheck, Sparkles, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bot, CheckCircle2, ExternalLink, LockKeyhole, Search, ShieldCheck, Sparkles, X } from "lucide-react";
 import { FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
 import { apiPost } from "@/lib/client-api";
 
@@ -51,7 +52,7 @@ type ChatTurn = {
 
 const starterPrompts = [
   "Why is this municipality high risk?",
-  "What evidence supports irregular expenditure?",
+  "Show evidence for irregular expenditure",
   "Which claims still need review?",
   "What can be safely published?"
 ];
@@ -70,13 +71,24 @@ function confidenceTone(confidence?: string) {
   return "neutral";
 }
 
+function pagePrompt(pathname: string) {
+  if (pathname.startsWith("/intervention-queue")) return "What evidence supports the top queue item?";
+  if (pathname.startsWith("/sources")) return "Which sources are safe to use?";
+  if (pathname.startsWith("/actions")) return "What evidence is needed before closing an action?";
+  if (pathname.startsWith("/briefings")) return "What should be checked before this briefing is shared?";
+  if (pathname.startsWith("/municheck")) return "What public claim can be safely published?";
+  return "What needs attention today?";
+}
+
 export function FreeAssistant() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const latestAnswer = useMemo(() => turns.findLast((turn) => turn.role === "assistant")?.answer, [turns]);
+  const prompts = useMemo(() => [pagePrompt(pathname), ...starterPrompts].filter((prompt, index, list) => list.indexOf(prompt) === index).slice(0, 5), [pathname]);
 
   async function askAssistant(question: string) {
     const cleaned = question.trim();
@@ -148,7 +160,7 @@ export function FreeAssistant() {
               <div>
                 <p className="eyeless">Free source-locked assistant</p>
                 <h2>Ask MuniAtlas</h2>
-                <span>Evidence Mode uses your backend data only. No paid AI credits.</span>
+                <span>Evidence Mode uses backend data only. No paid AI credits.</span>
               </div>
               <button className="assistant-close" aria-label="Close assistant" onClick={() => setOpen(false)}>
                 <X size={18} />
@@ -188,10 +200,10 @@ export function FreeAssistant() {
                   <div>
                     <Sparkles size={22} />
                   </div>
-                  <h3>Ask a question before you make a claim.</h3>
-                  <p>The assistant searches the AGSA evidence library and refuses unsupported answers. It is intentionally strict, like a tiny evidence librarian with a velvet clipboard.</p>
-                  <div className="assistant-prompts">
-                    {starterPrompts.map((prompt) => (
+                  <h3>Ask before you claim.</h3>
+                  <p>This assistant checks the AGSA evidence library first. If the source does not support the answer, it refuses instead of guessing.</p>
+                  <div className="assistant-prompts" aria-label="Suggested assistant questions">
+                    {prompts.map((prompt) => (
                       <button key={prompt} type="button" onClick={() => askAssistant(prompt)}>{prompt}</button>
                     ))}
                   </div>
