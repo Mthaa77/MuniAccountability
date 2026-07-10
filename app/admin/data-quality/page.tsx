@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, Archive, CheckCircle2, Database, FileSearch, ServerCog } from "lucide-react";
+import { AlertTriangle, Archive, CheckCircle2, Database, FileSearch } from "lucide-react";
 import { Badge } from "@/components/ui";
 import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { getAgsaReviewGovernance } from "@/lib/agsa-review-store";
