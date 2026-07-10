@@ -34,7 +34,16 @@ Use this documentation hub when onboarding new developers, handing work to Codex
 8. [`DEVELOPER_ONBOARDING.md`](./DEVELOPER_ONBOARDING.md)  
    Local setup, verification commands and manual QA checklist.
 
-9. [`NEXT_STEPS.md`](./NEXT_STEPS.md)  
+9. [`QA_CHECKLIST.md`](./QA_CHECKLIST.md)  
+   Route, workflow, device and deployment checks before shipping.
+
+10. [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)  
+   Vercel/deployment debugging, environment checks and post-deploy QA.
+
+11. [`REPO_MAINTENANCE.md`](./REPO_MAINTENANCE.md)  
+   Safe cleanup strategy, refactor rules and future folder organization.
+
+12. [`NEXT_STEPS.md`](./NEXT_STEPS.md)  
    Implementation plan from Step 5 onward.
 
 ## Important root-level handoff file
@@ -46,6 +55,18 @@ CODEX_CONTINUATION.md
 ```
 
 It contains a longer history of what was built, known caveats, and the step-by-step roadmap.
+
+## GitHub workflow helpers
+
+Repository templates now exist for future team workflow:
+
+```txt
+.github/pull_request_template.md
+.github/ISSUE_TEMPLATE/bug_report.md
+.github/ISSUE_TEMPLATE/feature_request.md
+```
+
+Use them when the project moves from direct commits to branch/PR workflow.
 
 ## Documentation principles
 
