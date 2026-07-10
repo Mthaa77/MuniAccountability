@@ -10,6 +10,7 @@ Read:
 docs/README.md
 docs/CODEBASE_MAP.md
 docs/CSS_LAYERS.md
+docs/TESTING_STRATEGY.md
 CODEX_CONTINUATION.md
 ```
 
@@ -25,11 +26,12 @@ npm run dev
 Run:
 
 ```bash
+npm run test:institutional
 npm run lint
 npm run build
 ```
 
-If available, also run:
+Before promoting or merging, run the full verification chain:
 
 ```bash
 npm run verify
@@ -106,6 +108,17 @@ If you change any of these, update docs:
 - persistence behavior
 - production readiness logic
 - assistant/source-lock behavior
+- test coverage or QA expectations
+
+### 8. Keep institutional tests current
+
+If you add a critical workflow, API family, public route, layout authority layer or documentation expectation, add or update a matching verification script under:
+
+```txt
+scripts/verify-*.mjs
+```
+
+Then wire it into `package.json` and `.github/workflows/verify.yml`.
 
 ## Manual QA checklist
 
