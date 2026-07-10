@@ -14,6 +14,7 @@ import "@/components/atlas/atlas-cockpit.css";
 import "@/components/atlas/atlas-type.css";
 import "@/components/atlas/atlas-components.css";
 import "@/components/atlas/atlas-access.css";
+import "@/components/atlas/atlas-assistant.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",
