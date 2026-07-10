@@ -1,5 +1,5 @@
 import { AlertTriangle, FileSearch, ShieldCheck, WandSparkles } from "lucide-react";
-import { AgsaExtractionReview } from "@/components/interactive";
+import { AgsaReviewDesk } from "@/components/atlas/agsa-review-desk";
 import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { extractionIssues } from "@/lib/pilot-data";
 
@@ -31,7 +31,7 @@ export default function AgsaExtractionReviewPage() {
         <AtlasMetricTile title="Mode" value="Local" note="Governance decisions persist to local prototype store" tone="blue" icon={WandSparkles} />
       </section>
 
-      <AgsaExtractionReview />
+      <AgsaReviewDesk />
     </div>
   );
 }
