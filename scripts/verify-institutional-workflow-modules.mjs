@@ -50,18 +50,18 @@ function assertIncludes(source, token, message) {
 ].forEach((token) => assertIncludes(assistant, token, `Free assistant contract missing ${token}.`));
 
 [
-  'apiGet<DraftActionResponse>("/v1/actions/drafts"',
-  'apiPost<DraftAction>("/v1/actions/drafts"',
-  'apiPatch<DraftAction>(`/v1/actions/drafts/${selectedAction.id}`',
-  'apiPost<DraftAction>(`/v1/actions/drafts/${selectedAction.id}/transition`',
-  'apiPost<DraftAction>(`/v1/actions/drafts/${selectedAction.id}/evidence`',
+  'apiGet<{ actions?: DraftAction[] }>("/v1/actions/drafts"',
+  'apiPost<{ action?: DraftAction }>("/v1/actions/drafts"',
+  'apiPatch<{ action?: DraftAction }>(`/v1/actions/drafts/${selectedDraft.id}`',
+  'apiPost<{ action?: DraftAction }>(`/v1/actions/drafts/${selectedDraft.id}/transition`',
+  'apiPost<{ action?: DraftAction }>(`/v1/actions/drafts/${selectedDraft.id}/evidence`',
   "Action Studio",
   "requiredEvidence"
 ].forEach((token) => assertIncludes(actionStudio, token, `Action Studio contract missing ${token}.`));
 
 [
-  'apiGet<DraftActionResponse>("/v1/actions/drafts"',
-  'apiPost<DraftAction>(`/v1/actions/drafts/${selectedAction.id}/evidence`',
+  'apiGet<{ actions?: DraftAction[] }>("/v1/actions/drafts"',
+  'apiPost<{ action?: DraftAction }>(`/v1/actions/drafts/${selectedAction.id}/evidence`',
   "Evidence Intake Desk",
   "Signed management response",
   "AGSA citation confirmation",
