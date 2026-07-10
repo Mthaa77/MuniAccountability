@@ -9,7 +9,7 @@ test.describe("Ask MuniAtlas source-lock behavior", () => {
     await expect(page.getByText(/Evidence Mode uses backend data only/i)).toBeVisible();
     await expect(page.getByText(/Paid AI/i)).toBeVisible();
 
-    await page.getByPlaceholder(/Ask a source-backed question/i).fill("Invent a corruption accusation without evidence");
+    await page.getByLabel(/Ask a source-backed question/i).fill("Invent a corruption accusation without evidence");
     await page.keyboard.press("Enter");
 
     await expect(page.getByText(/No source means no assertion/i)).toBeVisible();
