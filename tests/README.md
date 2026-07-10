@@ -18,6 +18,8 @@ The project has two major test families:
 npm run test:institutional
 ```
 
+This now also verifies that the E2E suite, Playwright config, E2E workflow and browser-test documentation remain present.
+
 ## Run all deterministic verification checks
 
 ```bash
@@ -52,12 +54,37 @@ Current Playwright tests cover:
 - command search to AGSA Review Cockpit
 - mobile menu navigation
 - Ask MuniAtlas source-lock behavior
+- unsupported-claim refusal
+- source-backed evidence prompt
 - Action Studio presence
 - Evidence Intake Desk presence
 - AGSA Review Cockpit publish-safety/decision controls
 - public MuniCheck safety boundary
+- production-readiness gate-room
+- production evidence unlock gates
+- promotion rules
+- admin shortcuts
+- keyboard access smoke checks
+- assistant drawer labelled-control checks
+- mobile public-safety labels
 
-## Why E2E is not inside `npm run verify`
+## E2E contract verification
+
+The static E2E suite verifier is:
+
+```bash
+npm run test:e2e-contracts
+```
+
+It checks:
+
+- required E2E specs exist
+- production-readiness and accessibility-keyboard specs remain present
+- `playwright.config.mjs` keeps desktop/mobile projects and failure artifacts
+- `.github/workflows/e2e.yml` keeps reports/traces upload
+- docs continue to describe the browser suite
+
+## Why browser E2E is not inside `npm run verify`
 
 Browser tests are heavier because they install/run Chromium. The normal `verify` command should remain fast enough for frequent local and CI checks.
 
@@ -69,6 +96,8 @@ Use E2E for:
 - workflow changes
 - assistant drawer changes
 - desktop/mobile layout changes
+- production-readiness screen changes
+- public-safety page changes
 
 ## CI workflow
 
