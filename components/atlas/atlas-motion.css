@@ -1,0 +1,292 @@
+/* Premium motion system: route transitions, drawer entrances, modal bloom, and soft component motion. */
+
+:root {
+  --atlas-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --atlas-ease-pop: cubic-bezier(0.2, 1.12, 0.3, 1);
+  --atlas-motion-fast: 160ms;
+  --atlas-motion-med: 320ms;
+  --atlas-motion-slow: 560ms;
+}
+
+.page-transition {
+  position: fixed;
+  left: calc(316px + 24px);
+  right: 24px;
+  top: 12px;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(214, 177, 90, 0.28);
+  border-radius: 999px;
+  background: rgba(16, 32, 26, 0.9);
+  color: #ffffff;
+  box-shadow: 0 18px 42px rgba(7, 22, 17, 0.22);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-14px) scale(0.985);
+  transition: opacity var(--atlas-motion-fast) ease, transform var(--atlas-motion-med) var(--atlas-ease-out);
+}
+
+.page-transition.is-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.page-transition span {
+  position: relative;
+  width: 70px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.page-transition span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 46%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d6b15a, #f3d889);
+  animation: atlasLoadingRail 940ms var(--atlas-ease-out) infinite;
+}
+
+.page-transition strong {
+  color: #ffffff !important;
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.atlas-workspace {
+  animation: atlasWorkspaceEnter 420ms var(--atlas-ease-out) both;
+}
+
+.premium-sidebar,
+.atlas-sidebar {
+  animation: atlasSidebarEnter 620ms var(--atlas-ease-out) both;
+}
+
+.nav-group,
+.nav-command-card,
+.nav-footer-card {
+  animation: atlasSoftRise 480ms var(--atlas-ease-out) both;
+}
+
+.nav-group:nth-of-type(1) { animation-delay: 40ms; }
+.nav-group:nth-of-type(2) { animation-delay: 80ms; }
+.nav-group:nth-of-type(3) { animation-delay: 120ms; }
+.nav-group:nth-of-type(4) { animation-delay: 160ms; }
+.nav-group:nth-of-type(5) { animation-delay: 200ms; }
+
+.mobile-nav-panel,
+.ui-sheet-content {
+  animation: atlasSheetSlide 360ms var(--atlas-ease-out) both;
+}
+
+.ui-dialog-content,
+.command-dialog,
+.assistant-shell-card,
+.action-studio-card {
+  animation: atlasModalBloom 320ms var(--atlas-ease-pop) both;
+}
+
+.assistant-drawer,
+.action-studio-modal,
+.ui-dialog-root,
+.ui-sheet-root {
+  animation: atlasBackdropFade 220ms ease both;
+}
+
+.assistant-shell-card {
+  animation-name: atlasAssistantSlide;
+}
+
+.action-studio-card {
+  transform-origin: center top;
+}
+
+.atlas-hero,
+.metric-card,
+.atlas-tile,
+.panel,
+.action-studio-hero,
+.action-studio-panel,
+.action-studio-command-strip article,
+.workflow-principle-card,
+.briefing-status-card,
+.municheck-card,
+.atlas-search-result {
+  animation: atlasSoftRise 420ms var(--atlas-ease-out) both;
+}
+
+.metric-card:nth-child(1),
+.atlas-tile:nth-child(1),
+.action-studio-command-strip article:nth-child(1) { animation-delay: 40ms; }
+.metric-card:nth-child(2),
+.atlas-tile:nth-child(2),
+.action-studio-command-strip article:nth-child(2) { animation-delay: 80ms; }
+.metric-card:nth-child(3),
+.atlas-tile:nth-child(3),
+.action-studio-command-strip article:nth-child(3) { animation-delay: 120ms; }
+.metric-card:nth-child(4),
+.atlas-tile:nth-child(4),
+.action-studio-command-strip article:nth-child(4) { animation-delay: 160ms; }
+
+.nav-item,
+.command-trigger,
+.primary-action,
+.secondary-action,
+.text-action,
+.icon-button,
+.assistant-float-button,
+.nav-float-button,
+.action-studio-status-grid button,
+.assistant-prompts button,
+.assistant-inline-prompts button {
+  transition:
+    transform var(--atlas-motion-fast) var(--atlas-ease-out),
+    box-shadow var(--atlas-motion-fast) ease,
+    border-color var(--atlas-motion-fast) ease,
+    background var(--atlas-motion-fast) ease,
+    opacity var(--atlas-motion-fast) ease !important;
+}
+
+.nav-item:hover,
+.command-trigger:hover,
+.primary-action:hover,
+.secondary-action:hover,
+.text-action:hover,
+.icon-button:hover,
+.action-studio-status-grid button:hover,
+.assistant-prompts button:hover,
+.assistant-inline-prompts button:hover {
+  transform: translateY(-1px);
+}
+
+.action-studio-modal .action-studio-body,
+.assistant-thread,
+.mobile-nav-panel {
+  scroll-behavior: smooth;
+}
+
+@keyframes atlasLoadingRail {
+  0% { transform: translateX(-120%); }
+  60% { transform: translateX(140%); }
+  100% { transform: translateX(220%); }
+}
+
+@keyframes atlasWorkspaceEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes atlasSidebarEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes atlasSheetSlide {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes atlasAssistantSlide {
+  from {
+    opacity: 0;
+    transform: translateX(34px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes atlasBackdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes atlasModalBloom {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes atlasSoftRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1180px) {
+  .page-transition {
+    left: 14px;
+    right: 14px;
+    top: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-transition strong {
+    display: none;
+  }
+
+  .page-transition span {
+    width: 100%;
+  }
+
+  .page-transition {
+    height: 28px;
+    padding: 0 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  .page-transition span::after {
+    animation: none !important;
+  }
+}
