@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, ClipboardCheck, FilePlus2, Link2, RotateCcw, Save, Send, ShieldCheck, X } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, FilePlus2, Link2, RotateCcw, Save, Send, X } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { apiGet, apiPatch, apiPost } from "@/lib/client-api";
 import { municipalities, queueItems } from "@/lib/pilot-data";
 import type { ActionStatus, DraftAction, QueueItem } from "@/lib/types";
 import { Badge, actionLabel, severityLabel } from "@/components/ui";
+
+const firstQueueItem = queueItems[0] as QueueItem;
 
 const statusOptions: ActionStatus[] = [
   "not_started",
@@ -81,31 +83,39 @@ function sourceOptions(item: QueueItem, draft?: DraftAction) {
   return Array.from(byId.values());
 }
 
+function upsertDraft(current: DraftAction[], saved: DraftAction) {
+  const exists = current.some((action) => action.id === saved.id);
+  return exists ? current.map((action) => action.id === saved.id ? saved : action) : [saved, ...current];
+}
+
 export function ActionStudio() {
   const [draftActions, setDraftActions] = useState<DraftAction[]>([]);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [message, setMessage] = useState("Loading draft actions from the workflow store...");
-  const [selectedQueueId, setSelectedQueueId] = useState(queueItems[0]?.id ?? "");
+  const [selectedQueueId, setSelectedQueueId] = useState(firstQueueItem.id);
   const [selectedDraftId, setSelectedDraftId] = useState<string | null>(null);
   const [studioOpen, setStudioOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<ActionDraftForm>(() => defaultForm(firstQueueItem));
   const [evidenceForm, setEvidenceForm] = useState<EvidenceForm>({
     label: "",
     url: "",
     submittedBy: "Oversight reviewer",
     note: "",
-    sourceRefId: ""
+    sourceRefId: firstQueueItem.evidenceRefs[0]?.id ?? ""
   });
 
-  const selectedQueue = queueItems.find((item) => item.id === selectedQueueId) ?? queueItems[0];
+  const selectedQueue = queueItems.find((item) => item.id === selectedQueueId) ?? firstQueueItem;
   const selectedDraft = useMemo(() => {
     if (selectedDraftId) return draftActions.find((action) => action.id === selectedDraftId);
-    return draftActions.find((action) => action.sourceQueueItemId === selectedQueue?.id);
-  }, [draftActions, selectedDraftId, selectedQueue?.id]);
-  const [form, setForm] = useState<ActionDraftForm>(() => defaultForm(selectedQueue));
+    return draftActions.find((action) => action.sourceQueueItemId === selectedQueue.id);
+  }, [draftActions, selectedDraftId, selectedQueue.id]);
   const sources = sourceOptions(selectedQueue, selectedDraft);
   const evidenceCount = selectedDraft?.evidenceAttachments?.length ?? 0;
-  const readinessScore = Math.min(100, 30 + evidenceCount * 22 + (selectedDraft?.status === "under_review" ? 20 : 0) + (["approved", "closed_with_residual_risk"].includes(selectedDraft?.status ?? "") ? 48 : 0));
+  const readinessScore = Math.min(
+    100,
+    30 + evidenceCount * 22 + (selectedDraft?.status === "under_review" ? 20 : 0) + (["approved", "closed_with_residual_risk"].includes(selectedDraft?.status ?? "") ? 48 : 0)
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -133,13 +143,12 @@ export function ActionStudio() {
   }, []);
 
   useEffect(() => {
-    if (!selectedQueue) return;
     setForm(selectedDraft ? formFromDraft(selectedDraft) : defaultForm(selectedQueue));
     setEvidenceForm((current) => ({
       ...current,
       sourceRefId: selectedDraft?.sourceRefs[0]?.id ?? selectedQueue.evidenceRefs[0]?.id ?? ""
     }));
-  }, [selectedDraft?.id, selectedQueue?.id]);
+  }, [selectedDraft?.id, selectedQueue]);
 
   function openFromQueue(item: QueueItem) {
     setSelectedQueueId(item.id);
@@ -148,7 +157,7 @@ export function ActionStudio() {
   }
 
   function openDraft(action: DraftAction) {
-    setSelectedQueueId(action.sourceQueueItemId ?? queueItems.find((item) => item.municipalityId === action.municipalityId)?.id ?? selectedQueueId);
+    setSelectedQueueId(action.sourceQueueItemId ?? queueItems.find((item) => item.municipalityId === action.municipalityId)?.id ?? firstQueueItem.id);
     setSelectedDraftId(action.id);
     setStudioOpen(true);
   }
@@ -174,7 +183,7 @@ export function ActionStudio() {
       reviewer: form.reviewer,
       dueDate: form.dueDate,
       status: form.status,
-      requiredEvidence: form.requiredEvidenceText.split("\n").map((item) => item.trim()).filter(Boolean),
+      requiredEvidence: form.requiredEvidenceText.split("\n").map((line) => line.trim()).filter(Boolean),
       escalationRule: form.escalationRule,
       closureNote: form.closureNote || undefined,
       residualRisk: form.residualRisk || undefined,
@@ -184,8 +193,6 @@ export function ActionStudio() {
 
   async function saveAction(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    if (!selectedQueue) return;
-
     setSaving(true);
     setMessage(selectedDraft ? "Updating action studio record..." : "Creating action from evidence...");
 
@@ -193,12 +200,10 @@ export function ActionStudio() {
       const payload = selectedDraft
         ? await apiPatch<{ action?: DraftAction }>(`/v1/actions/drafts/${selectedDraft.id}`, draftPayload(selectedQueue, selectedDraft))
         : await apiPost<{ action?: DraftAction }>("/v1/actions/drafts", draftPayload(selectedQueue));
-      if (payload.data.action) {
-        setDraftActions((current) => {
-          const exists = current.some((action) => action.id === payload.data.action!.id);
-          return exists ? current.map((action) => action.id === payload.data.action!.id ? payload.data.action! : action) : [payload.data.action!, ...current];
-        });
-        setSelectedDraftId(payload.data.action.id);
+      const saved = payload.data.action;
+      if (saved) {
+        setDraftActions((current) => upsertDraft(current, saved));
+        setSelectedDraftId(saved.id);
         setMessage(selectedDraft ? "Action updated." : "Draft action created from evidence.");
       }
     } catch {
@@ -222,9 +227,10 @@ export function ActionStudio() {
         changedBy: "action-studio",
         reason: "Updated from Action Studio"
       });
-      if (payload.data.action) {
-        setDraftActions((current) => current.map((action) => action.id === selectedDraft.id ? payload.data.action! : action));
-        updateForm("status", payload.data.action.status);
+      const saved = payload.data.action;
+      if (saved) {
+        setDraftActions((current) => current.map((action) => action.id === selectedDraft.id ? saved : action));
+        updateForm("status", saved.status);
         setMessage("Workflow status saved.");
       }
     } catch {
@@ -256,8 +262,9 @@ export function ActionStudio() {
         note: evidenceForm.note || undefined,
         sourceRefId: evidenceForm.sourceRefId || undefined
       });
-      if (payload.data.action) {
-        setDraftActions((current) => current.map((action) => action.id === selectedDraft.id ? payload.data.action! : action));
+      const saved = payload.data.action;
+      if (saved) {
+        setDraftActions((current) => current.map((action) => action.id === selectedDraft.id ? saved : action));
         setEvidenceForm((current) => ({ ...current, label: "", url: "", note: "" }));
         setMessage("Evidence attached and action moved forward.");
       }
@@ -358,47 +365,20 @@ export function ActionStudio() {
 
             <section className="action-studio-body">
               <div className="action-studio-main-form">
-                <label>
-                  Action title
-                  <input value={form.title} onChange={(event) => updateForm("title", event.target.value)} />
-                </label>
+                <label>Action title<input value={form.title} onChange={(event) => updateForm("title", event.target.value)} /></label>
                 <div className="action-studio-form-row">
-                  <label>
-                    Owner
-                    <input value={form.owner} onChange={(event) => updateForm("owner", event.target.value)} />
-                  </label>
-                  <label>
-                    Assigned to
-                    <input value={form.assignedTo} onChange={(event) => updateForm("assignedTo", event.target.value)} />
-                  </label>
+                  <label>Owner<input value={form.owner} onChange={(event) => updateForm("owner", event.target.value)} /></label>
+                  <label>Assigned to<input value={form.assignedTo} onChange={(event) => updateForm("assignedTo", event.target.value)} /></label>
                 </div>
                 <div className="action-studio-form-row">
-                  <label>
-                    Reviewer
-                    <input value={form.reviewer} onChange={(event) => updateForm("reviewer", event.target.value)} />
-                  </label>
-                  <label>
-                    Due date
-                    <input value={form.dueDate} onChange={(event) => updateForm("dueDate", event.target.value)} />
-                  </label>
+                  <label>Reviewer<input value={form.reviewer} onChange={(event) => updateForm("reviewer", event.target.value)} /></label>
+                  <label>Due date<input value={form.dueDate} onChange={(event) => updateForm("dueDate", event.target.value)} /></label>
                 </div>
-                <label>
-                  Required evidence, one per line
-                  <textarea value={form.requiredEvidenceText} onChange={(event) => updateForm("requiredEvidenceText", event.target.value)} rows={4} />
-                </label>
-                <label>
-                  Escalation rule
-                  <textarea value={form.escalationRule} onChange={(event) => updateForm("escalationRule", event.target.value)} rows={3} />
-                </label>
+                <label>Required evidence, one per line<textarea value={form.requiredEvidenceText} onChange={(event) => updateForm("requiredEvidenceText", event.target.value)} rows={4} /></label>
+                <label>Escalation rule<textarea value={form.escalationRule} onChange={(event) => updateForm("escalationRule", event.target.value)} rows={3} /></label>
                 <div className="action-studio-form-row">
-                  <label>
-                    Closure note
-                    <textarea value={form.closureNote} onChange={(event) => updateForm("closureNote", event.target.value)} rows={3} />
-                  </label>
-                  <label>
-                    Residual risk
-                    <textarea value={form.residualRisk} onChange={(event) => updateForm("residualRisk", event.target.value)} rows={3} />
-                  </label>
+                  <label>Closure note<textarea value={form.closureNote} onChange={(event) => updateForm("closureNote", event.target.value)} rows={3} /></label>
+                  <label>Residual risk<textarea value={form.residualRisk} onChange={(event) => updateForm("residualRisk", event.target.value)} rows={3} /></label>
                 </div>
               </div>
 
@@ -419,10 +399,7 @@ export function ActionStudio() {
                 </div>
 
                 <section className="action-studio-proof-box">
-                  <div>
-                    <p className="eyeless">Evidence attachment</p>
-                    <h3>Submit proof</h3>
-                  </div>
+                  <div><p className="eyeless">Evidence attachment</p><h3>Submit proof</h3></div>
                   <input value={evidenceForm.label} onChange={(event) => updateEvidence("label", event.target.value)} placeholder="Evidence label or reference" />
                   <input value={evidenceForm.url} onChange={(event) => updateEvidence("url", event.target.value)} placeholder="Optional evidence URL" />
                   <input value={evidenceForm.submittedBy} onChange={(event) => updateEvidence("submittedBy", event.target.value)} placeholder="Submitted by" />
@@ -464,10 +441,7 @@ export function ActionStudio() {
             </section>
 
             <footer>
-              <div>
-                <Badge tone={form.status}>{actionLabel[form.status]}</Badge>
-                <span>{saving ? "Saving..." : message}</span>
-              </div>
+              <div><Badge tone={form.status}>{actionLabel[form.status]}</Badge><span>{saving ? "Saving..." : message}</span></div>
               <div>
                 <button type="button" className="secondary-action" onClick={() => setForm(selectedDraft ? formFromDraft(selectedDraft) : defaultForm(selectedQueue))}>
                   <RotateCcw size={16} /> Reset
