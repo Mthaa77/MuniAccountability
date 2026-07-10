@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui";
 import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { muniDataEndpoints } from "@/lib/pilot-data";
-import { DatabaseZap, Globe2, LockKeyhole, ShieldCheck } from "lucide-react";
+import { Database, Globe2, LockKeyhole, ShieldCheck } from "lucide-react";
 
 export default function MuniDataPage() {
   const publicEndpoints = muniDataEndpoints.filter((endpoint) => endpoint.access.toLowerCase().includes("public")).length;
@@ -28,7 +28,7 @@ export default function MuniDataPage() {
       </AtlasHero>
 
       <section className="atlas-queue-brief" aria-label="MuniData endpoint summary">
-        <AtlasMetricTile title="Endpoints" value={String(muniDataEndpoints.length)} note="Routes exposed in the catalogue" icon={DatabaseZap} />
+        <AtlasMetricTile title="Endpoints" value={String(muniDataEndpoints.length)} note="Routes exposed in the catalogue" icon={Database} />
         <AtlasMetricTile title="Public" value={String(publicEndpoints)} note="Public-safe access routes" tone="good" icon={Globe2} />
         <AtlasMetricTile title="Protected" value={String(protectedEndpoints)} note="Partner or institutional access required" tone="gold" icon={LockKeyhole} />
         <AtlasMetricTile title="Source-aware" value="Yes" note="Routes preserve publication and source boundaries" tone="blue" icon={ShieldCheck} />
