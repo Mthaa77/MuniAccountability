@@ -15,6 +15,7 @@ import {
   Menu,
   PanelRightOpen,
   Search,
+  ShieldAlert,
   ShieldCheck,
   Siren,
   UsersRound,
@@ -47,6 +48,7 @@ const navGroups = [
       { href: "/municipalities", label: "Municipalities", hint: "Open a municipal case file", icon: Landmark },
       { href: "/findings", label: "Audit Findings", hint: "Issues found in the source reports", icon: ClipboardCheck },
       { href: "/sources", label: "Source Library", hint: "Documents, freshness and proof", icon: Database, badge: "Proof" },
+      { href: "/admin/agsa-review", label: "AGSA Review Cockpit", hint: "Review source extraction issues before publishing", icon: ShieldAlert, badge: "Review" },
       { href: "/admin/data-quality", label: "Data Checks", hint: "What still needs review", icon: ShieldCheck }
     ]
   },
@@ -83,7 +85,7 @@ const quickActions = [
   { href: "/actions", label: "Check action progress", hint: "Review owners, evidence and approvals" },
   { href: "/briefings", label: "Build a briefing", hint: "Prepare a source-backed decision pack" },
   { href: "/sources", label: "Verify a source", hint: "Check documents, freshness and review state" },
-  { href: "/admin/agsa-review", label: "Review extraction issues", hint: "Fix low-confidence source text before publishing" }
+  { href: "/admin/agsa-review", label: "Open AGSA Review Cockpit", hint: "Review extraction issues before public output" }
 ];
 
 function isActive(pathname: string, href: string) {
@@ -144,7 +146,7 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
         <p>Before anything is published, it should have a source, a review state and a clear confidence signal.</p>
         <div className="nav-footer-actions">
           <Link href="/sources" onClick={onNavigate}>Sources</Link>
-          <Link href="/admin" onClick={onNavigate}>Readiness</Link>
+          <Link href="/admin/agsa-review" onClick={onNavigate}>AGSA Review</Link>
         </div>
       </div>
     </>
@@ -212,7 +214,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}><Search size={18} /><span>Search pages and evidence</span><kbd>Ctrl K</kbd></button>
             <div className={`source-pill ${sourceState}`}>{sourceState === "loading" ? <Skeleton className="source-skeleton" /> : <span />}<strong>{healthLabel}</strong></div>
             <Link className="secondary-action glass-action" href="/sources"><PanelRightOpen size={17} />Check sources</Link>
-            <Link className="primary-action glass-action" href="/briefings"><WandSparkles size={17} />Build briefing</Link>
+            <Link className="primary-action glass-action" href="/admin/agsa-review"><ShieldAlert size={17} />AGSA Review</Link>
           </div>
         </header>
         {children}
@@ -234,7 +236,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link href={item.href} onClick={() => setCommandOpen(false)}><strong>{item.label}</strong><span>{item.hint}</span></Link>
                 </CommandItem>
               ))}
-              {!commandItems.length ? <div className="command-empty">No match yet. Try “sources”, “briefing”, “audit” or “queue”.</div> : null}
+              {!commandItems.length ? <div className="command-empty">No match yet. Try “AGSA”, “sources”, “briefing”, “audit” or “queue”.</div> : null}
             </CommandGroup>
           </CommandList>
         </Command>
