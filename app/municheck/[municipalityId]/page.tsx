@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui";
 import { AtlasEvidenceChip, AtlasHero, AtlasStatusPill } from "@/components/atlas/foundation";
 import { getPublicMuniCheckProfile, listPublicMuniCheckProfiles } from "@/lib/public-municheck";
 
+function isPublishablePublicState(state: string) {
+  return state === "publishable" || state === "corrected";
+}
+
 export function generateStaticParams() {
   return listPublicMuniCheckProfiles().map((profile) => ({ municipalityId: profile.municipalityId }));
 }
@@ -29,7 +33,7 @@ export default function MuniCheckDetailPage({ params }: { params: { municipality
       >
         <AtlasStatusPill>Public safe</AtlasStatusPill>
         <AtlasStatusPill tone="gold">Source period {profile.sourcePeriod}</AtlasStatusPill>
-        <AtlasStatusPill tone={profile.publicationState === "published" ? "default" : "risk"}>{profile.publicationState.replaceAll("_", " ")}</AtlasStatusPill>
+        <AtlasStatusPill tone={isPublishablePublicState(profile.publicationState) ? "default" : "risk"}>{profile.publicationState.replaceAll("_", " ")}</AtlasStatusPill>
       </AtlasHero>
 
       <section className="municheck-profile-grid">
