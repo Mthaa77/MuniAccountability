@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, ClipboardCheck, FilePlus2, Link2, RotateCcw, Save, Send, X } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, FilePlus2, Link2, RotateCcw, Save, Search, Send, X } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { apiGet, apiPatch, apiPost } from "@/lib/client-api";
 import { municipalities, queueItems } from "@/lib/pilot-data";
-import type { ActionStatus, DraftAction, QueueItem } from "@/lib/types";
+import type { ActionStatus, DraftAction, QueueItem, Severity } from "@/lib/types";
 import { Badge, actionLabel, severityLabel } from "@/components/ui";
 
 const firstQueueItem = queueItems[0] as QueueItem;
@@ -88,6 +88,15 @@ function upsertDraft(current: DraftAction[], saved: DraftAction) {
   return exists ? current.map((action) => action.id === saved.id ? saved : action) : [saved, ...current];
 }
 
+function requirementLines(text: string) {
+  return text.split("\n").map((line) => line.trim()).filter(Boolean);
+}
+
+function requirementCovered(requirement: string, draft?: DraftAction) {
+  const haystack = `${draft?.evidenceAttachments?.map((item) => `${item.label} ${item.note ?? ""}`).join(" ") ?? ""} ${draft?.sourceRefs.map((source) => source.label).join(" ") ?? ""}`.toLowerCase();
+  return requirement.toLowerCase().split(/\s+/).filter((word) => word.length > 4).some((word) => haystack.includes(word));
+}
+
 export function ActionStudio() {
   const [draftActions, setDraftActions] = useState<DraftAction[]>([]);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -96,6 +105,8 @@ export function ActionStudio() {
   const [selectedDraftId, setSelectedDraftId] = useState<string | null>(null);
   const [studioOpen, setStudioOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [query, setQuery] = useState("");
+  const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
   const [form, setForm] = useState<ActionDraftForm>(() => defaultForm(firstQueueItem));
   const [evidenceForm, setEvidenceForm] = useState<EvidenceForm>({
     label: "",
@@ -111,11 +122,25 @@ export function ActionStudio() {
     return draftActions.find((action) => action.sourceQueueItemId === selectedQueue.id);
   }, [draftActions, selectedDraftId, selectedQueue.id]);
   const sources = sourceOptions(selectedQueue, selectedDraft);
+  const requirements = requirementLines(form.requiredEvidenceText);
   const evidenceCount = selectedDraft?.evidenceAttachments?.length ?? 0;
+  const coveredRequirements = requirements.filter((requirement) => requirementCovered(requirement, selectedDraft)).length;
   const readinessScore = Math.min(
     100,
-    30 + evidenceCount * 22 + (selectedDraft?.status === "under_review" ? 20 : 0) + (["approved", "closed_with_residual_risk"].includes(selectedDraft?.status ?? "") ? 48 : 0)
+    26 + evidenceCount * 18 + coveredRequirements * 9 + (selectedDraft?.status === "under_review" ? 16 : 0) + (["approved", "closed_with_residual_risk"].includes(selectedDraft?.status ?? "") ? 32 : 0)
   );
+  const studioStats = {
+    drafts: draftActions.length,
+    withEvidence: draftActions.filter((action) => (action.evidenceAttachments?.length ?? 0) > 0).length,
+    underReview: draftActions.filter((action) => action.status === "under_review").length,
+    approved: draftActions.filter((action) => ["approved", "closed_with_residual_risk"].includes(action.status)).length
+  };
+  const filteredQueue = queueItems.filter((item) => {
+    const searchable = `${municipalityName(item.municipalityId)} ${item.title} ${item.requiredNextStep} ${item.reasonSummary} ${item.owner}`.toLowerCase();
+    const matchesQuery = searchable.includes(query.toLowerCase());
+    const matchesSeverity = severityFilter === "all" || item.severity === severityFilter;
+    return matchesQuery && matchesSeverity;
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -183,7 +208,7 @@ export function ActionStudio() {
       reviewer: form.reviewer,
       dueDate: form.dueDate,
       status: form.status,
-      requiredEvidence: form.requiredEvidenceText.split("\n").map((line) => line.trim()).filter(Boolean),
+      requiredEvidence: requirements,
       escalationRule: form.escalationRule,
       closureNote: form.closureNote || undefined,
       residualRisk: form.residualRisk || undefined,
@@ -289,6 +314,27 @@ export function ActionStudio() {
         </div>
       </div>
 
+      <section className="action-studio-command-strip" aria-label="Action Studio workflow summary">
+        <article><span>Drafts</span><strong>{studioStats.drafts}</strong><small>Saved in workflow store</small></article>
+        <article><span>With evidence</span><strong>{studioStats.withEvidence}</strong><small>Proof has been attached</small></article>
+        <article><span>Under review</span><strong>{studioStats.underReview}</strong><small>Waiting for reviewer sign-off</small></article>
+        <article><span>Accepted</span><strong>{studioStats.approved}</strong><small>Ready for closure or reporting</small></article>
+      </section>
+
+      <div className="action-studio-toolbar">
+        <div className="action-studio-search">
+          <Search size={16} />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search queue by municipality, risk, owner or next step..." />
+        </div>
+        <select value={severityFilter} onChange={(event) => setSeverityFilter(event.target.value as Severity | "all")}>
+          <option value="all">All severities</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="watch">Watch</option>
+        </select>
+      </div>
+
       <div className="action-studio-grid">
         <section className="action-studio-panel">
           <div className="action-studio-panel-header">
@@ -296,10 +342,10 @@ export function ActionStudio() {
               <p className="eyeless">Start from evidence</p>
               <h3>Queue items needing action</h3>
             </div>
-            <Badge tone="watch">{queueItems.length} signals</Badge>
+            <Badge tone="watch">{filteredQueue.length} signal(s)</Badge>
           </div>
           <div className="action-studio-list">
-            {queueItems.slice(0, 6).map((item) => {
+            {filteredQueue.slice(0, 6).map((item) => {
               const existing = draftActions.find((action) => action.sourceQueueItemId === item.id);
               return (
                 <article key={item.id}>
@@ -358,9 +404,7 @@ export function ActionStudio() {
                 <h2>{selectedDraft ? selectedDraft.title : selectedQueue.title}</h2>
                 <span>{municipalityName(selectedQueue.municipalityId)} · source-backed workflow</span>
               </div>
-              <button type="button" className="assistant-close" aria-label="Close Action Studio" onClick={() => setStudioOpen(false)}>
-                <X size={18} />
-              </button>
+              <button type="button" className="assistant-close" aria-label="Close Action Studio" onClick={() => setStudioOpen(false)}><X size={18} /></button>
             </header>
 
             <section className="action-studio-body">
@@ -380,6 +424,19 @@ export function ActionStudio() {
                   <label>Closure note<textarea value={form.closureNote} onChange={(event) => updateForm("closureNote", event.target.value)} rows={3} /></label>
                   <label>Residual risk<textarea value={form.residualRisk} onChange={(event) => updateForm("residualRisk", event.target.value)} rows={3} /></label>
                 </div>
+
+                <section className="action-studio-requirements">
+                  <div><p className="eyeless">Evidence checklist</p><h3>What still needs proof</h3></div>
+                  {requirements.map((requirement) => {
+                    const covered = requirementCovered(requirement, selectedDraft);
+                    return (
+                      <article className={covered ? "covered" : ""} key={requirement}>
+                        <CheckCircle2 size={16} />
+                        <span>{requirement}</span>
+                      </article>
+                    );
+                  })}
+                </section>
               </div>
 
               <aside className="action-studio-sidecar">
@@ -392,11 +449,22 @@ export function ActionStudio() {
 
                 <div className="action-studio-status-grid">
                   {statusOptions.map((status) => (
-                    <button key={status} type="button" className={form.status === status ? "active" : ""} onClick={() => transitionStatus(status)} disabled={saving}>
-                      {actionLabel[status]}
-                    </button>
+                    <button key={status} type="button" className={form.status === status ? "active" : ""} onClick={() => transitionStatus(status)} disabled={saving}>{actionLabel[status]}</button>
                   ))}
                 </div>
+
+                {selectedDraft?.statusHistory?.length ? (
+                  <section className="action-studio-timeline">
+                    <h3>Status timeline</h3>
+                    {selectedDraft.statusHistory.slice().reverse().slice(0, 5).map((entry) => (
+                      <article key={`${entry.status}-${entry.changedAt}`}>
+                        <span>{entry.changedAt}</span>
+                        <strong>{actionLabel[entry.status]}</strong>
+                        <small>{entry.changedBy}{entry.reason ? ` · ${entry.reason}` : ""}</small>
+                      </article>
+                    ))}
+                  </section>
+                ) : null}
 
                 <section className="action-studio-proof-box">
                   <div><p className="eyeless">Evidence attachment</p><h3>Submit proof</h3></div>
@@ -408,9 +476,7 @@ export function ActionStudio() {
                     {sources.map((source) => <option key={source.id} value={source.id}>{source.label}</option>)}
                   </select>
                   <textarea value={evidenceForm.note} onChange={(event) => updateEvidence("note", event.target.value)} placeholder="Optional reviewer note" rows={3} />
-                  <button type="button" className="secondary-action" onClick={attachEvidence} disabled={saving || !selectedDraft}>
-                    <FilePlus2 size={16} /> Attach evidence
-                  </button>
+                  <button type="button" className="secondary-action" onClick={attachEvidence} disabled={saving || !selectedDraft}><FilePlus2 size={16} /> Attach evidence</button>
                 </section>
 
                 {selectedDraft?.evidenceAttachments?.length ? (
@@ -419,10 +485,7 @@ export function ActionStudio() {
                     {selectedDraft.evidenceAttachments.map((attachment) => (
                       <article key={attachment.id}>
                         <CheckCircle2 size={15} />
-                        <div>
-                          <strong>{attachment.label}</strong>
-                          <span>{attachment.submittedBy} · {attachment.submittedAt}</span>
-                        </div>
+                        <div><strong>{attachment.label}</strong><span>{attachment.submittedBy} · {attachment.submittedAt}</span></div>
                       </article>
                     ))}
                   </section>
@@ -431,10 +494,7 @@ export function ActionStudio() {
                 <section className="action-studio-source-card">
                   <h3>Source chain</h3>
                   {sources.map((source) => (
-                    <Link href={source.url ?? "/sources"} key={source.id}>
-                      <Link2 size={15} />
-                      <span>{source.label}</span>
-                    </Link>
+                    <Link href={source.url ?? "/sources"} key={source.id}><Link2 size={15} /><span>{source.label}</span></Link>
                   ))}
                 </section>
               </aside>
@@ -443,13 +503,8 @@ export function ActionStudio() {
             <footer>
               <div><Badge tone={form.status}>{actionLabel[form.status]}</Badge><span>{saving ? "Saving..." : message}</span></div>
               <div>
-                <button type="button" className="secondary-action" onClick={() => setForm(selectedDraft ? formFromDraft(selectedDraft) : defaultForm(selectedQueue))}>
-                  <RotateCcw size={16} /> Reset
-                </button>
-                <button type="submit" className="primary-action" disabled={saving}>
-                  {selectedDraft ? <Save size={16} /> : <Send size={16} />}
-                  {selectedDraft ? "Save action" : "Create action"}
-                </button>
+                <button type="button" className="secondary-action" onClick={() => setForm(selectedDraft ? formFromDraft(selectedDraft) : defaultForm(selectedQueue))}><RotateCcw size={16} /> Reset</button>
+                <button type="submit" className="primary-action" disabled={saving}>{selectedDraft ? <Save size={16} /> : <Send size={16} />}{selectedDraft ? "Save action" : "Create action"}</button>
               </div>
             </footer>
           </form>
