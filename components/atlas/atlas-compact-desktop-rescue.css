@@ -1,0 +1,241 @@
+/*
+  Compact desktop rescue layer.
+  Fixes phone browsers using "Desktop site" where the viewport is wide enough
+  to avoid mobile rules, but too narrow for the full sidebar desktop shell.
+*/
+
+@media (max-width: 1180px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .app-shell,
+  .premium-shell,
+  .atlas-shell {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .premium-sidebar,
+  .atlas-sidebar,
+  .sidebar {
+    display: none !important;
+  }
+
+  .premium-workspace,
+  .atlas-workspace,
+  .workspace {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: clamp(14px, 3vw, 28px) !important;
+  }
+
+  .premium-topbar,
+  .atlas-topbar,
+  .topbar {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 12px !important;
+    min-height: auto !important;
+    width: 100% !important;
+    margin: 0 0 18px !important;
+    padding: 0 !important;
+  }
+
+  .atlas-topbar > div:first-of-type,
+  .topbar > div:first-of-type {
+    min-width: 0 !important;
+  }
+
+  .atlas-topbar h1,
+  .topbar h1 {
+    max-width: 100% !important;
+    font-size: clamp(1.45rem, 4vw, 2.25rem) !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.055em !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .top-actions {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
+    justify-content: stretch !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .command-trigger,
+  .source-pill,
+  .glass-action,
+  .top-actions .primary-action,
+  .top-actions .secondary-action {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    justify-content: center !important;
+  }
+
+  .command-trigger {
+    justify-content: flex-start !important;
+  }
+
+  .mobile-menu,
+  .nav-float-button {
+    display: inline-flex !important;
+  }
+
+  .atlas-page-stack,
+  .atlas-workflow-console,
+  .atlas-admin-console,
+  .municheck-public,
+  .action-studio-console,
+  .evidence-intake-console,
+  .agsa-review-desk {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin-inline: 0 !important;
+  }
+
+  .atlas-hero,
+  .page-header,
+  .hero-band,
+  .panel,
+  .atlas-glass,
+  .atlas-tile,
+  .metric-card,
+  .action-studio-hero,
+  .evidence-intake-hero,
+  .agsa-review-hero,
+  .agsa-source-viewer,
+  .workflow-command-card,
+  .workflow-checklist-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .atlas-hero-grid,
+  .atlas-hero,
+  .page-header,
+  .hero-band,
+  .action-studio-hero,
+  .evidence-intake-hero,
+  .agsa-review-hero,
+  .agsa-review-layout,
+  .agsa-source-grid,
+  .agsa-governance-strip,
+  .agsa-review-gates,
+  .agsa-review-toolbar,
+  .agsa-review-stats,
+  .action-studio-grid,
+  .action-studio-command-strip,
+  .action-studio-toolbar,
+  .evidence-intake-stats,
+  .evidence-intake-toolbar,
+  .evidence-action-grid,
+  .atlas-admin-metrics,
+  .atlas-workflow-metrics,
+  .workflow-principle-grid,
+  .atlas-workflow-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .atlas-hero h1,
+  .page-header h2,
+  .hero-band h2,
+  .action-studio-hero h2,
+  .evidence-intake-hero h2,
+  .agsa-review-hero h2,
+  .agsa-source-viewer h2 {
+    max-width: 100% !important;
+    font-size: clamp(2rem, 6vw, 3.6rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.065em !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .atlas-hero .eyeless,
+  .page-header .eyeless,
+  .hero-band .eyeless,
+  .action-studio-hero .eyeless,
+  .evidence-intake-hero .eyeless,
+  .agsa-review-hero .eyeless {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    letter-spacing: 0.12em !important;
+    white-space: normal !important;
+  }
+
+  .atlas-hero-side,
+  .page-actions,
+  .hero-actions,
+  .atlas-evidence-pills,
+  .action-studio-state,
+  .evidence-intake-status,
+  .agsa-review-state {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-items: start !important;
+  }
+
+  .badge,
+  .atlas-status-pill,
+  .source-pill,
+  .nav-item-badge {
+    white-space: normal !important;
+    max-width: 100% !important;
+  }
+
+  .nav-float-button {
+    left: 16px !important;
+    right: auto !important;
+    bottom: 22px !important;
+    z-index: 72 !important;
+  }
+
+  .assistant-float-button {
+    right: 16px !important;
+    bottom: 22px !important;
+    z-index: 72 !important;
+  }
+
+  .page-transition {
+    left: 14px !important;
+    right: 14px !important;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 761px) {
+  .mobile-nav-panel,
+  .ui-sheet-content {
+    width: min(440px, 92vw) !important;
+  }
+
+  .atlas-hero,
+  .page-header,
+  .hero-band,
+  .action-studio-hero,
+  .evidence-intake-hero,
+  .agsa-review-hero {
+    padding: clamp(22px, 4vw, 38px) !important;
+    border-radius: 30px !important;
+  }
+}
