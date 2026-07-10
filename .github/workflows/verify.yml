@@ -75,6 +75,9 @@ jobs:
       - name: Verify production evidence surface
         run: npm run test:production-evidence-surface
 
+      - name: Verify institutional platform contracts
+        run: npm run test:institutional
+
       - name: Typecheck
         run: npm run typecheck -- --pretty false --incremental false
 
