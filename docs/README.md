@@ -32,13 +32,13 @@ Use this documentation hub when onboarding new developers, handing work to Codex
    Critical. Explains why CSS import order matters and how not to break desktop/mobile layouts.
 
 8. [`TESTING_STRATEGY.md`](./TESTING_STRATEGY.md)  
-   Defines the institutional test suite and readiness gates.
+   Defines the institutional test suite, Playwright browser checks and readiness gates.
 
 9. [`DEVELOPER_ONBOARDING.md`](./DEVELOPER_ONBOARDING.md)  
    Local setup, verification commands and manual QA checklist.
 
 10. [`QA_CHECKLIST.md`](./QA_CHECKLIST.md)  
-   Route, workflow, device and deployment checks before shipping.
+   Route, workflow, device, browser E2E and deployment checks before shipping.
 
 11. [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)  
    Vercel/deployment debugging, environment checks and post-deploy QA.
@@ -59,6 +59,22 @@ CODEX_CONTINUATION.md
 
 It contains a longer history of what was built, known caveats, and the step-by-step roadmap.
 
+## Test folder guide
+
+Browser-level tests are documented in:
+
+```txt
+tests/README.md
+```
+
+The E2E suite lives in:
+
+```txt
+tests/e2e
+playwright.config.mjs
+.github/workflows/e2e.yml
+```
+
 ## GitHub workflow helpers
 
 Repository templates now exist for future team workflow:
@@ -73,7 +89,7 @@ Use them when the project moves from direct commits to branch/PR workflow.
 
 ## Verification gates
 
-The main verification command is:
+The main deterministic verification command is:
 
 ```bash
 npm run verify
@@ -85,7 +101,13 @@ The institutional safety layer can also be run directly:
 npm run test:institutional
 ```
 
-It checks API contracts, workflow wiring, public-safety rules, CSS authority layers and documentation completeness.
+The heavier browser E2E layer can be run with:
+
+```bash
+npm run test:e2e
+```
+
+It checks API contracts, workflow wiring, public-safety rules, CSS authority layers, documentation completeness and browser-level user journeys.
 
 ## Documentation principles
 
@@ -104,7 +126,7 @@ It checks API contracts, workflow wiring, public-safety rules, CSS authority lay
 | Evidence Intake Desk | Built | Dedicated evidence drawer, proof templates, source preview |
 | AGSA Review Cockpit | Built | Review queue, decision persistence, publish-safety gates |
 | Desktop/mobile shell | Stabilized | Multiple final CSS authority layers now protect layout |
-| Institutional tests | Started | Zero-dependency contract scripts now wired into verify |
+| Institutional tests | Expanded | Node contract scripts plus optional Playwright E2E browser checks |
 | Durable persistence | Not complete | Local JSON remains active prototype write path |
 | Auth/RBAC | Not complete | Needs production-grade Firebase/Admin role handling |
 | File evidence upload | Not complete | Evidence URL only, no object storage workflow yet |
