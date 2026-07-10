@@ -4,9 +4,13 @@ import { Badge } from "@/components/ui";
 import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { listPublicMuniCheckProfiles } from "@/lib/public-municheck";
 
+function isPublishablePublicState(state: string) {
+  return state === "publishable" || state === "corrected";
+}
+
 export default function MuniCheckPage() {
   const profiles = listPublicMuniCheckProfiles();
-  const reviewedProfiles = profiles.filter((profile) => profile.reviewStatus === "accepted" || profile.publicationState === "published").length;
+  const reviewedProfiles = profiles.filter((profile) => profile.reviewStatus === "accepted" || isPublishablePublicState(profile.publicationState)).length;
   const needsReview = profiles.length - reviewedProfiles;
 
   return (
@@ -62,7 +66,7 @@ export default function MuniCheckPage() {
                 <p className="eyeless">Public profile</p>
                 <h2>{profile.name}</h2>
               </div>
-              <Badge tone={profile.publicationState === "published" ? "healthy" : "watch"}>{profile.publicationState.replaceAll("_", " ")}</Badge>
+              <Badge tone={isPublishablePublicState(profile.publicationState) ? "healthy" : "watch"}>{profile.publicationState.replaceAll("_", " ")}</Badge>
             </header>
             <p>{profile.plainLanguageStatus}</p>
             <div className="municheck-field-list">
