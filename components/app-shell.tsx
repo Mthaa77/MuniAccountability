@@ -28,6 +28,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/feedback";
 import { FreeAssistant } from "@/components/atlas/free-assistant";
+import { PageTransition } from "@/components/atlas/page-transition";
 
 const navGroups = [
   {
@@ -125,18 +126,9 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
                   const Icon = item.icon;
                   const active = isActive(pathname, item.href);
                   return (
-                    <Link
-                      href={item.href}
-                      key={item.href}
-                      className={active ? "active nav-item" : "nav-item"}
-                      aria-current={active ? "page" : undefined}
-                      onClick={onNavigate}
-                    >
+                    <Link href={item.href} key={item.href} className={active ? "active nav-item" : "nav-item"} aria-current={active ? "page" : undefined} onClick={onNavigate}>
                       <span className="nav-item-icon"><Icon size={17} /></span>
-                      <span className="nav-item-copy">
-                        <strong>{item.label}</strong>
-                        <small>{item.hint}</small>
-                      </span>
+                      <span className="nav-item-copy"><strong>{item.label}</strong><small>{item.hint}</small></span>
                       {item.badge ? <span className="nav-item-badge">{item.badge}</span> : null}
                     </Link>
                   );
@@ -148,10 +140,7 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
       </nav>
 
       <div className="sidebar-card evidence-lock nav-footer-card">
-        <div>
-          <span className="nav-command-kicker">Trust rule</span>
-          <strong>No proof, no public claim</strong>
-        </div>
+        <div><span className="nav-command-kicker">Trust rule</span><strong>No proof, no public claim</strong></div>
         <p>Before anything is published, it should have a source, a review state and a clear confidence signal.</p>
         <div className="nav-footer-actions">
           <Link href="/sources" onClick={onNavigate}>Sources</Link>
@@ -181,14 +170,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const controller = new AbortController();
-
     apiGet<{ sources?: SourceHealth[] }>("/v1/sources", controller.signal)
       .then((payload) => {
         setSources(payload.data.sources ?? []);
         setSourceState("ready");
       })
       .catch(() => setSourceState("error"));
-
     return () => controller.abort();
   }, []);
 
@@ -199,13 +186,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         setCommandOpen(true);
       }
     }
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   return (
     <main className="premium-shell atlas-shell">
+      <PageTransition />
       <aside className="premium-sidebar atlas-sidebar" aria-label="Primary navigation">
         <NavigationContent pathname={pathname} sourceState={sourceState} healthLabel={healthLabel} />
       </aside>
@@ -217,33 +204,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <FreeAssistant />
 
-      <div className="premium-workspace atlas-workspace">
+      <div className="premium-workspace atlas-workspace" key={pathname}>
         <header className="topbar premium-topbar atlas-topbar">
-          <button className="icon-button mobile-menu" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
-            <Menu size={18} />
-          </button>
-          <div>
-            <p className="eyeless">Source-backed municipal oversight</p>
-            <h1>MuniAccountability Command</h1>
-          </div>
+          <button className="icon-button mobile-menu" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={18} /></button>
+          <div><p className="eyeless">Source-backed municipal oversight</p><h1>MuniAccountability Command</h1></div>
           <div className="top-actions" aria-label="Workspace controls">
-            <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}>
-              <Search size={18} />
-              <span>Search pages and evidence</span>
-              <kbd>Ctrl K</kbd>
-            </button>
-            <div className={`source-pill ${sourceState}`}>
-              {sourceState === "loading" ? <Skeleton className="source-skeleton" /> : <span />}
-              <strong>{healthLabel}</strong>
-            </div>
-            <Link className="secondary-action glass-action" href="/sources">
-              <PanelRightOpen size={17} />
-              Check sources
-            </Link>
-            <Link className="primary-action glass-action" href="/briefings">
-              <WandSparkles size={17} />
-              Build briefing
-            </Link>
+            <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}><Search size={18} /><span>Search pages and evidence</span><kbd>Ctrl K</kbd></button>
+            <div className={`source-pill ${sourceState}`}>{sourceState === "loading" ? <Skeleton className="source-skeleton" /> : <span />}<strong>{healthLabel}</strong></div>
+            <Link className="secondary-action glass-action" href="/sources"><PanelRightOpen size={17} />Check sources</Link>
+            <Link className="primary-action glass-action" href="/briefings"><WandSparkles size={17} />Build briefing</Link>
           </div>
         </header>
         {children}
@@ -257,20 +226,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <Dialog open={commandOpen} onOpenChange={setCommandOpen} title="Search the command centre" className="command-dialog">
         <Command>
-          <CommandInput
-            autoFocus
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search pages, sources, workflows or review gates..."
-          />
+          <CommandInput autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search pages, sources, workflows or review gates..." />
           <CommandList>
             <CommandGroup>
               {commandItems.map((item) => (
                 <CommandItem key={`${item.href}-${item.label}`}>
-                  <Link href={item.href} onClick={() => setCommandOpen(false)}>
-                    <strong>{item.label}</strong>
-                    <span>{item.hint}</span>
-                  </Link>
+                  <Link href={item.href} onClick={() => setCommandOpen(false)}><strong>{item.label}</strong><span>{item.hint}</span></Link>
                 </CommandItem>
               ))}
               {!commandItems.length ? <div className="command-empty">No match yet. Try “sources”, “briefing”, “audit” or “queue”.</div> : null}
