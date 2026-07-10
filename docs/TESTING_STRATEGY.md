@@ -132,7 +132,25 @@ Purpose:
 - QA/deployment/maintenance docs exist
 - GitHub templates exist
 
-### 8. Browser E2E regression checks
+### 8. E2E suite contract safety
+
+Script:
+
+```bash
+npm run test:e2e-contracts
+```
+
+Purpose:
+
+- required browser specs remain present
+- Playwright config keeps desktop and mobile projects
+- failure artifacts remain enabled
+- E2E GitHub workflow remains wired
+- browser test docs remain complete
+
+This is part of `npm run test:institutional`, so the browser suite cannot silently disappear even though browser execution itself remains optional.
+
+### 9. Browser E2E regression checks
 
 Scripts:
 
@@ -150,12 +168,24 @@ Purpose:
 - test Action Studio and Evidence Intake visibility
 - test AGSA Review Cockpit governance controls
 - test public MuniCheck public-safety boundary
+- test production-readiness gate-room and promotion controls
+- smoke test keyboard-accessible controls and labelled drawers
 
 The E2E suite lives in:
 
 ```txt
 tests/e2e
 playwright.config.mjs
+```
+
+Current specs include:
+
+```txt
+command-shell.spec.mjs
+assistant-source-lock.spec.mjs
+workflow-cockpits.spec.mjs
+production-readiness.spec.mjs
+accessibility-keyboard.spec.mjs
 ```
 
 The dedicated E2E CI workflow is:
@@ -182,6 +212,7 @@ test:institutional-workflows
 test:public-safety-contracts
 test:css-authority-layers
 test:documentation-completeness
+test:e2e-contracts
 ```
 
 ## CI expectation
@@ -228,7 +259,7 @@ Add React Testing Library later for:
 
 ### Accessibility tests
 
-Add axe checks later for:
+The current E2E suite has keyboard/accessibility smoke tests. Add axe checks later for deeper automated accessibility coverage on:
 
 - navigation
 - dialogs/sheets
