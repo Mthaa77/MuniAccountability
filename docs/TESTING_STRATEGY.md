@@ -8,18 +8,21 @@ The goal is not only to check that the app builds. The goal is to prove the plat
 
 ## Current test approach
 
-The project currently uses zero-dependency Node verification scripts under:
+The project now uses two complementary test layers:
 
-```txt
-scripts/verify-*.mjs
-```
+1. zero-dependency Node verification scripts under `scripts/verify-*.mjs`
+2. optional Playwright browser E2E tests under `tests/e2e`
 
-These tests are designed for institutional fixture and contract verification. They are lightweight, deterministic and suitable for CI.
-
-The main command is:
+The deterministic verification command is:
 
 ```bash
 npm run verify
+```
+
+The browser E2E command is:
+
+```bash
+npm run test:e2e
 ```
 
 ## Test layers
@@ -129,15 +132,49 @@ Purpose:
 - QA/deployment/maintenance docs exist
 - GitHub templates exist
 
+### 8. Browser E2E regression checks
+
+Scripts:
+
+```bash
+npm run test:e2e:install
+npm run test:e2e
+npm run test:e2e:headed
+```
+
+Purpose:
+
+- verify the app in a real Chromium browser
+- protect desktop and mobile shell behavior
+- test assistant source-lock UX
+- test Action Studio and Evidence Intake visibility
+- test AGSA Review Cockpit governance controls
+- test public MuniCheck public-safety boundary
+
+The E2E suite lives in:
+
+```txt
+tests/e2e
+playwright.config.mjs
+```
+
+The dedicated E2E CI workflow is:
+
+```txt
+.github/workflows/e2e.yml
+```
+
+Browser tests are not included inside `npm run verify` because they install/run Chromium and are heavier than deterministic contract checks. Run them for release readiness, major UI changes and workflow regressions.
+
 ## Institutional readiness test command
 
-A dedicated command should run the institutional safety layer:
+A dedicated command runs the institutional contract layer:
 
 ```bash
 npm run test:institutional
 ```
 
-It should include:
+It includes:
 
 ```txt
 test:institutional-api-contracts
@@ -156,10 +193,16 @@ GitHub Actions should run:
 3. typecheck
 4. build
 
-The workflow file is:
+The deterministic verification workflow file is:
 
 ```txt
 .github/workflows/verify.yml
+```
+
+The browser E2E workflow file is:
+
+```txt
+.github/workflows/e2e.yml
 ```
 
 ## Future test upgrades
@@ -183,17 +226,6 @@ Add React Testing Library later for:
 - Evidence Intake form validation
 - AGSA Review decision form
 
-### Browser E2E tests
-
-Add Playwright when the platform needs full institutional regression checks:
-
-- `/actions` workflow
-- `/admin/agsa-review` review save
-- assistant source-lock refusal
-- mobile navigation
-- desktop layout
-- public MuniCheck boundary
-
 ### Accessibility tests
 
 Add axe checks later for:
@@ -206,43 +238,20 @@ Add axe checks later for:
 
 ## Institutional pass criteria
 
-A release should not be considered institution-ready unless:
+A release should not be considered institution-ready unless this passes locally and in CI:
 
 ```bash
 npm run verify
 ```
 
-passes locally and in CI.
+For release candidates and major UI/workflow changes, also run:
+
+```bash
+npm run test:e2e
+```
 
 Manual QA should also pass using:
 
 ```txt
 docs/QA_CHECKLIST.md
 ```
-
-## What the tests protect
-
-The tests are designed to protect:
-
-- source-backed evidence behavior
-- public-safety boundaries
-- API route contracts
-- workflow endpoint wiring
-- review decision governance
-- CSS import authority
-- documentation completeness
-- production readiness clarity
-
-## What the tests do not protect yet
-
-Current tests do not fully cover:
-
-- browser-level click flows
-- actual file uploads
-- authenticated RBAC
-- real database writes
-- visual screenshot regression
-- accessibility scans
-- performance budgets
-
-Those should be added as the platform moves from premium MVP to production-grade institutional system.
