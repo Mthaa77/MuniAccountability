@@ -15,13 +15,13 @@ export const severityLabel: Record<Severity, string> = {
 export const actionLabel: Record<ActionStatus, string> = {
   not_started: "Not started",
   in_progress: "In progress",
-  evidence_submitted: "Evidence submitted",
-  under_review: "Under review",
+  evidence_submitted: "Evidence added",
+  under_review: "Being reviewed",
   approved: "Approved",
-  rejected: "Rejected",
+  rejected: "Needs changes",
   overdue: "Overdue",
   escalated: "Escalated",
-  closed_with_residual_risk: "Closed with residual risk"
+  closed_with_residual_risk: "Closed with risk note"
 };
 
 export function tone(value: string) {
@@ -88,11 +88,12 @@ export function RiskMap() {
     <section className="panel map-panel">
       <div className="panel-header">
         <div>
-          <p className="eyeless">Interactive risk atlas</p>
-          <h2>Pilot Risk View</h2>
+          <p className="eyeless">Risk map</p>
+          <h2>Where attention is needed</h2>
         </div>
-        <Badge tone="under_review">AGSA-backed cohort</Badge>
+        <Badge tone="under_review">Audit-backed view</Badge>
       </div>
+      <p className="panel-intro">Click a municipality to open the full case file. Larger markers mean a higher intervention priority score.</p>
       <RiskAtlas municipalities={municipalities} />
       <div className="map-list">
         {municipalities.map((municipality) => (
@@ -111,7 +112,7 @@ export function MunicipalityPreview({ municipality }: { municipality: Municipali
     <section className="panel">
       <div className="panel-header">
         <div>
-          <p className="eyeless">Municipality 360</p>
+          <p className="eyeless">Case file</p>
           <h2>{municipality.commonName}</h2>
         </div>
         <Badge tone={municipality.interventionPriority}>{severityLabel[municipality.interventionPriority]}</Badge>
@@ -124,15 +125,15 @@ export function MunicipalityPreview({ municipality }: { municipality: Municipali
       </div>
       <div className="ipi-block">
         <div>
-          <span>Intervention Priority Index</span>
+          <span>Priority score</span>
           <strong>{municipality.ipi}</strong>
         </div>
-        <div className="ipi-bar" aria-label={`IPI ${municipality.ipi} out of 100`}>
+        <div className="ipi-bar" aria-label={`Priority score ${municipality.ipi} out of 100`}>
           <span style={{ width: `${municipality.ipi}%` }} />
         </div>
       </div>
       <Link className="primary-link" href={`/municipalities/${municipality.id}`}>
-        Open full case file
+        Open case file
       </Link>
     </section>
   );
@@ -143,13 +144,14 @@ export function QueuePreview({ items }: { items: QueueItem[] }) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <p className="eyeless">Decision required</p>
-          <h2>Queue Preview</h2>
+          <p className="eyeless">Needs a decision</p>
+          <h2>Priority Queue</h2>
         </div>
         <Link className="text-action" href="/intervention-queue">
-          Open queue
+          View all
         </Link>
       </div>
+      <p className="panel-intro">These are the highest-ranked issues that need review, action or escalation.</p>
       <div className="compact-list">
         {items.slice(0, 4).map((item) => {
           const municipality = municipalities.find((candidate) => candidate.id === item.municipalityId);
