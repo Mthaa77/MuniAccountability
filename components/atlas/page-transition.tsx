@@ -1,11 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { MouseEvent, useEffect, useState } from "react";
-
-function isModifiedClick(event: MouseEvent<Document>) {
-  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
-}
+import { useEffect, useState } from "react";
 
 export function PageTransition() {
   const pathname = usePathname();
