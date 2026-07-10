@@ -209,6 +209,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <NavigationContent pathname={pathname} sourceState={sourceState} healthLabel={healthLabel} />
       </aside>
 
+      <button className="nav-float-button" aria-label="Open navigation menu" onClick={() => setMenuOpen(true)}>
+        <Menu size={17} />
+        <span>Menu</span>
+      </button>
+
       <div className="premium-workspace atlas-workspace">
         <header className="topbar premium-topbar atlas-topbar">
           <button className="icon-button mobile-menu" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
