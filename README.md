@@ -47,6 +47,7 @@ app/README.md
 components/README.md
 components/atlas/README.md
 lib/README.md
+tests/README.md
 ```
 
 ## Local Development
@@ -62,7 +63,7 @@ Copy `.env.example` to `.env.local` when preparing Firebase/GCP settings.
 
 ## Verification Commands
 
-Run the full platform verification chain before promoting any change:
+Run the full deterministic platform verification chain before promoting any change:
 
 ```bash
 npm run verify
@@ -84,6 +85,35 @@ npm run test:production-evidence
 ```
 
 The institutional suite protects API contracts, workflow wiring, public-safety rules, CSS authority layers and documentation completeness.
+
+## Browser E2E Tests
+
+Playwright E2E tests live under:
+
+```txt
+tests/e2e
+playwright.config.mjs
+```
+
+Install Chromium once:
+
+```bash
+npm run test:e2e:install
+```
+
+Run the browser suite:
+
+```bash
+npm run test:e2e
+```
+
+Run headed for debugging:
+
+```bash
+npm run test:e2e:headed
+```
+
+The E2E suite is intentionally separate from `npm run verify` because browser tests are heavier. Use it for release candidates, major workflow changes and layout regressions.
 
 ## Firebase and GCP Preparation
 
