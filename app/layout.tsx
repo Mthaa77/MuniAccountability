@@ -19,6 +19,7 @@ import "@/components/atlas/atlas-assistant-mobile-fix.css";
 import "@/components/atlas/atlas-action-studio.css";
 import "@/components/atlas/atlas-motion.css";
 import "@/components/atlas/atlas-action-studio-rescue.css";
+import "@/components/atlas/atlas-evidence-drawer.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",
