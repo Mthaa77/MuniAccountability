@@ -1,0 +1,255 @@
+/* Final reusable component polish: previews, helper text, lists and guided panels. */
+
+.panel-intro {
+  max-width: 62ch;
+  margin: -4px 0 16px;
+  color: var(--text-soft) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.62 !important;
+}
+
+.panel-header {
+  align-items: start !important;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(216, 208, 194, 0.7);
+}
+
+.panel-header + .lead,
+.panel-header + .panel-intro,
+.panel-header + .compact-list,
+.panel-header + .risk-atlas,
+.panel-header + .map-list {
+  margin-top: 14px;
+}
+
+.compact-list {
+  gap: 9px !important;
+}
+
+.compact-list article,
+.map-list a,
+.metric-list article,
+.source-stack article,
+.briefing-list article,
+.action-card {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px !important;
+  padding: 14px !important;
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 18px !important;
+  background: #fbf8f0 !important;
+  color: var(--atlas-heading) !important;
+  text-decoration: none;
+}
+
+.compact-list article::before,
+.map-list a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--atlas-emerald);
+  opacity: 0.7;
+}
+
+.compact-list article:hover,
+.map-list a:hover,
+.metric-list article:hover,
+.source-stack article:hover,
+.briefing-list article:hover,
+.action-card:hover {
+  border-color: var(--atlas-line-strong) !important;
+  background: #ffffff !important;
+}
+
+.compact-list strong,
+.map-list span:first-child,
+.metric-list strong,
+.source-stack strong,
+.briefing-list strong,
+.action-card strong {
+  color: var(--atlas-heading) !important;
+  font-size: 0.96rem !important;
+  line-height: 1.2 !important;
+}
+
+.compact-list span,
+.metric-list span,
+.source-stack span,
+.briefing-list span,
+.action-card span {
+  color: var(--text-soft) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.45 !important;
+}
+
+.map-list {
+  gap: 8px !important;
+  margin-top: 14px !important;
+}
+
+.map-list a {
+  min-height: 52px;
+}
+
+.case-meta {
+  margin: 16px 0 !important;
+}
+
+.case-meta span,
+.check-list span,
+.agenda-list span,
+.municheck-field-list span,
+.municheck-method-list span {
+  border-radius: 999px !important;
+  background: #ffffff !important;
+}
+
+.ipi-block {
+  padding: 16px !important;
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, #fbf8f0, #ffffff) !important;
+}
+
+.ipi-block div:first-child {
+  align-items: end !important;
+}
+
+.ipi-block span {
+  color: var(--text-soft) !important;
+  font-size: 0.78rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ipi-block strong {
+  color: var(--atlas-emerald) !important;
+}
+
+.ipi-bar {
+  height: 12px !important;
+  border: 1px solid rgba(11, 95, 79, 0.12);
+  background: #e5ded1 !important;
+}
+
+.ipi-bar span {
+  background: linear-gradient(90deg, #0b5f4f, #8a6419, #a9473b) !important;
+}
+
+.badge,
+.atlas-status-pill {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.badge::before,
+.atlas-status-pill::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.primary-link,
+.primary-action,
+.secondary-action,
+.text-action {
+  min-height: 40px;
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.text-action {
+  padding: 0 12px;
+  border: 1px solid var(--atlas-line-strong) !important;
+  border-radius: 999px;
+  background: #ffffff !important;
+  color: var(--atlas-emerald-ink) !important;
+  text-decoration: none !important;
+}
+
+.atlas-search-form label,
+.command-dialog label,
+form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--atlas-heading) !important;
+  font-size: 0.82rem;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.atlas-search-prompts a {
+  border-color: var(--atlas-line-strong) !important;
+  background: #ffffff !important;
+  color: var(--atlas-emerald-ink) !important;
+  font-weight: 820;
+  text-decoration: none;
+}
+
+.atlas-source-thread {
+  border-style: dashed !important;
+  background: #fffdf8 !important;
+}
+
+.atlas-source-thread h3 {
+  margin-bottom: 6px;
+}
+
+.atlas-search-result header,
+.source-card header,
+.municheck-card header {
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(216, 208, 194, 0.7);
+}
+
+.atlas-search-result footer,
+.source-card footer,
+.municheck-card footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 760px) {
+  .compact-list article,
+  .map-list a,
+  .metric-list article,
+  .source-stack article,
+  .briefing-list article,
+  .action-card {
+    grid-template-columns: 1fr !important;
+    justify-items: start;
+  }
+
+  .compact-list article .badge,
+  .map-list a .badge {
+    width: auto !important;
+  }
+
+  .panel-header {
+    gap: 10px;
+  }
+
+  .atlas-search-result footer,
+  .source-card footer,
+  .municheck-card footer {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
