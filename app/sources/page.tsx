@@ -6,7 +6,7 @@ import { agsaDocuments, sourceHealth } from "@/lib/pilot-data";
 
 export default function SourcesPage() {
   const degradedSources = sourceHealth.filter((source) => source.status !== "healthy").length;
-  const disabledSources = sourceHealth.filter((source) => source.status === "disabled").length;
+  const lockedSources = sourceHealth.filter((source) => source.status === "blocked" || source.status === "unknown").length;
 
   return (
     <div className="atlas-page-stack">
@@ -32,7 +32,7 @@ export default function SourcesPage() {
         <AtlasMetricTile title="Source systems" value={String(sourceHealth.length)} note="Tracked source families and operational gates" icon={Database} />
         <AtlasMetricTile title="Documents" value={String(agsaDocuments.length)} note="AGSA source documents in the prototype corpus" tone="blue" icon={Archive} />
         <AtlasMetricTile title="Needs attention" value={String(degradedSources)} note="Degraded, locked or validation-pending source gates" tone="gold" icon={FileSearch} />
-        <AtlasMetricTile title="Disabled" value={String(disabledSources)} note="Sources intentionally kept out of product values" tone="risk" icon={ShieldCheck} />
+        <AtlasMetricTile title="Locked" value={String(lockedSources)} note="Blocked or unknown sources kept out of product values" tone="risk" icon={ShieldCheck} />
       </section>
 
       <section className="atlas-vault-grid">
