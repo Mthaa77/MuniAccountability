@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, FileSearch, Filter, LockKeyhole, Search, ShieldAlert, ShieldCheck, Sparkles, XCircle } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, FileSearch, Filter, Gauge, LockKeyhole, Scale, Search, ShieldAlert, ShieldCheck, Sparkles, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost } from "@/lib/client-api";
 import { agsaDocuments, agsaExtract, agsaPageCitations, extractionIssues } from "@/lib/pilot-data";
@@ -19,7 +19,7 @@ type ReviewItem = {
   issue: string;
   sectionTitle: string;
   textSample: string;
-  confidence: ConfidenceFilter;
+  confidence: Exclude<ConfidenceFilter, "all">;
   citations: AgsaPageCitation[];
 };
 
@@ -29,12 +29,20 @@ type CorrectionDraft = {
   rationale: string;
 };
 
+type ReviewerGate = {
+  label: string;
+  detail: string;
+  passed: boolean;
+};
+
 const rationaleTemplates = [
   "Accepted after checking citation, page context and source document metadata.",
   "Correction required because the extracted wording does not fully match the source page context.",
   "Excluded from publishable output because the current evidence is incomplete or unsupported.",
   "Reviewer confirmed source citation, but public wording must remain conservative."
 ];
+
+const correctionFieldPresets = ["auditOutcome", "findingDescription", "citationSnippet", "materialIrregularity", "recommendation", "publicSummary"];
 
 function decisionKey(documentId: string, pageNumber: number, issue: string) {
   return `${documentId}:p${pageNumber}:${issue}`;
@@ -51,6 +59,13 @@ function decisionTone(status: ReviewFilter) {
   if (status === "correction") return "watch";
   if (status === "excluded") return "risk";
   return "watch";
+}
+
+function confidenceScore(confidence: string) {
+  if (confidence === "high") return 30;
+  if (confidence === "medium") return 22;
+  if (confidence === "low") return 10;
+  return 0;
 }
 
 function buildReviewItems(): ReviewItem[] {
@@ -70,6 +85,35 @@ function buildReviewItems(): ReviewItem[] {
   });
 }
 
+function buildReviewerGates(item: ReviewItem | undefined, decision: AgsaReviewDecision | undefined, draft: CorrectionDraft): ReviewerGate[] {
+  const hasText = Boolean(item?.textSample && !item.textSample.startsWith("No parsed"));
+  const hasCitation = Boolean(item?.citations.length);
+  const hasRationale = draft.rationale.trim().length > 18 || Boolean(decision?.rationale);
+  const hasCorrectionPath = Boolean(draft.replacementField.trim() && draft.replacementValue.trim()) || decision?.status !== "correction";
+
+  return [
+    { label: "Source page inspected", detail: "A reviewer can see the extracted page sample.", passed: hasText },
+    { label: "Citation trail present", detail: "The issue has at least one citation ID attached.", passed: hasCitation },
+    { label: "Reviewer rationale captured", detail: "A decision should explain why the claim is safe, corrected or excluded.", passed: hasRationale },
+    { label: "Correction path ready", detail: "Correction decisions should name the field and replacement value.", passed: Boolean(hasCorrectionPath) }
+  ];
+}
+
+function publishSafetyScore(item: ReviewItem | undefined, decision: AgsaReviewDecision | undefined, gates: ReviewerGate[]) {
+  if (!item) return 0;
+  const gatePoints = gates.filter((gate) => gate.passed).length * 12;
+  const citationPoints = Math.min(18, item.citations.length * 9);
+  const decisionPoints = decision?.status === "accepted" ? 18 : decision?.status === "correction" ? 14 : decision?.status === "excluded" ? 4 : 0;
+  return Math.min(100, confidenceScore(item.confidence) + gatePoints + citationPoints + decisionPoints);
+}
+
+function decisionPreview(status: AgsaReviewDecisionStatus | "open" | undefined, score: number) {
+  if (status === "accepted") return score >= 70 ? "Can support a publish-safe claim with citation." : "Accepted, but reviewer gates still need strengthening.";
+  if (status === "correction") return "Can support output only through a correction overlay and conservative wording.";
+  if (status === "excluded") return "Blocked from public output. Keep internally for audit trail only.";
+  return "Not publish-safe yet. Save a decision after checking source, citation and rationale.";
+}
+
 export function AgsaReviewDesk() {
   const reviewItems = useMemo(() => buildReviewItems(), []);
   const documentsById = useMemo(() => new Map(agsaDocuments.map((document) => [document.documentId, document])), []);
@@ -86,6 +130,10 @@ export function AgsaReviewDesk() {
   const selectedItem = reviewItems.find((item) => item.key === selectedKey) ?? reviewItems[0];
   const selectedDocument = selectedItem ? documentsById.get(selectedItem.documentId) : undefined;
   const selectedDecision = selectedItem ? decisionsByKey[selectedItem.key] : undefined;
+  const reviewerGates = useMemo(() => buildReviewerGates(selectedItem, selectedDecision, draft), [selectedItem, selectedDecision, draft]);
+  const safetyScore = publishSafetyScore(selectedItem, selectedDecision, reviewerGates);
+  const blockers = reviewerGates.filter((gate) => !gate.passed);
+  const currentDecisionStatus = selectedDecision?.status ?? "open";
   const filteredItems = reviewItems.filter((item) => {
     const document = documentsById.get(item.documentId);
     const status = decisionsByKey[item.key]?.status ?? "open";
@@ -149,6 +197,10 @@ export function AgsaReviewDesk() {
     setDraft((current) => ({ ...current, rationale: template }));
   }
 
+  function applyFieldPreset(field: string) {
+    setDraft((current) => ({ ...current, replacementField: field }));
+  }
+
   async function saveDecision(status: AgsaReviewDecisionStatus) {
     if (!selectedItem) return;
 
@@ -194,10 +246,10 @@ export function AgsaReviewDesk() {
 
   return (
     <section className="agsa-review-desk">
-      <div className="agsa-review-hero">
+      <div className="agsa-review-hero ultra">
         <div>
           <p className="eyeless">Step 4</p>
-          <h2>AGSA Review Desk</h2>
+          <h2>AGSA Review Cockpit</h2>
           <p>Inspect low-confidence source pages, confirm citations, write reviewer rationale and save accept, correct or exclude decisions before public claims are allowed.</p>
         </div>
         <div className="agsa-review-state">
@@ -212,6 +264,24 @@ export function AgsaReviewDesk() {
         <article><span>Corrections</span><strong>{stats.correction}</strong><small>Need overlay wording</small></article>
         <article><span>Excluded</span><strong>{stats.excluded}</strong><small>Blocked from public output</small></article>
         <article><span>Publish-safe</span><strong>{publishSafeCount}</strong><small>Accepted or corrected</small></article>
+      </section>
+
+      <section className="agsa-governance-strip" aria-label="Selected issue governance summary">
+        <article>
+          <div><Gauge size={18} /><span>Publish safety</span></div>
+          <strong>{safetyScore}%</strong>
+          <div className="ui-progress"><span style={{ width: `${safetyScore}%` }} /></div>
+        </article>
+        <article>
+          <div><ClipboardCheck size={18} /><span>Reviewer gates</span></div>
+          <strong>{reviewerGates.filter((gate) => gate.passed).length}/{reviewerGates.length}</strong>
+          <small>{blockers.length ? `${blockers.length} blocker(s) remain` : "All gates passed"}</small>
+        </article>
+        <article>
+          <div><Scale size={18} /><span>Decision preview</span></div>
+          <strong>{currentDecisionStatus.replaceAll("_", " ")}</strong>
+          <small>{decisionPreview(currentDecisionStatus, safetyScore)}</small>
+        </article>
       </section>
 
       <div className="agsa-review-toolbar">
@@ -258,7 +328,7 @@ export function AgsaReviewDesk() {
           </div>
         </aside>
 
-        <section className="agsa-source-viewer">
+        <section className="agsa-source-viewer ultra-viewer">
           {selectedItem ? (
             <>
               <header>
@@ -273,6 +343,15 @@ export function AgsaReviewDesk() {
                 </div>
               </header>
 
+              <section className="agsa-review-gates" aria-label="Reviewer gates">
+                {reviewerGates.map((gate) => (
+                  <article className={gate.passed ? "passed" : "blocked"} key={gate.label}>
+                    {gate.passed ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                    <div><strong>{gate.label}</strong><span>{gate.detail}</span></div>
+                  </article>
+                ))}
+              </section>
+
               <div className="agsa-source-grid">
                 <article className="agsa-source-card text-sample">
                   <div><FileSearch size={18} /><strong>Extracted page sample</strong></div>
@@ -285,7 +364,7 @@ export function AgsaReviewDesk() {
                 </article>
               </div>
 
-              <section className="agsa-citation-strip">
+              <section className="agsa-citation-strip ultra-citations">
                 <h3>Citations on this page</h3>
                 {selectedItem.citations.length ? selectedItem.citations.map((citation) => (
                   <article key={citation.citationId}>
@@ -295,7 +374,7 @@ export function AgsaReviewDesk() {
                 )) : <article><XCircle size={15} /><div><strong>No citation generated</strong><span>This page should stay blocked until a citation is reviewed or created.</span></div></article>}
               </section>
 
-              <section className="agsa-decision-panel">
+              <section className="agsa-decision-panel ultra-decision">
                 <div className="agsa-review-panel-header">
                   <div><p className="eyeless">Decision controls</p><h3>Save review decision</h3></div>
                   <Badge tone={selectedDecision ? decisionTone(selectedDecision.status) : "watch"}>{selectedDecision ? "saved" : "not saved"}</Badge>
@@ -306,11 +385,22 @@ export function AgsaReviewDesk() {
                   {rationaleTemplates.map((template) => <button key={template} onClick={() => applyTemplate(template)}>{template}</button>)}
                 </div>
 
+                <div className="agsa-field-presets" aria-label="Correction field presets">
+                  <span>Correction field presets</span>
+                  <div>{correctionFieldPresets.map((field) => <button key={field} onClick={() => applyFieldPreset(field)}>{field}</button>)}</div>
+                </div>
+
                 <div className="agsa-correction-grid">
                   <label>Replacement field<input value={draft.replacementField} onChange={(event) => setDraft((current) => ({ ...current, replacementField: event.target.value }))} placeholder="Example: auditOutcome" /></label>
                   <label>Replacement value<input value={draft.replacementValue} onChange={(event) => setDraft((current) => ({ ...current, replacementValue: event.target.value }))} placeholder="Corrected value" /></label>
                   <label>Reviewer rationale<textarea value={draft.rationale} onChange={(event) => setDraft((current) => ({ ...current, rationale: event.target.value }))} rows={4} placeholder="Explain why this decision is safe." /></label>
                 </div>
+
+                <section className="agsa-decision-preview">
+                  <div><Scale size={16} /><strong>Public output preview</strong></div>
+                  <p>{decisionPreview(currentDecisionStatus, safetyScore)}</p>
+                  {blockers.length ? <small>Remaining blockers: {blockers.map((gate) => gate.label).join(", ")}.</small> : <small>All reviewer gates are currently satisfied.</small>}
+                </section>
 
                 <div className="agsa-decision-actions">
                   <button className="secondary-action" onClick={() => saveDecision("accepted")}><ShieldCheck size={16} /> Accept</button>
