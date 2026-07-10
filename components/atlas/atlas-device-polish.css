@@ -1,0 +1,393 @@
+/*
+  Final device polish layer.
+  Makes desktop, laptop, compact desktop and mobile feel intentionally premium.
+  Loaded after all shell/rescue layers.
+*/
+
+:root {
+  --atlas-desktop-sidebar: 304px;
+  --atlas-desktop-gutter: clamp(24px, 2.2vw, 40px);
+  --atlas-card-glow: 0 22px 70px rgba(17, 28, 23, 0.08);
+  --atlas-card-glow-strong: 0 32px 90px rgba(17, 28, 23, 0.13);
+}
+
+/* ---------- Desktop and laptop authority ---------- */
+@media (min-width: 1181px) {
+  body {
+    background:
+      radial-gradient(circle at 18% -12%, rgba(214, 177, 90, 0.13), transparent 32rem),
+      radial-gradient(circle at 100% 0%, rgba(11, 95, 79, 0.08), transparent 34rem),
+      linear-gradient(135deg, #f7f5ef, #fbfaf6 48%, #f0eee7) !important;
+  }
+
+  .premium-shell.atlas-shell,
+  .premium-shell,
+  .atlas-shell {
+    grid-template-columns: var(--atlas-desktop-sidebar) minmax(0, 1fr) !important;
+    isolation: isolate !important;
+  }
+
+  .premium-sidebar.atlas-sidebar,
+  .premium-sidebar,
+  .atlas-sidebar {
+    width: var(--atlas-desktop-sidebar) !important;
+    min-width: var(--atlas-desktop-sidebar) !important;
+    max-width: var(--atlas-desktop-sidebar) !important;
+    padding: 14px !important;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(214, 177, 90, 0.12), transparent 13rem),
+      linear-gradient(180deg, #10201a, #071611 82%) !important;
+    border-right: 1px solid rgba(214, 177, 90, 0.16) !important;
+    box-shadow: inset -1px 0 rgba(255, 255, 255, 0.05), 18px 0 80px rgba(7, 22, 17, 0.08) !important;
+  }
+
+  .premium-workspace.atlas-workspace,
+  .premium-workspace,
+  .atlas-workspace {
+    padding: 24px var(--atlas-desktop-gutter) 56px !important;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.55), transparent 18rem),
+      transparent !important;
+  }
+
+  .atlas-page-stack,
+  .atlas-workflow-console,
+  .atlas-admin-console,
+  .municheck-public,
+  .action-studio-console,
+  .evidence-intake-console,
+  .agsa-review-desk {
+    max-width: 1360px !important;
+    margin-inline: auto !important;
+  }
+
+  .premium-topbar.atlas-topbar,
+  .premium-topbar,
+  .atlas-topbar,
+  .topbar {
+    position: relative !important;
+    padding: 12px 14px !important;
+    margin: 0 0 22px !important;
+    border: 1px solid rgba(230, 224, 212, 0.72) !important;
+    border-radius: 26px !important;
+    background: rgba(255, 253, 248, 0.78) !important;
+    box-shadow: 0 18px 50px rgba(26, 37, 32, 0.06) !important;
+    backdrop-filter: blur(20px) saturate(1.05) !important;
+  }
+
+  .atlas-topbar h1,
+  .topbar h1 {
+    font-size: clamp(1.35rem, 1.6vw, 1.92rem) !important;
+    letter-spacing: -0.052em !important;
+  }
+
+  .top-actions {
+    max-width: min(720px, 54vw) !important;
+  }
+
+  .command-trigger,
+  .source-pill,
+  .glass-action,
+  .top-actions .primary-action,
+  .top-actions .secondary-action {
+    min-height: 40px !important;
+    border-radius: 999px !important;
+  }
+
+  .command-trigger {
+    min-width: 220px !important;
+    max-width: 260px !important;
+    background: #ffffff !important;
+  }
+
+  .source-pill {
+    max-width: 240px !important;
+    background: #ffffff !important;
+  }
+
+  .glass-action {
+    box-shadow: 0 10px 24px rgba(14, 26, 21, 0.06) !important;
+  }
+
+  .nav-brand-card {
+    min-height: 70px !important;
+    border: 1px solid rgba(214, 177, 90, 0.18) !important;
+    background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.035)) !important;
+  }
+
+  .nav-group {
+    background: rgba(255, 255, 255, 0.055) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .nav-item,
+  .nav-group a.nav-item,
+  .sidebar nav a.nav-item {
+    min-height: 49px !important;
+  }
+
+  .nav-item-copy strong {
+    white-space: nowrap !important;
+  }
+
+  .nav-item-copy small {
+    max-width: 162px !important;
+  }
+
+  .atlas-hero,
+  .page-header,
+  .hero-band,
+  .action-studio-hero,
+  .evidence-intake-hero,
+  .agsa-review-hero {
+    border: 1px solid rgba(230, 224, 212, 0.86) !important;
+    border-radius: 34px !important;
+    background:
+      radial-gradient(circle at 94% 8%, rgba(214, 177, 90, 0.2), transparent 22rem),
+      radial-gradient(circle at 4% 100%, rgba(11, 95, 79, 0.09), transparent 20rem),
+      linear-gradient(135deg, rgba(255,255,255,0.98), rgba(251,248,240,0.9)) !important;
+    box-shadow: var(--atlas-card-glow) !important;
+  }
+
+  .atlas-hero-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr) !important;
+  }
+
+  .atlas-hero h1,
+  .page-header h2,
+  .hero-band h2 {
+    max-width: 900px !important;
+    font-size: clamp(2.65rem, 3.85vw, 4.4rem) !important;
+    line-height: 0.96 !important;
+    letter-spacing: -0.068em !important;
+  }
+
+  .atlas-hero h1 em,
+  .page-header h2 em,
+  .hero-band h2 em {
+    display: inline !important;
+  }
+
+  .atlas-hero p,
+  .page-header p,
+  .hero-band p {
+    max-width: 720px !important;
+    font-size: clamp(0.98rem, 1.15vw, 1.08rem) !important;
+    line-height: 1.62 !important;
+  }
+
+  .atlas-hero-side,
+  .action-studio-state,
+  .evidence-intake-status,
+  .agsa-review-state {
+    align-self: stretch !important;
+    justify-content: start !important;
+  }
+
+  .metric-card,
+  .atlas-tile,
+  .panel,
+  .workflow-principle-card,
+  .action-studio-panel,
+  .evidence-action-card,
+  .agsa-source-viewer,
+  .agsa-review-queue,
+  .agsa-source-card,
+  .agsa-decision-panel,
+  .municheck-card,
+  .source-card,
+  .directory-card {
+    box-shadow: var(--atlas-card-glow) !important;
+  }
+
+  .metric-card:hover,
+  .atlas-tile:hover,
+  .panel:hover,
+  .action-studio-panel:hover,
+  .evidence-action-card:hover,
+  .municheck-card:hover,
+  .source-card:hover,
+  .directory-card:hover {
+    box-shadow: var(--atlas-card-glow-strong) !important;
+  }
+
+  .atlas-admin-metrics,
+  .atlas-workflow-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .workflow-principle-grid,
+  .briefing-status-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .action-studio-command-strip,
+  .evidence-intake-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .action-studio-toolbar,
+  .evidence-intake-toolbar {
+    align-items: center !important;
+  }
+}
+
+/* ---------- Laptop tuning ---------- */
+@media (min-width: 1181px) and (max-width: 1440px) {
+  :root {
+    --atlas-desktop-sidebar: 286px;
+    --atlas-desktop-gutter: clamp(20px, 2vw, 32px);
+  }
+
+  .nav-item-copy small {
+    max-width: 138px !important;
+  }
+
+  .nav-group-heading small,
+  .command-trigger kbd {
+    display: none !important;
+  }
+
+  .top-actions {
+    max-width: min(560px, 50vw) !important;
+  }
+
+  .command-trigger {
+    min-width: 190px !important;
+    max-width: 220px !important;
+  }
+
+  .source-pill {
+    max-width: 205px !important;
+  }
+
+  .top-actions .glass-action {
+    min-height: 38px !important;
+    padding-inline: 11px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .atlas-hero,
+  .page-header,
+  .hero-band,
+  .action-studio-hero,
+  .evidence-intake-hero,
+  .agsa-review-hero {
+    padding: clamp(24px, 3vw, 40px) !important;
+  }
+
+  .atlas-hero h1,
+  .page-header h2,
+  .hero-band h2 {
+    max-width: 780px !important;
+    font-size: clamp(2.2rem, 3.55vw, 3.55rem) !important;
+    line-height: 0.98 !important;
+  }
+
+  .atlas-hero-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.35fr) !important;
+  }
+
+  .atlas-evidence-chip,
+  .atlas-status-pill,
+  .badge {
+    font-size: 0.68rem !important;
+  }
+}
+
+/* ---------- Compact desktop and tablet polish ---------- */
+@media (max-width: 1180px) {
+  .premium-workspace.atlas-workspace,
+  .premium-workspace,
+  .atlas-workspace {
+    background: transparent !important;
+  }
+
+  .premium-topbar.atlas-topbar,
+  .premium-topbar,
+  .atlas-topbar,
+  .topbar {
+    border: 1px solid rgba(230, 224, 212, 0.76) !important;
+    border-radius: 24px !important;
+    background: rgba(255, 253, 248, 0.86) !important;
+    box-shadow: 0 16px 46px rgba(26, 37, 32, 0.06) !important;
+    padding: 12px !important;
+  }
+
+  .atlas-hero,
+  .page-header,
+  .hero-band,
+  .action-studio-hero,
+  .evidence-intake-hero,
+  .agsa-review-hero {
+    box-shadow: var(--atlas-card-glow) !important;
+  }
+}
+
+/* ---------- True mobile premium polish ---------- */
+@media (max-width: 760px) {
+  .premium-workspace.atlas-workspace,
+  .premium-workspace,
+  .atlas-workspace {
+    padding: 12px 12px 132px !important;
+  }
+
+  .premium-topbar.atlas-topbar,
+  .premium-topbar,
+  .atlas-topbar,
+  .topbar {
+    padding: 11px !important;
+    border-radius: 22px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .atlas-topbar h1,
+  .topbar h1 {
+    font-size: 1.28rem !important;
+  }
+
+  .top-actions {
+    gap: 8px !important;
+  }
+
+  .atlas-hero,
+  .page-header,
+  .hero-band,
+  .action-studio-hero,
+  .evidence-intake-hero,
+  .agsa-review-hero {
+    padding: 18px !important;
+    border-radius: 26px !important;
+  }
+
+  .atlas-hero h1,
+  .page-header h2,
+  .hero-band h2,
+  .action-studio-hero h2,
+  .evidence-intake-hero h2,
+  .agsa-review-hero h2 {
+    font-size: clamp(1.9rem, 10vw, 2.8rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.065em !important;
+  }
+
+  .metric-card,
+  .atlas-tile,
+  .panel,
+  .workflow-principle-card,
+  .action-studio-panel,
+  .evidence-action-card,
+  .agsa-source-viewer,
+  .agsa-review-queue,
+  .municheck-card,
+  .source-card,
+  .directory-card {
+    border-radius: 22px !important;
+  }
+
+  .assistant-float-button,
+  .nav-float-button {
+    min-height: 44px !important;
+    box-shadow: 0 18px 44px rgba(7, 22, 17, 0.2) !important;
+  }
+}
