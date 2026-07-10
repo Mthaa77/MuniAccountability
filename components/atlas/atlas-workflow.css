@@ -1,0 +1,266 @@
+.atlas-workflow-console {
+  display: grid;
+  gap: 18px;
+}
+
+.atlas-workflow-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.76fr) minmax(460px, 1.24fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.atlas-workflow-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.workflow-command-card,
+.workflow-checklist-card,
+.briefing-control-card,
+.briefing-preview-card,
+.workflow-principle-card {
+  display: grid;
+  gap: 16px;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid rgba(230, 224, 212, 0.9);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(200, 162, 74, 0.14), transparent 13rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(251, 250, 247, 0.72));
+  box-shadow: 0 18px 52px rgba(26, 37, 32, 0.075);
+}
+
+.workflow-command-card h2,
+.workflow-checklist-card h2,
+.briefing-control-card h2,
+.briefing-preview-card h2,
+.workflow-principle-card h2 {
+  margin: 0;
+  color: var(--atlas-ink);
+  font-size: clamp(1.45rem, 2.3vw, 2.4rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.workflow-command-card p,
+.workflow-checklist-card p,
+.briefing-control-card p,
+.briefing-preview-card p,
+.workflow-principle-card p {
+  color: var(--atlas-muted);
+  line-height: 1.64;
+}
+
+.workflow-principle-grid,
+.briefing-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.workflow-principle-card {
+  min-height: 190px;
+}
+
+.workflow-principle-card span,
+.briefing-status-card span {
+  color: var(--atlas-gold);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.kanban {
+  gap: 14px;
+  padding-bottom: 10px;
+}
+
+.kanban-column {
+  min-width: 250px;
+  padding: 14px;
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(251, 250, 247, 0.58)),
+    rgba(255, 255, 255, 0.6);
+}
+
+.kanban-header {
+  padding: 4px 4px 12px;
+}
+
+.kanban-header strong {
+  letter-spacing: -0.035em;
+}
+
+.kanban-header span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--atlas-emerald-soft);
+  color: var(--atlas-emerald);
+  font-weight: 950;
+}
+
+.kanban-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(230, 224, 212, 0.88);
+  border-radius: 22px;
+  background: rgba(255,255,255,0.76);
+  box-shadow: 0 10px 28px rgba(26, 37, 32, 0.06);
+}
+
+.kanban-card strong {
+  color: var(--atlas-ink);
+  letter-spacing: -0.035em;
+}
+
+.kanban-card p,
+.kanban-card span,
+.kanban-card small {
+  color: var(--atlas-muted);
+  line-height: 1.5;
+}
+
+.action-lifecycle {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(230,224,212,0.86);
+  border-radius: 18px;
+  background: rgba(251,250,247,0.72);
+}
+
+.action-lifecycle select,
+.action-lifecycle input {
+  min-height: 38px;
+  border: 1px solid rgba(230,224,212,0.9);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.86);
+  color: var(--atlas-ink);
+  padding: 0 12px;
+}
+
+.action-lifecycle div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.review-save-state {
+  border: 1px solid rgba(230,224,212,0.9);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.68);
+  color: var(--atlas-muted);
+  box-shadow: 0 10px 28px rgba(26,37,32,0.045);
+}
+
+.briefing-tabs {
+  display: grid;
+  gap: 10px;
+}
+
+.briefing-tabs button,
+.tabs-trigger {
+  border-radius: 22px;
+  border-color: rgba(230,224,212,0.9);
+  background: rgba(255,255,255,0.65);
+}
+
+.briefing-tabs button[aria-selected='true'],
+.briefing-tabs button.active,
+.tabs-trigger.active {
+  border-color: rgba(14,111,92,0.25);
+  background: linear-gradient(135deg, rgba(231,242,238,0.86), rgba(255,255,255,0.74));
+  box-shadow: 0 16px 34px rgba(14,111,92,0.08);
+}
+
+.briefing-readiness {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(230,224,212,0.88);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(200,162,74,0.18), transparent 9rem),
+    rgba(255,255,255,0.66);
+}
+
+.briefing-readiness span {
+  color: var(--atlas-gold);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.briefing-readiness strong {
+  color: var(--atlas-ink);
+  font-size: clamp(1.35rem, 2.2vw, 2.1rem);
+  letter-spacing: -0.06em;
+}
+
+.ui-progress {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(230,224,212,0.82);
+}
+
+.ui-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--atlas-emerald), var(--atlas-gold));
+}
+
+.briefing-preview,
+.briefing-preview-card {
+  display: grid;
+  gap: 14px;
+}
+
+.briefing-preview article,
+.briefing-preview-card article,
+.briefing-status-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(230,224,212,0.88);
+  border-radius: 22px;
+  background: rgba(255,255,255,0.68);
+}
+
+.briefing-preview article > span,
+.briefing-preview-card article > span {
+  color: var(--atlas-gold);
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+}
+
+.briefing-preview article strong,
+.briefing-preview-card article strong,
+.briefing-status-card strong {
+  color: var(--atlas-ink);
+  letter-spacing: -0.035em;
+}
+
+@media (max-width: 1180px) {
+  .atlas-workflow-grid,
+  .atlas-workflow-metrics,
+  .workflow-principle-grid,
+  .briefing-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-lifecycle div {
+    grid-template-columns: 1fr;
+  }
+}
