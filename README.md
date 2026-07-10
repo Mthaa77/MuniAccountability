@@ -15,6 +15,36 @@ The current MVP is an **AGSA-first municipal accountability workspace**. It comb
 
 The prototype deliberately marks Treasury/Municipal Money telemetry as pending validation. It does not claim live financial integration.
 
+## Developer Documentation
+
+Start with the docs hub:
+
+```txt
+docs/README.md
+```
+
+Recommended reading order:
+
+1. `docs/CODEBASE_MAP.md`
+2. `docs/ARCHITECTURE.md`
+3. `docs/FRONTEND_GUIDE.md`
+4. `docs/API_REFERENCE.md`
+5. `docs/WORKFLOW_MODULES.md`
+6. `docs/DESIGN_SYSTEM.md`
+7. `docs/CSS_LAYERS.md`
+8. `docs/DEVELOPER_ONBOARDING.md`
+9. `docs/NEXT_STEPS.md`
+10. `CODEX_CONTINUATION.md`
+
+Folder-level guides also exist in:
+
+```txt
+app/README.md
+components/README.md
+components/atlas/README.md
+lib/README.md
+```
+
 ## Local Development
 
 ```bash
@@ -77,6 +107,7 @@ Prepared providers:
 - Human-readable route summary: `/docs-api`
 - OpenAPI source: `docs/openapi.yaml`
 - Endpoint catalogue: `/v1/munidata`
+- Developer API summary: `docs/API_REFERENCE.md`
 
 Core API families include municipalities, case files, intervention queue, findings, AGSA documents, source search, assistant query, validation, production readiness, production evidence and MuniCheck.
 
