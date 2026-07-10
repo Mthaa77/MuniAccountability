@@ -11,45 +11,45 @@ export default function BriefingsPage() {
   return (
     <div className="atlas-workflow-console">
       <AtlasHero
-        kicker="Committee and executive packs"
-        title="Generate source-cited decision packs"
-        emphasis="with review discipline."
-        description="Choose a briefing template, inspect required sections, keep every assertion tied to AGSA-backed evidence, and exclude Treasury-derived values until validation gates pass."
+        kicker="Briefing Builder"
+        title="Create clear decision packs people can actually use"
+        emphasis="without losing the evidence."
+        description="Choose a briefing type, check the required sections and make sure every important statement links back to a source. Financial values stay out until the Treasury checks are complete."
         side={
           <>
-            <AtlasEvidenceChip source="AGSA citations required" />
-            <AtlasEvidenceChip source="Treasury values excluded" state="locked" />
-            <AtlasEvidenceChip source="Reviewer package mode" state="pending" />
+            <AtlasEvidenceChip source="Citations required" />
+            <AtlasEvidenceChip source="Financial values locked" state="locked" />
+            <AtlasEvidenceChip source="Reviewer check needed" state="pending" />
           </>
         }
       >
-        <AtlasStatusPill>Briefing builder</AtlasStatusPill>
-        <AtlasStatusPill tone="gold">Source lock</AtlasStatusPill>
-        <AtlasStatusPill tone="risk">Treasury gate respected</AtlasStatusPill>
+        <AtlasStatusPill>Build a briefing</AtlasStatusPill>
+        <AtlasStatusPill tone="gold">Check sources</AtlasStatusPill>
+        <AtlasStatusPill tone="risk">Keep unsafe numbers out</AtlasStatusPill>
       </AtlasHero>
 
       <section className="atlas-workflow-metrics" aria-label="Briefing workspace summary">
-        <AtlasMetricTile title="Briefings" value={String(briefings.length)} note="Decision packs available in the prototype workspace" icon={FileText} />
-        <AtlasMetricTile title="In review" value={String(reviewBriefings)} note="Briefing packs waiting for reviewer confirmation" tone="gold" icon={BookOpenCheck} />
-        <AtlasMetricTile title="Drafts" value={String(draftBriefings)} note="Packs still being assembled with evidence sections" tone="blue" icon={LockKeyhole} />
-        <AtlasMetricTile title="Source refs" value={String(sourceRefs)} note="AGSA source references attached to briefing templates" tone="good" icon={ShieldCheck} />
+        <AtlasMetricTile title="Briefings" value={String(briefings.length)} note="Decision packs available in this workspace" icon={FileText} />
+        <AtlasMetricTile title="In review" value={String(reviewBriefings)} note="Packs waiting for source and wording checks" tone="gold" icon={BookOpenCheck} />
+        <AtlasMetricTile title="Drafts" value={String(draftBriefings)} note="Packs still being assembled" tone="blue" icon={LockKeyhole} />
+        <AtlasMetricTile title="Source links" value={String(sourceRefs)} note="Evidence references already attached" tone="good" icon={ShieldCheck} />
       </section>
 
       <section className="briefing-status-grid">
         <article className="briefing-status-card">
-          <span>Guardrail</span>
+          <span>Rule</span>
           <strong>No source, no claim</strong>
-          <p>Briefing output should never make unsupported assertions. Every decision note needs an evidence trail.</p>
+          <p>If a statement cannot be traced to evidence, leave it out or mark it for review.</p>
         </article>
         <article className="briefing-status-card">
           <span>Gate</span>
-          <strong>Treasury excluded</strong>
-          <p>Financial Pulse and Municipal Money values stay out until connector, schema, formula and freshness gates pass.</p>
+          <strong>Do not use unverified numbers</strong>
+          <p>Financial Pulse values stay locked until the source, formula and freshness checks pass.</p>
         </article>
         <article className="briefing-status-card">
-          <span>Audience</span>
-          <strong>Executive-ready</strong>
-          <p>Templates should read like decision packs, not raw dashboards, with clear actions, risks and next evidence gates.</p>
+          <span>Goal</span>
+          <strong>Make decisions easier</strong>
+          <p>A good briefing should explain the risk, the evidence, the decision needed and the next step.</p>
         </article>
       </section>
 
