@@ -32,9 +32,13 @@ Recommended reading order:
 5. `docs/WORKFLOW_MODULES.md`
 6. `docs/DESIGN_SYSTEM.md`
 7. `docs/CSS_LAYERS.md`
-8. `docs/DEVELOPER_ONBOARDING.md`
-9. `docs/NEXT_STEPS.md`
-10. `CODEX_CONTINUATION.md`
+8. `docs/TESTING_STRATEGY.md`
+9. `docs/DEVELOPER_ONBOARDING.md`
+10. `docs/QA_CHECKLIST.md`
+11. `docs/DEPLOYMENT_RUNBOOK.md`
+12. `docs/REPO_MAINTENANCE.md`
+13. `docs/NEXT_STEPS.md`
+14. `CODEX_CONTINUATION.md`
 
 Folder-level guides also exist in:
 
@@ -69,9 +73,17 @@ Focused checks are also available:
 ```bash
 npm run typecheck
 npm run build
+npm run test:institutional
+npm run test:institutional-api-contracts
+npm run test:institutional-workflows
+npm run test:public-safety-contracts
+npm run test:css-authority-layers
+npm run test:documentation-completeness
 npm run test:production-readiness
 npm run test:production-evidence
 ```
+
+The institutional suite protects API contracts, workflow wiring, public-safety rules, CSS authority layers and documentation completeness.
 
 ## Firebase and GCP Preparation
 
