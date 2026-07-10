@@ -31,57 +31,57 @@ import { Skeleton } from "@/components/ui/feedback";
 const navGroups = [
   {
     label: "Command",
-    eyebrow: "Live workspace",
+    eyebrow: "Start here",
     items: [
-      { href: "/", label: "Overview", hint: "Executive cockpit", icon: Gauge, badge: "Core" },
-      { href: "/intervention-queue", label: "Intervention Queue", hint: "Ranked risk worklist", icon: Siren, badge: "Priority" },
-      { href: "/search", label: "Ask the Evidence", hint: "Source-locked search", icon: Search, badge: "Ctrl K" }
+      { href: "/", label: "Home", hint: "What needs attention today", icon: Gauge, badge: "Main" },
+      { href: "/intervention-queue", label: "Priority Queue", hint: "Ranked risks and next steps", icon: Siren, badge: "Urgent" },
+      { href: "/search", label: "Find Evidence", hint: "Search sources before you claim", icon: Search, badge: "Ctrl K" }
     ]
   },
   {
     label: "Evidence",
-    eyebrow: "Source chain",
+    eyebrow: "Proof first",
     items: [
-      { href: "/municipalities", label: "Municipalities", hint: "Case-file directory", icon: Landmark },
-      { href: "/findings", label: "Findings", hint: "AGSA issue register", icon: ClipboardCheck },
-      { href: "/sources", label: "Source Vault", hint: "Provenance & freshness", icon: Database, badge: "Guarded" },
-      { href: "/admin/data-quality", label: "Data Quality", hint: "Validation console", icon: ShieldCheck }
+      { href: "/municipalities", label: "Municipalities", hint: "Open a municipal case file", icon: Landmark },
+      { href: "/findings", label: "Audit Findings", hint: "Issues found in the source reports", icon: ClipboardCheck },
+      { href: "/sources", label: "Source Library", hint: "Documents, freshness and proof", icon: Database, badge: "Proof" },
+      { href: "/admin/data-quality", label: "Data Checks", hint: "What still needs review", icon: ShieldCheck }
     ]
   },
   {
     label: "Workflow",
-    eyebrow: "Execution layer",
+    eyebrow: "Get work done",
     items: [
-      { href: "/actions", label: "Action Board", hint: "Evidence lifecycle", icon: ClipboardCheck },
-      { href: "/recovery", label: "Recovery Room", hint: "Weekly rhythm", icon: BriefcaseBusiness },
-      { href: "/briefings", label: "Briefings", hint: "Decision packs", icon: FileText, badge: "Build" },
-      { href: "/financial-pulse", label: "Financial Pulse", hint: "Treasury-gated telemetry", icon: BarChart3, badge: "Locked" }
+      { href: "/actions", label: "Action Board", hint: "Track owners, evidence and review", icon: ClipboardCheck },
+      { href: "/recovery", label: "Recovery Room", hint: "Follow turnaround milestones", icon: BriefcaseBusiness },
+      { href: "/briefings", label: "Briefing Builder", hint: "Create clear decision packs", icon: FileText, badge: "Build" },
+      { href: "/financial-pulse", label: "Financial Pulse", hint: "Locked until numbers are verified", icon: BarChart3, badge: "Locked" }
     ]
   },
   {
     label: "Public",
-    eyebrow: "Citizen layer",
+    eyebrow: "Share safely",
     items: [
-      { href: "/municheck", label: "MuniCheck", hint: "Plain-language profiles", icon: ShieldCheck },
-      { href: "/munidata", label: "MuniData", hint: "API and export catalogue", icon: Archive }
+      { href: "/municheck", label: "MuniCheck", hint: "Public-friendly audit profiles", icon: ShieldCheck },
+      { href: "/munidata", label: "MuniData", hint: "API routes and exports", icon: Archive }
     ]
   },
   {
     label: "System",
-    eyebrow: "Controls",
+    eyebrow: "Admin",
     items: [
-      { href: "/admin", label: "Admin", hint: "Readiness gate-room", icon: Layers3, badge: "Gate" },
-      { href: "/docs-api", label: "API Docs", hint: "OpenAPI contract", icon: UsersRound }
+      { href: "/admin", label: "Readiness Gate", hint: "Production checks and blockers", icon: Layers3, badge: "Gate" },
+      { href: "/docs-api", label: "API Docs", hint: "How integrations should connect", icon: UsersRound }
     ]
   }
 ];
 
 const quickActions = [
-  { href: "/intervention-queue", label: "Open intervention queue", hint: "Ranked AGSA-backed worklist" },
-  { href: "/actions", label: "Review action board", hint: "Workflow and evidence lifecycle" },
-  { href: "/briefings", label: "Generate weekly brief", hint: "Source-cited briefing workspace" },
-  { href: "/sources", label: "Inspect source vault", hint: "Freshness, gates, and guardrails" },
-  { href: "/admin/agsa-review", label: "Resolve AGSA review issues", hint: "Publication blockers and corrections" }
+  { href: "/intervention-queue", label: "See what needs attention", hint: "Open the ranked municipal risk queue" },
+  { href: "/actions", label: "Check action progress", hint: "Review owners, evidence and approvals" },
+  { href: "/briefings", label: "Build a briefing", hint: "Prepare a source-backed decision pack" },
+  { href: "/sources", label: "Verify a source", hint: "Check documents, freshness and review state" },
+  { href: "/admin/agsa-review", label: "Review extraction issues", hint: "Fix low-confidence source text before publishing" }
 ];
 
 function isActive(pathname: string, href: string) {
@@ -97,15 +97,15 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
           <div className="brand-mark">MA</div>
           <div className="nav-brand-copy">
             <strong>MuniAtlas</strong>
-            <span>Evidence Command</span>
+            <span>Municipal Accountability Command</span>
           </div>
         </Link>
       </div>
 
       <div className="nav-command-card" aria-label="Navigation status">
         <div>
-          <span className="nav-command-kicker">Command status</span>
-          <strong>{healthLabel ?? "Source-aware workspace"}</strong>
+          <span className="nav-command-kicker">System status</span>
+          <strong>{healthLabel ?? "Checking source health"}</strong>
         </div>
         <span className={`nav-status-light ${sourceState ?? "ready"}`} />
       </div>
@@ -148,13 +148,13 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
 
       <div className="sidebar-card evidence-lock nav-footer-card">
         <div>
-          <span className="nav-command-kicker">Evidence thread</span>
-          <strong>Claim discipline active</strong>
+          <span className="nav-command-kicker">Trust rule</span>
+          <strong>No proof, no public claim</strong>
         </div>
-        <p>Every publishable claim should trace back to a source, review state and confidence signal.</p>
+        <p>Before anything is published, it should have a source, a review state and a clear confidence signal.</p>
         <div className="nav-footer-actions">
-          <Link href="/sources" onClick={onNavigate}>Source Vault</Link>
-          <Link href="/admin" onClick={onNavigate}>Gate Room</Link>
+          <Link href="/sources" onClick={onNavigate}>Sources</Link>
+          <Link href="/admin" onClick={onNavigate}>Readiness</Link>
         </div>
       </div>
     </>
@@ -176,7 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     [query]
   );
   const degradedCount = sources.filter((source) => source.status !== "healthy").length;
-  const healthLabel = sourceState === "loading" ? "Loading source health" : sourceState === "error" ? "Source status unavailable" : degradedCount ? `${degradedCount} source gate(s)` : "Sources healthy";
+  const healthLabel = sourceState === "loading" ? "Checking sources" : sourceState === "error" ? "Source status unavailable" : degradedCount ? `${degradedCount} source gate(s) need review` : "Sources look healthy";
 
   useEffect(() => {
     const controller = new AbortController();
@@ -215,13 +215,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu size={18} />
           </button>
           <div>
-            <p className="eyeless">Source-backed municipal intelligence</p>
-            <h1>MuniAccountability Atlas</h1>
+            <p className="eyeless">Source-backed municipal oversight</p>
+            <h1>MuniAccountability Command</h1>
           </div>
           <div className="top-actions" aria-label="Workspace controls">
             <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}>
               <Search size={18} />
-              <span>Search command</span>
+              <span>Search pages and evidence</span>
               <kbd>Ctrl K</kbd>
             </button>
             <div className={`source-pill ${sourceState}`}>
@@ -230,30 +230,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <Link className="secondary-action glass-action" href="/sources">
               <PanelRightOpen size={17} />
-              Source vault
+              Check sources
             </Link>
             <Link className="primary-action glass-action" href="/briefings">
               <WandSparkles size={17} />
-              Generate brief
+              Build briefing
             </Link>
           </div>
         </header>
         {children}
       </div>
 
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="MuniAtlas navigation">
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="MuniAtlas menu">
         <div className="mobile-nav-panel">
           <NavigationContent pathname={pathname} onNavigate={() => setMenuOpen(false)} sourceState={sourceState} healthLabel={healthLabel} />
         </div>
       </Sheet>
 
-      <Dialog open={commandOpen} onOpenChange={setCommandOpen} title="Command palette" className="command-dialog">
+      <Dialog open={commandOpen} onOpenChange={setCommandOpen} title="Search the command centre" className="command-dialog">
         <Command>
           <CommandInput
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search routes, workflows, source gates..."
+            placeholder="Search pages, sources, workflows or review gates..."
           />
           <CommandList>
             <CommandGroup>
@@ -265,7 +265,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 </CommandItem>
               ))}
-              {!commandItems.length ? <div className="command-empty">No matching command.</div> : null}
+              {!commandItems.length ? <div className="command-empty">No match yet. Try “sources”, “briefing”, “audit” or “queue”.</div> : null}
             </CommandGroup>
           </CommandList>
         </Command>
