@@ -30,7 +30,10 @@
     "test:institutional-workflows": "node scripts/verify-institutional-workflow-modules.mjs",
     "test:public-safety-contracts": "node scripts/verify-public-safety-contracts.mjs",
     "test:css-authority-layers": "node scripts/verify-css-authority-layers.mjs",
-    "test:documentation-completeness": "node scripts/verify-documentation-completeness.mjs"
+    "test:documentation-completeness": "node scripts/verify-documentation-completeness.mjs",
+    "test:e2e": "npx -y @playwright/test@1.49.1 test",
+    "test:e2e:headed": "npx -y @playwright/test@1.49.1 test --headed",
+    "test:e2e:install": "npx -y @playwright/test@1.49.1 install chromium"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
