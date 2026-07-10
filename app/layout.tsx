@@ -26,6 +26,7 @@ import "@/components/atlas/atlas-agsa-review-ultra.css";
 import "@/components/atlas/atlas-compact-desktop-rescue.css";
 import "@/components/atlas/atlas-desktop-shell-fix.css";
 import "@/components/atlas/atlas-device-polish.css";
+import "@/components/atlas/atlas-button-system.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",
