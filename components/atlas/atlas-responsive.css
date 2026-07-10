@@ -1,0 +1,722 @@
+/*
+  Atlas Responsive + Media Layer
+  Loaded after the rescue layer. Handles SVG/chart/image-like visuals,
+  grid overflow, mobile navigation, and desktop rhythm.
+*/
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  min-width: 320px;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+img,
+picture,
+video,
+canvas {
+  display: block;
+  height: auto;
+}
+
+svg {
+  overflow: visible;
+}
+
+* {
+  min-width: 0;
+}
+
+.app-shell,
+.premium-shell {
+  width: 100%;
+}
+
+.premium-workspace,
+.workspace {
+  min-width: 0;
+  width: 100%;
+}
+
+.atlas-page-stack,
+.atlas-workflow-console,
+.atlas-admin-console,
+.municheck-public {
+  width: 100%;
+  max-width: 1480px;
+  margin-inline: auto;
+}
+
+.panel,
+.atlas-hero,
+.page-header,
+.hero-band,
+.atlas-tile,
+.metric-card,
+.municheck-card,
+.kanban-card,
+.chart-card,
+.source-card,
+.directory-card,
+.review-card,
+.atlas-search-result {
+  overflow-wrap: anywhere;
+}
+
+.atlas-hero,
+.page-header,
+.hero-band {
+  margin-bottom: clamp(16px, 2vw, 24px);
+}
+
+.atlas-hero-grid {
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.58fr) !important;
+  align-items: stretch !important;
+}
+
+.atlas-hero-side {
+  align-self: stretch;
+  align-content: start;
+}
+
+.atlas-hero h1,
+.page-header h2,
+.hero-band h2 {
+  font-size: clamp(2.4rem, 5vw, 4.8rem) !important;
+}
+
+.atlas-queue-brief,
+.atlas-admin-metrics,
+.atlas-workflow-metrics,
+.metrics-grid,
+.product-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: clamp(12px, 1.4vw, 18px) !important;
+}
+
+.main-grid,
+.case-file-grid,
+.workspace-split,
+.command-layout,
+.atlas-vault-grid,
+.atlas-validation-grid,
+.atlas-workflow-grid,
+.atlas-admin-grid,
+.municheck-directory,
+.municheck-profile-grid,
+.municheck-plain-grid,
+.municheck-boundary-grid,
+.workflow-principle-grid,
+.briefing-status-grid,
+.atlas-dossier-grid,
+.atlas-finding-grid,
+.atlas-breakdown-grid {
+  gap: clamp(14px, 1.6vw, 22px) !important;
+}
+
+.municheck-directory,
+.atlas-finding-grid,
+.workflow-principle-grid,
+.briefing-status-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+}
+
+.municheck-profile-grid,
+.municheck-plain-grid,
+.municheck-boundary-grid,
+.atlas-workflow-grid,
+.atlas-admin-grid,
+.atlas-validation-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)) !important;
+}
+
+.case-file-grid,
+.main-grid,
+.workspace-split,
+.command-layout,
+.atlas-vault-grid,
+.atlas-dossier-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+@media (min-width: 1240px) {
+  .main-grid,
+  .workspace-split,
+  .case-file-grid,
+  .atlas-dossier-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr) !important;
+  }
+
+  .command-layout {
+    grid-template-columns: minmax(260px, 0.72fr) minmax(480px, 1.28fr) minmax(300px, 0.85fr) !important;
+  }
+
+  .atlas-vault-grid,
+  .atlas-workflow-grid,
+  .atlas-admin-grid {
+    grid-template-columns: minmax(320px, 0.8fr) minmax(520px, 1.2fr) !important;
+  }
+}
+
+.panel.wide,
+.chart-card-wide,
+.atlas-validation-card,
+.atlas-release-room,
+.atlas-intake-room,
+.atlas-gate-room,
+.atlas-quality-room {
+  grid-column: 1 / -1;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 18px;
+}
+
+table {
+  min-width: 760px !important;
+}
+
+th,
+td {
+  white-space: normal;
+}
+
+.compact-list article,
+.metric-list article > div,
+.action-card,
+.briefing-list article,
+.source-stack article,
+.panel-header,
+.municheck-section-header,
+.atlas-gate-header,
+.atlas-intake-header,
+.atlas-quality-header,
+.chart-card-header {
+  gap: 12px;
+}
+
+.primary-action,
+.secondary-action,
+.primary-link,
+.secondary-link,
+.text-action,
+.command-trigger,
+.icon-button,
+button,
+a {
+  max-width: 100%;
+}
+
+.primary-link,
+.secondary-action,
+.primary-action,
+.text-action {
+  white-space: normal;
+  text-align: center;
+}
+
+.atlas-hero-actions,
+.top-actions,
+.hero-actions,
+.case-meta,
+.atlas-evidence-pills,
+.atlas-release-list,
+.municheck-field-list,
+.atlas-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.atlas-status-pill,
+.badge,
+.source-pill,
+.municheck-soft-pill,
+.case-meta span,
+.check-list span,
+.agenda-list span,
+.atlas-evidence-pills span,
+.municheck-field-list span {
+  max-width: 100%;
+  white-space: normal !important;
+  line-height: 1.28;
+  min-height: 32px;
+  padding-block: 6px;
+}
+
+/* Risk atlas and SVG image-like visuals */
+.risk-atlas {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.risk-atlas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 260px;
+  max-height: 520px;
+  border-radius: 18px;
+}
+
+.atlas-point text {
+  pointer-events: none;
+  fill: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.atlas-label {
+  fill: #10201a !important;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.atlas-grid {
+  stroke: rgba(16, 32, 26, 0.22);
+  stroke-width: 1.2;
+}
+
+.atlas-province {
+  stroke: rgba(16, 32, 26, 0.18);
+  stroke-width: 2;
+}
+
+.atlas-inspector {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--atlas-line);
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.atlas-inspector span {
+  color: var(--atlas-emerald) !important;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.atlas-inspector strong {
+  font-size: 1.1rem;
+}
+
+/* Advanced chart visuals */
+.advanced-chart-grid,
+.validation-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(14px, 1.6vw, 22px);
+  width: 100%;
+}
+
+.chart-card,
+.validation-matrix .chart-card {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: clamp(18px, 2vw, 28px);
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 24px;
+  background: #ffffff !important;
+  box-shadow: var(--atlas-shadow-soft) !important;
+}
+
+.chart-card-wide {
+  grid-column: 1 / -1;
+}
+
+.radial-stage {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.radial-stage svg {
+  width: min(180px, 48vw);
+  height: auto;
+}
+
+.radial-track {
+  fill: none;
+  stroke: #e4ddd0;
+  stroke-width: 10;
+}
+
+.radial-value {
+  fill: none;
+  stroke: var(--atlas-emerald);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.radial-stage strong {
+  display: block;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 0.95;
+}
+
+.radial-stage span {
+  color: var(--atlas-muted) !important;
+  font-weight: 800;
+}
+
+.bar-3d-chart {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  min-height: 220px;
+  overflow-x: auto;
+  padding: 8px 4px 2px;
+}
+
+.bar-3d {
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  gap: 8px;
+  min-width: 88px;
+  min-height: 190px;
+  padding: 10px;
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 18px;
+  background: #fbf8f0 !important;
+  color: var(--atlas-heading) !important;
+}
+
+.bar-3d span {
+  display: block;
+  width: 28px;
+  height: var(--bar-height);
+  min-height: 22px;
+  border-radius: 999px 999px 8px 8px;
+  background: var(--atlas-emerald);
+}
+
+.bar-3d.active {
+  border-color: var(--atlas-emerald) !important;
+  background: var(--atlas-emerald-soft) !important;
+}
+
+.bar-3d em {
+  color: var(--atlas-muted) !important;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 850;
+  text-align: center;
+}
+
+.timeline-rail,
+.matrix-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.timeline-rail article,
+.matrix-cell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 18px;
+  background: #fbf8f0 !important;
+}
+
+.matrix-grid {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.matrix-cell {
+  grid-template-columns: auto minmax(0, 1fr);
+  text-align: left;
+}
+
+.matrix-cell em,
+.timeline-rail em,
+.timeline-rail span,
+.matrix-cell span {
+  color: var(--atlas-muted) !important;
+  font-style: normal;
+}
+
+.rail-dot,
+.matrix-led {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--atlas-blue);
+}
+
+.rail-dot.tone-risk,
+.matrix-led.tone-risk {
+  background: var(--atlas-clay);
+}
+
+.rail-dot.tone-watch,
+.matrix-led.tone-watch {
+  background: var(--atlas-gold);
+}
+
+.rail-dot.tone-good,
+.matrix-led.tone-good {
+  background: var(--atlas-green);
+}
+
+.formula-meter {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4ddd0;
+}
+
+.formula-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--atlas-emerald);
+}
+
+/* Card spacing rhythm */
+.panel,
+.atlas-tile,
+.metric-card,
+.municheck-card,
+.workflow-principle-card,
+.briefing-status-card,
+.atlas-search-result,
+.source-card,
+.directory-card {
+  padding: clamp(16px, 1.8vw, 24px) !important;
+}
+
+.evidence-list dd,
+.evidence-list dt,
+.source-card,
+.directory-card,
+.kanban-card,
+.timeline-rail article,
+.matrix-cell {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1180px) {
+  .premium-shell {
+    grid-template-columns: 1fr !important;
+  }
+
+  .premium-sidebar,
+  .sidebar {
+    position: relative !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .nav-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px !important;
+  }
+
+  .sidebar-card {
+    margin-top: 0 !important;
+  }
+
+  .premium-topbar,
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+  }
+
+  .atlas-hero-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .premium-workspace,
+  .workspace {
+    padding: 14px !important;
+  }
+
+  .premium-topbar,
+  .topbar {
+    display: grid !important;
+    gap: 12px;
+    margin-inline: -14px !important;
+    padding: 12px 14px !important;
+  }
+
+  .top-actions {
+    justify-content: flex-start !important;
+  }
+
+  .brand-lockup {
+    width: 100%;
+  }
+
+  .nav-groups {
+    grid-template-columns: 1fr !important;
+  }
+
+  .nav-group {
+    padding: 10px !important;
+  }
+
+  .nav-group nav,
+  .sidebar nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px;
+  }
+
+  .nav-group a,
+  .sidebar nav a {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 0.84rem;
+  }
+
+  .atlas-hero,
+  .page-header,
+  .hero-band {
+    padding: 18px !important;
+  }
+
+  .atlas-hero h1,
+  .page-header h2,
+  .hero-band h2 {
+    font-size: clamp(2.05rem, 11vw, 3.2rem) !important;
+    letter-spacing: -0.045em !important;
+  }
+
+  .atlas-hero p:not(.eyeless),
+  .page-header p:not(.eyeless),
+  .hero-band p:not(.eyeless),
+  .lead {
+    font-size: 0.96rem !important;
+    line-height: 1.62 !important;
+  }
+
+  .atlas-queue-brief,
+  .atlas-admin-metrics,
+  .atlas-workflow-metrics,
+  .metrics-grid,
+  .product-strip,
+  .municheck-directory,
+  .workflow-principle-grid,
+  .briefing-status-grid,
+  .advanced-chart-grid,
+  .validation-matrix {
+    grid-template-columns: 1fr !important;
+  }
+
+  .panel-header,
+  .municheck-section-header,
+  .atlas-gate-header,
+  .atlas-intake-header,
+  .atlas-quality-header,
+  .chart-card-header {
+    display: grid !important;
+    justify-content: stretch !important;
+  }
+
+  .risk-atlas svg {
+    min-height: 220px;
+  }
+
+  .atlas-point text {
+    font-size: 0.6rem;
+  }
+
+  .atlas-label {
+    font-size: 0.68rem;
+  }
+
+  .radial-stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .bar-3d-chart {
+    min-height: 180px;
+  }
+
+  .bar-3d {
+    min-height: 160px;
+    min-width: 74px;
+  }
+
+  .timeline-rail article,
+  .matrix-cell {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .timeline-rail article em {
+    grid-column: 2;
+  }
+
+  table {
+    min-width: 680px !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .nav-group nav,
+  .sidebar nav {
+    grid-template-columns: 1fr !important;
+  }
+
+  .atlas-status-pill,
+  .badge,
+  .source-pill,
+  .primary-action,
+  .secondary-action,
+  .primary-link,
+  .text-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .atlas-hero-actions,
+  .top-actions,
+  .hero-actions,
+  .atlas-result-meta,
+  .case-meta {
+    display: grid !important;
+    grid-template-columns: 1fr;
+  }
+
+  .risk-atlas svg {
+    min-height: 190px;
+  }
+}
