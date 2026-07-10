@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Badge, PageHeader, severityLabel } from "@/components/ui";
+import { AlertTriangle, FileSearch, Gauge, ShieldCheck } from "lucide-react";
+import { Badge, severityLabel } from "@/components/ui";
+import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { getDecisionForCitation } from "@/lib/agsa-review-store";
 import { agsaFindings, getFindingDetail } from "@/lib/pilot-data";
 
@@ -13,15 +15,35 @@ export default function FindingDetailPage({ params }: { params: { findingId: str
   if (!finding) notFound();
 
   const reviewDecision = getDecisionForCitation(finding.citationId);
+  const reviewStatus = reviewDecision?.status ?? "not reviewed";
 
   return (
-    <>
-      <PageHeader
+    <div className="atlas-page-stack">
+      <AtlasHero
         kicker="AGSA finding detail"
         title={finding.subtheme}
+        emphasis="source trail."
         description={finding.description}
-        actions={<Badge tone={finding.severity}>{severityLabel[finding.severity]}</Badge>}
-      />
+        side={
+          <>
+            <AtlasEvidenceChip source={severityLabel[finding.severity]} state={finding.severity === "critical" ? "locked" : "pending"} />
+            <AtlasEvidenceChip source={finding.source.qualityState.replaceAll("_", " ")} />
+            <AtlasEvidenceChip source={reviewStatus.replaceAll("_", " ")} state={reviewDecision?.status === "accepted" ? "reviewed" : "pending"} />
+          </>
+        }
+      >
+        <AtlasStatusPill tone={finding.severity === "critical" ? "risk" : "gold"}>{severityLabel[finding.severity]}</AtlasStatusPill>
+        <AtlasStatusPill>Finding impact</AtlasStatusPill>
+        <AtlasStatusPill tone="gold">Citation required</AtlasStatusPill>
+      </AtlasHero>
+
+      <section className="atlas-queue-brief" aria-label="Finding detail summary">
+        <AtlasMetricTile title="Severity" value={severityLabel[finding.severity]} note="AGSA-derived risk severity used for workflow prioritisation" tone={finding.severity === "critical" ? "risk" : "gold"} icon={Gauge} />
+        <AtlasMetricTile title="Repeat" value={finding.repeatFlag ? "Yes" : "No"} note="Indicates whether the finding repeats across reporting context" tone={finding.repeatFlag ? "risk" : "good"} icon={AlertTriangle} />
+        <AtlasMetricTile title="Related" value={String(finding.relatedMunicipalities.length)} note="Municipalities linked to this finding" tone="blue" icon={FileSearch} />
+        <AtlasMetricTile title="Review" value={reviewStatus.replaceAll("_", " ")} note="Citation review state from the governance overlay" tone={reviewDecision?.status === "accepted" ? "good" : "gold"} icon={ShieldCheck} />
+      </section>
+
       <section className="case-file-grid">
         <section className="panel">
           <div className="panel-header">
@@ -29,7 +51,7 @@ export default function FindingDetailPage({ params }: { params: { findingId: str
               <p className="eyeless">Finding impact</p>
               <h2>Why it matters</h2>
             </div>
-            <Badge tone={reviewDecision?.status ?? "watch"}>{reviewDecision?.status ?? "not reviewed"}</Badge>
+            <Badge tone={reviewDecision?.status ?? "watch"}>{reviewStatus}</Badge>
           </div>
           <p className="lead">{finding.impact}</p>
           <dl className="evidence-list">
@@ -89,6 +111,6 @@ export default function FindingDetailPage({ params }: { params: { findingId: str
           <p className="lead">{finding.methodologyNote}</p>
         </section>
       </section>
-    </>
+    </div>
   );
 }
