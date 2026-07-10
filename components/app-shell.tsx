@@ -27,6 +27,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Sheet } from "@/components/ui/sheet";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/feedback";
+import { FreeAssistant } from "@/components/atlas/free-assistant";
 
 const navGroups = [
   {
@@ -213,6 +214,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Menu size={17} />
         <span>Menu</span>
       </button>
+
+      <FreeAssistant />
 
       <div className="premium-workspace atlas-workspace">
         <header className="topbar premium-topbar atlas-topbar">
