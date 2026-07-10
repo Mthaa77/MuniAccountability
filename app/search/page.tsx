@@ -6,10 +6,14 @@ import { searchAgsaEvidence } from "@/lib/source-search";
 
 const prompts = ["water", "irregular expenditure", "material irregularity", "clean audit", "Tshwane"];
 
+function isPublishableState(state?: string) {
+  return state === "publishable" || state === "corrected";
+}
+
 export default function SearchPage({ searchParams }: { searchParams: { q?: string } }) {
   const query = searchParams.q ?? "";
   const results = searchAgsaEvidence(query, 12);
-  const reviewedCount = results.filter((result) => result.reviewStatus === "accepted" || result.publicationState === "published").length;
+  const reviewedCount = results.filter((result) => result.reviewStatus === "accepted" || isPublishableState(result.publicationState)).length;
 
   return (
     <div className="atlas-page-stack">
@@ -76,7 +80,7 @@ export default function SearchPage({ searchParams }: { searchParams: { q?: strin
                 <p className="eyeless">{result.type.replaceAll("_", " ")}</p>
                 <h2>{result.title}</h2>
               </div>
-              <Badge tone={result.publicationState === "published" ? "healthy" : "watch"}>{result.publicationState?.replaceAll("_", " ") ?? "needs review"}</Badge>
+              <Badge tone={isPublishableState(result.publicationState) ? "healthy" : "watch"}>{result.publicationState?.replaceAll("_", " ") ?? "needs review"}</Badge>
             </header>
             <p>{result.summary}</p>
             <small>
