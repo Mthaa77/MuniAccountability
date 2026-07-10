@@ -1,0 +1,490 @@
+/*
+  Atlas Rescue Layer
+  Loaded last on purpose. This removes fragile glass overlap, restores contrast,
+  and gives the product a cleaner institutional design language.
+*/
+
+:root {
+  --atlas-bg: #f4f1e8;
+  --atlas-page: #f7f4ed;
+  --atlas-panel: #fffdf8;
+  --atlas-panel-strong: #ffffff;
+  --atlas-ink: #10201a;
+  --atlas-heading: #071611;
+  --atlas-muted: #4f5f59;
+  --atlas-subtle: #738079;
+  --atlas-line: #d8d0c2;
+  --atlas-line-strong: #bfb5a5;
+  --atlas-emerald: #0b5f4f;
+  --atlas-emerald-ink: #06362e;
+  --atlas-emerald-soft: #e4f0eb;
+  --atlas-gold: #8a6419;
+  --atlas-gold-soft: #f4ead0;
+  --atlas-clay: #a9473b;
+  --atlas-clay-soft: #f7e4df;
+  --atlas-blue: #345f86;
+  --atlas-blue-soft: #e6eef5;
+  --atlas-green: #2f6d4b;
+  --atlas-shadow-soft: 0 14px 34px rgba(14, 26, 21, 0.08);
+  --atlas-shadow-lift: 0 20px 54px rgba(14, 26, 21, 0.13);
+  --atlas-radius: 22px;
+  --atlas-radius-sm: 14px;
+}
+
+html,
+body {
+  color: var(--atlas-ink);
+  background: var(--atlas-page) !important;
+}
+
+body::before,
+.atlas-hero::after,
+.page-header::after,
+.metric-card::after,
+.atlas-tile::after {
+  display: none !important;
+}
+
+body,
+body * {
+  text-rendering: optimizeLegibility;
+}
+
+body p,
+body li,
+body dd,
+body td,
+body small,
+.lead,
+.atlas-tile-note,
+.municheck-card p,
+.workflow-command-card p,
+.workflow-checklist-card p,
+.briefing-preview p,
+.briefing-status-card p,
+.atlas-gate-card p,
+.atlas-intake-card p,
+.atlas-quality-card p,
+.atlas-search-result p,
+.source-card p,
+.directory-card p {
+  color: var(--atlas-muted) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+strong,
+.panel h2,
+.atlas-hero h1,
+.atlas-tile-value,
+.kanban-card strong,
+.municheck-card h2,
+.workflow-principle-card h2,
+.briefing-status-card strong,
+.atlas-gate-card strong,
+.atlas-intake-card strong,
+.atlas-quality-card strong,
+.atlas-search-result h2 {
+  color: var(--atlas-heading) !important;
+}
+
+.app-shell,
+.premium-shell {
+  background: var(--atlas-page) !important;
+}
+
+.premium-sidebar,
+.sidebar {
+  background: #10201a !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 10px 0 30px rgba(14, 26, 21, 0.08) !important;
+  backdrop-filter: none !important;
+}
+
+.premium-sidebar *,
+.sidebar * {
+  color: rgba(255, 255, 255, 0.84) !important;
+}
+
+.brand-lockup,
+.nav-group,
+.sidebar-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.brand-mark {
+  background: linear-gradient(145deg, #d6b15a, #8a6419) !important;
+  color: #10201a !important;
+  box-shadow: none !important;
+}
+
+.nav-group > span {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.nav-group a,
+.sidebar nav a {
+  color: rgba(255, 255, 255, 0.74) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.nav-group a:hover,
+.nav-group a.active,
+.sidebar nav a:hover,
+.sidebar nav a.active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 3px 0 0 #d6b15a !important;
+}
+
+.premium-workspace,
+.workspace {
+  background: var(--atlas-page) !important;
+}
+
+.premium-topbar,
+.topbar {
+  background: rgba(247, 244, 237, 0.96) !important;
+  border-bottom: 1px solid var(--atlas-line) !important;
+  backdrop-filter: none !important;
+}
+
+.premium-topbar *,
+.topbar * {
+  color: var(--atlas-heading) !important;
+}
+
+.atlas-hero,
+.page-header,
+.hero-band {
+  isolation: isolate;
+  overflow: visible !important;
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 28px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fffbf2 55%, #f1eadb 100%) !important;
+  box-shadow: var(--atlas-shadow-soft) !important;
+  backdrop-filter: none !important;
+}
+
+.atlas-hero-grid,
+.atlas-hero-copy,
+.atlas-hero-side,
+.page-header > *,
+.hero-band > * {
+  position: relative;
+  z-index: 2;
+}
+
+.atlas-hero h1,
+.page-header h2,
+.hero-band h2 {
+  max-width: 980px;
+  line-height: 0.98 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.atlas-hero h1 em {
+  color: var(--atlas-emerald) !important;
+  font-style: normal;
+}
+
+.atlas-hero p:not(.eyeless),
+.page-header p:not(.eyeless),
+.hero-band p:not(.eyeless) {
+  max-width: 760px;
+  color: var(--atlas-muted) !important;
+}
+
+.atlas-hero-side,
+.municheck-hero-note,
+.sidebar-card.evidence-lock {
+  background: #ffffff !important;
+  border: 1px solid var(--atlas-line) !important;
+  box-shadow: 0 10px 28px rgba(14, 26, 21, 0.06) !important;
+  backdrop-filter: none !important;
+}
+
+.panel,
+.metric-card,
+.atlas-tile,
+.atlas-insight-card,
+.directory-card,
+.source-card,
+.review-card,
+.kanban-column,
+.kanban-card,
+.workflow-command-card,
+.workflow-checklist-card,
+.workflow-principle-card,
+.briefing-control-card,
+.briefing-preview-card,
+.briefing-status-card,
+.municheck-card,
+.municheck-profile-card,
+.municheck-explainer,
+.municheck-soft-note,
+.atlas-gate-room,
+.atlas-intake-room,
+.atlas-release-room,
+.atlas-quality-room,
+.atlas-gate-card,
+.atlas-intake-card,
+.atlas-quality-card,
+.atlas-validation-card,
+.atlas-provider-card,
+.atlas-readiness-seal,
+.atlas-search-console,
+.atlas-search-result,
+.atlas-source-thread,
+.atlas-vault-card,
+.atlas-doc-card,
+.atlas-provenance-flow {
+  background: var(--atlas-panel-strong) !important;
+  border: 1px solid var(--atlas-line) !important;
+  box-shadow: var(--atlas-shadow-soft) !important;
+  backdrop-filter: none !important;
+  color: var(--atlas-ink) !important;
+}
+
+.panel:hover,
+.metric-card:hover,
+.atlas-tile:hover,
+.atlas-insight-card:hover,
+.municheck-card:hover,
+.kanban-card:hover,
+.atlas-search-result:hover,
+.directory-card:hover,
+.source-card:hover {
+  transform: none !important;
+  border-color: var(--atlas-line-strong) !important;
+  box-shadow: var(--atlas-shadow-lift) !important;
+}
+
+.atlas-tile,
+.metric-card {
+  min-height: 160px !important;
+}
+
+.atlas-tile-icon,
+.metric-icon {
+  background: var(--atlas-emerald-soft) !important;
+  color: var(--atlas-emerald) !important;
+}
+
+.atlas-tile[data-tone='risk'] .atlas-tile-icon,
+.metric-card.tone-risk .metric-icon {
+  background: var(--atlas-clay-soft) !important;
+  color: var(--atlas-clay) !important;
+}
+
+.atlas-tile[data-tone='gold'] .atlas-tile-icon,
+.metric-card.tone-watch .metric-icon {
+  background: var(--atlas-gold-soft) !important;
+  color: var(--atlas-gold) !important;
+}
+
+.atlas-tile[data-tone='blue'] .atlas-tile-icon,
+.metric-card.tone-neutral .metric-icon {
+  background: var(--atlas-blue-soft) !important;
+  color: var(--atlas-blue) !important;
+}
+
+.atlas-status-pill,
+.badge,
+.source-pill,
+.municheck-soft-pill,
+.municheck-field-list span,
+.atlas-evidence-pills span,
+.atlas-release-list span,
+.case-meta span,
+.check-list span,
+.agenda-list span,
+.compact-list article,
+.atlas-source-node {
+  background: #ffffff !important;
+  border: 1px solid var(--atlas-line-strong) !important;
+  color: var(--atlas-ink) !important;
+  box-shadow: none !important;
+}
+
+.atlas-status-pill[data-tone='gold'],
+.tone-watch,
+.badge.tone-watch {
+  background: var(--atlas-gold-soft) !important;
+  border-color: #d8bd74 !important;
+  color: #5d4210 !important;
+}
+
+.atlas-status-pill[data-tone='risk'],
+.tone-risk,
+.badge.tone-risk {
+  background: var(--atlas-clay-soft) !important;
+  border-color: #d7978e !important;
+  color: #6f231b !important;
+}
+
+.atlas-status-pill[data-tone='blue'],
+.tone-neutral,
+.badge.tone-neutral {
+  background: var(--atlas-blue-soft) !important;
+  border-color: #a9bfd3 !important;
+  color: #1f4568 !important;
+}
+
+.tone-good,
+.badge.tone-good {
+  background: #e3f1e8 !important;
+  border-color: #a7cdb6 !important;
+  color: #1f5136 !important;
+}
+
+.primary-action,
+.primary-link {
+  background: #0b5f4f !important;
+  border: 1px solid #0b5f4f !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+.secondary-action,
+.text-action,
+.command-trigger,
+.icon-button {
+  background: #ffffff !important;
+  border: 1px solid var(--atlas-line-strong) !important;
+  color: var(--atlas-emerald-ink) !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+.primary-action:hover,
+.primary-link:hover,
+.secondary-action:hover,
+.text-action:hover,
+.command-trigger:hover,
+.icon-button:hover {
+  filter: brightness(0.98);
+  transform: translateY(-1px);
+}
+
+input,
+select,
+textarea,
+.atlas-search-box input,
+.action-lifecycle input,
+.action-lifecycle select {
+  background: #ffffff !important;
+  border: 1px solid var(--atlas-line-strong) !important;
+  color: var(--atlas-heading) !important;
+  box-shadow: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #7b8781 !important;
+}
+
+.table-wrap,
+table,
+th,
+td {
+  color: var(--atlas-ink) !important;
+}
+
+th {
+  color: var(--atlas-muted) !important;
+  background: #fbf8f0 !important;
+}
+
+td {
+  background: #ffffff !important;
+}
+
+.map-canvas,
+.risk-map,
+.atlas-canvas {
+  background: #fbf8f0 !important;
+  border-color: var(--atlas-line) !important;
+}
+
+.review-save-state,
+.briefing-readiness,
+.action-lifecycle,
+.atlas-search-box,
+.atlas-provenance-nodes {
+  background: #fbf8f0 !important;
+  border: 1px solid var(--atlas-line) !important;
+  box-shadow: none !important;
+}
+
+.ui-progress {
+  background: #ded6c8 !important;
+}
+
+.ui-progress span {
+  background: #0b5f4f !important;
+}
+
+.atlas-readiness-orb {
+  background: #ffffff !important;
+  border: 1px solid var(--atlas-line-strong) !important;
+  box-shadow: inset 0 0 0 10px #f7f4ed, 0 18px 42px rgba(14, 26, 21, 0.1) !important;
+}
+
+.atlas-readiness-orb strong {
+  color: var(--atlas-emerald) !important;
+}
+
+.eyeless {
+  color: var(--atlas-emerald) !important;
+}
+
+@media (max-width: 1180px) {
+  .app-shell {
+    grid-template-columns: 1fr !important;
+  }
+
+  .premium-sidebar,
+  .sidebar {
+    position: relative !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .atlas-hero-grid,
+  .atlas-workflow-grid,
+  .atlas-admin-grid,
+  .municheck-profile-grid,
+  .main-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .atlas-hero,
+  .page-header,
+  .panel,
+  .atlas-tile,
+  .metric-card,
+  .workflow-command-card,
+  .workflow-checklist-card,
+  .municheck-card,
+  .atlas-gate-room,
+  .atlas-intake-room,
+  .atlas-quality-room {
+    border-radius: 18px !important;
+  }
+
+  .atlas-hero h1,
+  .page-header h2 {
+    font-size: clamp(2rem, 10vw, 3.15rem) !important;
+    line-height: 1 !important;
+  }
+}
