@@ -307,11 +307,183 @@
   background: rgba(255, 255, 255, 0.54);
 }
 
+.atlas-search-console {
+  display: grid;
+  gap: 18px;
+  padding: clamp(22px, 4vw, 42px);
+  border-radius: 34px;
+}
+
+.atlas-search-form {
+  display: grid;
+  gap: 14px;
+}
+
+.atlas-search-form label {
+  color: var(--atlas-emerald);
+  font-size: 0.74rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.atlas-search-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid rgba(230, 224, 212, 0.94);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.58), 0 16px 42px rgba(26, 37, 32, 0.06);
+}
+
+.atlas-search-box input {
+  min-height: 54px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0 18px;
+  color: var(--atlas-ink);
+  font-size: 1rem;
+  outline: none;
+}
+
+.atlas-search-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.atlas-search-prompts a,
+.atlas-source-node {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(230, 224, 212, 0.9);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.65);
+  color: var(--atlas-emerald-ink);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.atlas-search-results,
+.atlas-source-vault-grid,
+.atlas-document-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.atlas-search-result {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid rgba(230, 224, 212, 0.88);
+  border-radius: 26px;
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 12px 34px rgba(26, 37, 32, 0.055);
+}
+
+.atlas-search-result header,
+.atlas-search-result footer,
+.atlas-vault-card header,
+.atlas-doc-card header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.atlas-search-result h2,
+.atlas-vault-card h2,
+.atlas-doc-card h2 {
+  margin: 0;
+  color: var(--atlas-ink);
+  font-size: clamp(1.16rem, 2vw, 1.7rem);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+}
+
+.atlas-search-result p,
+.atlas-search-result small,
+.atlas-vault-card p,
+.atlas-doc-card p,
+.atlas-doc-card small {
+  color: var(--atlas-muted);
+  line-height: 1.62;
+}
+
+.atlas-result-meta,
+.atlas-vault-meta,
+.atlas-doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.atlas-vault-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.82fr) minmax(420px, 1.18fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.atlas-vault-card,
+.atlas-doc-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(230, 224, 212, 0.88);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 12px 34px rgba(26, 37, 32, 0.055);
+}
+
+.atlas-vault-card[data-status='degraded'],
+.atlas-vault-card[data-status='pending_validation'] {
+  background: linear-gradient(135deg, rgba(247,238,209,0.58), rgba(255,255,255,0.72));
+}
+
+.atlas-vault-card[data-status='disabled'] {
+  background: linear-gradient(135deg, rgba(250,232,228,0.54), rgba(255,255,255,0.72));
+}
+
+.atlas-provenance-flow {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 26px;
+  border: 1px solid rgba(230, 224, 212, 0.9);
+  background:
+    radial-gradient(circle at 88% 12%, rgba(200,162,74,0.22), transparent 10rem),
+    rgba(255,255,255,0.66);
+}
+
+.atlas-provenance-flow h2 {
+  margin: 0;
+  letter-spacing: -0.055em;
+}
+
+.atlas-provenance-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.atlas-doc-card .evidence-list {
+  margin: 0;
+}
+
 @media (max-width: 1180px) {
   .atlas-queue-brief,
   .atlas-dossier-strip,
   .atlas-dossier-grid,
-  .atlas-finding-grid {
+  .atlas-finding-grid,
+  .atlas-vault-grid {
     grid-template-columns: 1fr;
   }
 
@@ -322,5 +494,12 @@
   .evidence-drawer {
     position: relative;
     top: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .atlas-search-box {
+    grid-template-columns: 1fr;
+    border-radius: 26px;
   }
 }
