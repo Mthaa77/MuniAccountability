@@ -1,11 +1,11 @@
 "use client";
 
-import { CheckCircle2, FilePlus2, Link2, Paperclip, Search, ShieldCheck, X } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, FilePlus2, Link2, Paperclip, Search, ShieldCheck, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost } from "@/lib/client-api";
 import { municipalities } from "@/lib/pilot-data";
-import type { DraftAction } from "@/lib/types";
+import type { DraftAction, SourceReference } from "@/lib/types";
 import { Badge, actionLabel } from "@/components/ui";
 
 type EvidenceForm = {
@@ -15,6 +15,37 @@ type EvidenceForm = {
   note: string;
   sourceRefId: string;
 };
+
+type IntakeFilter = "all" | "needs_proof" | "with_evidence" | "under_review";
+
+type EvidenceTemplate = {
+  label: string;
+  note: string;
+  sourceHint?: string;
+};
+
+const evidenceTemplates: EvidenceTemplate[] = [
+  {
+    label: "Signed management response",
+    note: "Management response received. Reviewer should confirm whether the response directly addresses the audit finding and includes a named accountable owner.",
+    sourceHint: "management"
+  },
+  {
+    label: "AGSA citation confirmation",
+    note: "AGSA source reference checked. Reviewer should confirm that the cited source supports the action and that wording remains publish-safe.",
+    sourceHint: "agsa"
+  },
+  {
+    label: "Owner assignment proof",
+    note: "Responsible owner identified. Reviewer should confirm the owner, escalation path and due date before moving this action to review.",
+    sourceHint: "owner"
+  },
+  {
+    label: "Remedial action plan",
+    note: "Remedial plan submitted. Reviewer should check milestones, timeframes, evidence requirements and remaining residual risk.",
+    sourceHint: "plan"
+  }
+];
 
 function municipalityName(id: string) {
   return municipalities.find((municipality) => municipality.id === id)?.commonName ?? id;
@@ -35,11 +66,32 @@ function readinessLabel(action?: DraftAction) {
   return "Evidence captured";
 }
 
+function attachmentText(action?: DraftAction) {
+  return `${action?.evidenceAttachments?.map((attachment) => `${attachment.label} ${attachment.note ?? ""}`).join(" ") ?? ""} ${action?.sourceRefs.map((source) => `${source.label} ${source.source} ${source.location}`).join(" ") ?? ""}`.toLowerCase();
+}
+
+function requirementCovered(requirement: string, action?: DraftAction) {
+  const haystack = attachmentText(action);
+  const keywords = requirement.toLowerCase().split(/\s+/).filter((word) => word.length > 4);
+  return keywords.length ? keywords.some((word) => haystack.includes(word)) : (action?.evidenceAttachments?.length ?? 0) > 0;
+}
+
+function sourceQualityLabel(source?: SourceReference) {
+  return source?.qualityState?.replaceAll("_", " ") ?? "No source selected";
+}
+
+function qualityTone(source?: SourceReference) {
+  if (!source) return "watch";
+  if (source.qualityState === "verified" || source.qualityState === "source_published") return "healthy";
+  return "watch";
+}
+
 export function EvidenceAttachmentDrawer() {
   const [actions, setActions] = useState<DraftAction[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<IntakeFilter>("all");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("Loading draft actions...");
@@ -55,16 +107,28 @@ export function EvidenceAttachmentDrawer() {
     () => actions.find((action) => action.id === selectedActionId) ?? actions[0],
     [actions, selectedActionId]
   );
+  const selectedSource = selectedAction?.sourceRefs.find((source) => source.id === form.sourceRefId);
+  const coveredRequirements = selectedAction?.requiredEvidence.filter((requirement) => requirementCovered(requirement, selectedAction)).length ?? 0;
+  const coverageScore = selectedAction?.requiredEvidence.length ? Math.round((coveredRequirements / selectedAction.requiredEvidence.length) * 100) : 0;
+
   const filteredActions = actions.filter((action) => {
     const searchable = `${action.title} ${municipalityName(action.municipalityId)} ${action.owner} ${action.reviewer} ${action.status}`.toLowerCase();
-    return searchable.includes(query.toLowerCase());
+    const matchesQuery = searchable.includes(query.toLowerCase());
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "needs_proof" && evidenceGap(action) > 0) ||
+      (filter === "with_evidence" && (action.evidenceAttachments?.length ?? 0) > 0) ||
+      (filter === "under_review" && action.status === "under_review");
+    return matchesQuery && matchesFilter;
   });
+  const sortedActions = [...filteredActions].sort((a, b) => evidenceGap(b) - evidenceGap(a));
   const stats = {
     drafts: actions.length,
     needingProof: actions.filter((action) => evidenceGap(action) > 0).length,
     withEvidence: actions.filter((action) => (action.evidenceAttachments?.length ?? 0) > 0).length,
     underReview: actions.filter((action) => action.status === "under_review").length
   };
+  const canSubmit = Boolean(selectedAction && form.label.trim());
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +170,19 @@ export function EvidenceAttachmentDrawer() {
     setOpen(true);
   }
 
+  function applyTemplate(template: EvidenceTemplate) {
+    const matchedSource = selectedAction?.sourceRefs.find((source) => {
+      const haystack = `${source.label} ${source.source} ${source.location}`.toLowerCase();
+      return template.sourceHint ? haystack.includes(template.sourceHint) : false;
+    });
+    setForm((current) => ({
+      ...current,
+      label: template.label,
+      note: template.note,
+      sourceRefId: matchedSource?.id ?? current.sourceRefId
+    }));
+  }
+
   async function attachEvidence() {
     if (!selectedAction) {
       setMessage("Select a draft action before attaching proof.");
@@ -133,7 +210,7 @@ export function EvidenceAttachmentDrawer() {
       if (saved) {
         setActions((current) => current.map((action) => action.id === saved.id ? saved : action));
         setSelectedActionId(saved.id);
-        setForm((current) => ({ ...current, label: "", url: "", note: "" }));
+        setForm((current) => ({ ...current, label: "", url: "", note: "", sourceRefId: saved.sourceRefs[0]?.id ?? current.sourceRefId }));
         setMessage("Evidence attached. The action has moved forward for review.");
       }
     } catch {
@@ -148,7 +225,7 @@ export function EvidenceAttachmentDrawer() {
       <div className="evidence-intake-hero">
         <div>
           <p className="eyeless">Step 3</p>
-          <h2>Evidence Attachment Drawer</h2>
+          <h2>Evidence Intake Desk</h2>
           <p>Submit proof quickly, link it to the right action, connect it to the source chain and move the item closer to reviewer sign-off.</p>
         </div>
         <div className="evidence-intake-status">
@@ -169,20 +246,31 @@ export function EvidenceAttachmentDrawer() {
           <Search size={16} />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search draft actions by municipality, owner, reviewer or status..." />
         </div>
+        <select value={filter} onChange={(event) => setFilter(event.target.value as IntakeFilter)}>
+          <option value="all">All intake items</option>
+          <option value="needs_proof">Need proof</option>
+          <option value="with_evidence">With evidence</option>
+          <option value="under_review">Under review</option>
+        </select>
         <button className="primary-action" onClick={() => selectedAction ? openForAction(selectedAction) : setOpen(true)} disabled={!selectedAction}>
           <Paperclip size={16} /> Submit evidence
         </button>
       </div>
 
       <div className="evidence-action-grid">
-        {filteredActions.length ? filteredActions.slice(0, 8).map((action) => {
+        {sortedActions.length ? sortedActions.slice(0, 8).map((action) => {
           const gap = evidenceGap(action);
+          const attached = action.evidenceAttachments?.length ?? 0;
           return (
             <article className="evidence-action-card" key={action.id}>
               <div>
                 <span>{municipalityName(action.municipalityId)} · due {action.dueDate}</span>
                 <strong>{action.title}</strong>
-                <small>{gap ? `${gap} required item(s) still need proof` : "Required evidence has at least one attachment path"}</small>
+                <small>{gap ? `${gap} required item(s) still need proof` : "Required evidence has an attachment path"}</small>
+              </div>
+              <div className="evidence-card-proof-meter">
+                <span>Proof packet</span>
+                <strong>{attached}/{action.requiredEvidence.length}</strong>
               </div>
               <div className="evidence-action-card-footer">
                 <Badge tone={action.status}>{actionLabel[action.status]}</Badge>
@@ -212,6 +300,25 @@ export function EvidenceAttachmentDrawer() {
 
             <section className="evidence-drawer-body">
               <div className="evidence-drawer-form">
+                <section className="evidence-packet-score">
+                  <div>
+                    <p className="eyeless">Proof packet coverage</p>
+                    <h3>{coverageScore}% covered</h3>
+                  </div>
+                  <div className="ui-progress"><span style={{ width: `${coverageScore}%` }} /></div>
+                  <p>{coveredRequirements} of {selectedAction?.requiredEvidence.length ?? 0} required evidence item(s) appear covered by attachments or source references.</p>
+                </section>
+
+                <section className="evidence-template-grid" aria-label="Evidence templates">
+                  <div>
+                    <Sparkles size={16} />
+                    <span>Quick proof templates</span>
+                  </div>
+                  {evidenceTemplates.map((template) => (
+                    <button type="button" key={template.label} onClick={() => applyTemplate(template)}>{template.label}</button>
+                  ))}
+                </section>
+
                 <label>Evidence label<input value={form.label} onChange={(event) => updateForm("label", event.target.value)} placeholder="Example: Signed management response" /></label>
                 <label>Evidence URL<input value={form.url} onChange={(event) => updateForm("url", event.target.value)} placeholder="Optional link to document, folder or source" /></label>
                 <label>Submitted by<input value={form.submittedBy} onChange={(event) => updateForm("submittedBy", event.target.value)} /></label>
@@ -219,18 +326,25 @@ export function EvidenceAttachmentDrawer() {
                   <option value="">No source reference</option>
                   {selectedAction?.sourceRefs.map((source) => <option key={source.id} value={source.id}>{source.label}</option>)}
                 </select></label>
+                {selectedSource ? (
+                  <section className="selected-source-preview">
+                    <div><Badge tone={qualityTone(selectedSource)}>{sourceQualityLabel(selectedSource)}</Badge><strong>{selectedSource.label}</strong></div>
+                    <p>{selectedSource.source} · {selectedSource.period} · {selectedSource.location}</p>
+                  </section>
+                ) : null}
                 <label>Reviewer note<textarea value={form.note} onChange={(event) => updateForm("note", event.target.value)} rows={4} placeholder="Explain what the proof shows and what should be checked next." /></label>
-                <button className="primary-action" onClick={attachEvidence} disabled={saving || !selectedAction}>
-                  <FilePlus2 size={16} /> {saving ? "Submitting..." : "Attach evidence"}
+                <button className="primary-action" onClick={attachEvidence} disabled={saving || !canSubmit}>
+                  <FilePlus2 size={16} /> {saving ? "Submitting..." : canSubmit ? "Attach evidence" : "Add label first"}
                 </button>
               </div>
 
               <aside className="evidence-drawer-sidecar">
                 <section>
                   <h3>Required evidence</h3>
-                  {selectedAction?.requiredEvidence.map((requirement) => (
-                    <article key={requirement}><CheckCircle2 size={15} /><span>{requirement}</span></article>
-                  ))}
+                  {selectedAction?.requiredEvidence.map((requirement) => {
+                    const covered = requirementCovered(requirement, selectedAction);
+                    return <article className={covered ? "covered" : ""} key={requirement}><CheckCircle2 size={15} /><span>{requirement}</span></article>;
+                  })}
                 </section>
 
                 <section>
@@ -247,7 +361,12 @@ export function EvidenceAttachmentDrawer() {
                       <article key={attachment.id}><Paperclip size={15} /><span>{attachment.label}</span></article>
                     ))}
                   </section>
-                ) : null}
+                ) : (
+                  <section>
+                    <h3>No attachments yet</h3>
+                    <article><ClipboardCheck size={15} /><span>Use the form to submit the first proof item for this action.</span></article>
+                  </section>
+                )}
               </aside>
             </section>
           </div>
