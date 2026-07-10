@@ -31,42 +31,47 @@ import { Skeleton } from "@/components/ui/feedback";
 const navGroups = [
   {
     label: "Command",
+    eyebrow: "Live workspace",
     items: [
-      { href: "/", label: "Overview", icon: Gauge },
-      { href: "/intervention-queue", label: "Intervention Queue", icon: Siren },
-      { href: "/search", label: "Ask the Evidence", icon: Search }
+      { href: "/", label: "Overview", hint: "Executive cockpit", icon: Gauge, badge: "Core" },
+      { href: "/intervention-queue", label: "Intervention Queue", hint: "Ranked risk worklist", icon: Siren, badge: "Priority" },
+      { href: "/search", label: "Ask the Evidence", hint: "Source-locked search", icon: Search, badge: "Ctrl K" }
     ]
   },
   {
     label: "Evidence",
+    eyebrow: "Source chain",
     items: [
-      { href: "/municipalities", label: "Municipalities", icon: Landmark },
-      { href: "/findings", label: "Findings", icon: ClipboardCheck },
-      { href: "/sources", label: "Source Vault", icon: Database },
-      { href: "/admin/data-quality", label: "Data Quality", icon: ShieldCheck }
+      { href: "/municipalities", label: "Municipalities", hint: "Case-file directory", icon: Landmark },
+      { href: "/findings", label: "Findings", hint: "AGSA issue register", icon: ClipboardCheck },
+      { href: "/sources", label: "Source Vault", hint: "Provenance & freshness", icon: Database, badge: "Guarded" },
+      { href: "/admin/data-quality", label: "Data Quality", hint: "Validation console", icon: ShieldCheck }
     ]
   },
   {
     label: "Workflow",
+    eyebrow: "Execution layer",
     items: [
-      { href: "/actions", label: "Action Board", icon: ClipboardCheck },
-      { href: "/recovery", label: "Recovery Room", icon: BriefcaseBusiness },
-      { href: "/briefings", label: "Briefings", icon: FileText },
-      { href: "/financial-pulse", label: "Financial Pulse", icon: BarChart3 }
+      { href: "/actions", label: "Action Board", hint: "Evidence lifecycle", icon: ClipboardCheck },
+      { href: "/recovery", label: "Recovery Room", hint: "Weekly rhythm", icon: BriefcaseBusiness },
+      { href: "/briefings", label: "Briefings", hint: "Decision packs", icon: FileText, badge: "Build" },
+      { href: "/financial-pulse", label: "Financial Pulse", hint: "Treasury-gated telemetry", icon: BarChart3, badge: "Locked" }
     ]
   },
   {
     label: "Public",
+    eyebrow: "Citizen layer",
     items: [
-      { href: "/municheck", label: "MuniCheck", icon: ShieldCheck },
-      { href: "/munidata", label: "MuniData", icon: Archive }
+      { href: "/municheck", label: "MuniCheck", hint: "Plain-language profiles", icon: ShieldCheck },
+      { href: "/munidata", label: "MuniData", hint: "API and export catalogue", icon: Archive }
     ]
   },
   {
     label: "System",
+    eyebrow: "Controls",
     items: [
-      { href: "/admin", label: "Admin", icon: Layers3 },
-      { href: "/docs-api", label: "API Docs", icon: UsersRound }
+      { href: "/admin", label: "Admin", hint: "Readiness gate-room", icon: Layers3, badge: "Gate" },
+      { href: "/docs-api", label: "API Docs", hint: "OpenAPI contract", icon: UsersRound }
     ]
   }
 ];
@@ -84,42 +89,73 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavigationContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: { pathname: string; onNavigate?: () => void; sourceState?: "loading" | "ready" | "error"; healthLabel?: string }) {
   return (
     <>
       <div className="sidebar-topline">
-        <Link href="/" className="brand-lockup premium-brand" onClick={onNavigate}>
+        <Link href="/" className="brand-lockup premium-brand nav-brand-card" onClick={onNavigate}>
           <div className="brand-mark">MA</div>
-          <div>
+          <div className="nav-brand-copy">
             <strong>MuniAtlas</strong>
             <span>Evidence Command</span>
           </div>
         </Link>
       </div>
-      <nav className="nav-groups">
-        {navGroups.map((group) => (
-          <div className="nav-group" key={group.label}>
-            <span>{group.label}</span>
-            {group.items.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  href={item.href}
-                  key={item.href}
-                  className={isActive(pathname, item.href) ? "active" : ""}
-                  onClick={onNavigate}
-                >
-                  <Icon size={17} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+
+      <div className="nav-command-card" aria-label="Navigation status">
+        <div>
+          <span className="nav-command-kicker">Command status</span>
+          <strong>{healthLabel ?? "Source-aware workspace"}</strong>
+        </div>
+        <span className={`nav-status-light ${sourceState ?? "ready"}`} />
+      </div>
+
+      <nav className="nav-groups" aria-label="Primary sections">
+        {navGroups.map((group) => {
+          const groupActive = group.items.some((item) => isActive(pathname, item.href));
+          return (
+            <section className={groupActive ? "nav-group active-group" : "nav-group"} key={group.label}>
+              <div className="nav-group-heading">
+                <span>{group.label}</span>
+                <small>{group.eyebrow}</small>
+              </div>
+              <div className="nav-group-links">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(pathname, item.href);
+                  return (
+                    <Link
+                      href={item.href}
+                      key={item.href}
+                      className={active ? "active nav-item" : "nav-item"}
+                      aria-current={active ? "page" : undefined}
+                      onClick={onNavigate}
+                    >
+                      <span className="nav-item-icon"><Icon size={17} /></span>
+                      <span className="nav-item-copy">
+                        <strong>{item.label}</strong>
+                        <small>{item.hint}</small>
+                      </span>
+                      {item.badge ? <span className="nav-item-badge">{item.badge}</span> : null}
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
       </nav>
-      <div className="sidebar-card evidence-lock">
-        <strong>Evidence thread</strong>
-        <span>Every publishable claim should trace back to a source, review state and confidence signal.</span>
+
+      <div className="sidebar-card evidence-lock nav-footer-card">
+        <div>
+          <span className="nav-command-kicker">Evidence thread</span>
+          <strong>Claim discipline active</strong>
+        </div>
+        <p>Every publishable claim should trace back to a source, review state and confidence signal.</p>
+        <div className="nav-footer-actions">
+          <Link href="/sources" onClick={onNavigate}>Source Vault</Link>
+          <Link href="/admin" onClick={onNavigate}>Gate Room</Link>
+        </div>
       </div>
     </>
   );
@@ -134,7 +170,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [sources, setSources] = useState<SourceHealth[]>([]);
   const commandItems = useMemo(
     () =>
-      [...navGroups.flatMap((group) => group.items.map((item) => ({ ...item, hint: group.label }))), ...quickActions].filter((item) =>
+      [...navGroups.flatMap((group) => group.items.map((item) => ({ ...item, hint: `${group.label} / ${item.hint}` }))), ...quickActions].filter((item) =>
         `${item.label} ${item.hint}`.toLowerCase().includes(query.toLowerCase())
       ),
     [query]
@@ -170,7 +206,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="premium-shell atlas-shell">
       <aside className="premium-sidebar atlas-sidebar" aria-label="Primary navigation">
-        <NavigationContent pathname={pathname} />
+        <NavigationContent pathname={pathname} sourceState={sourceState} healthLabel={healthLabel} />
       </aside>
 
       <div className="premium-workspace atlas-workspace">
@@ -207,7 +243,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="MuniAtlas navigation">
         <div className="mobile-nav-panel">
-          <NavigationContent pathname={pathname} onNavigate={() => setMenuOpen(false)} />
+          <NavigationContent pathname={pathname} onNavigate={() => setMenuOpen(false)} sourceState={sourceState} healthLabel={healthLabel} />
         </div>
       </Sheet>
 
