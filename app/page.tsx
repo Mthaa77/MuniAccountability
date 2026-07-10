@@ -12,29 +12,29 @@ export default function CommandCentrePage() {
   return (
     <>
       <AtlasHero
-        kicker="Municipal accountability intelligence"
-        title="Audit risk, recovery evidence and civic oversight"
-        emphasis="in one command room."
-        description="A premium AGSA-first workspace for turning municipal findings into source-backed intervention priorities, action workflows and review-ready briefings before live Treasury telemetry is unlocked."
+        kicker="Daily oversight view"
+        title="See what needs attention, why it matters and what proof supports it"
+        emphasis="before decisions are made."
+        description="Use this workspace to review municipal risks, open the source evidence, assign follow-up actions and prepare briefings that are easy to understand and safe to share. Treasury financial numbers stay locked until they are verified."
         side={
           <>
-            <AtlasEvidenceChip source="AGSA-backed corpus" />
-            <AtlasEvidenceChip source="Treasury gate locked" state="pending" />
-            <AtlasEvidenceChip source="Prototype persistence" state="locked" />
+            <AtlasEvidenceChip source="Audit evidence loaded" />
+            <AtlasEvidenceChip source="Treasury numbers locked" state="pending" />
+            <AtlasEvidenceChip source="Prototype storage" state="locked" />
           </>
         }
       >
-        <AtlasStatusPill>Source thread active</AtlasStatusPill>
-        <AtlasStatusPill tone="gold">Validation gates visible</AtlasStatusPill>
-        <AtlasStatusPill tone="risk">Decision queue open</AtlasStatusPill>
+        <AtlasStatusPill>Evidence first</AtlasStatusPill>
+        <AtlasStatusPill tone="gold">Review before publishing</AtlasStatusPill>
+        <AtlasStatusPill tone="risk">Priority queue open</AtlasStatusPill>
       </AtlasHero>
 
       <section className="metrics-grid" aria-label="Executive intelligence tiles">
-        <AtlasMetricTile title="Attention cohort" value="4" note="One-province pilot municipalities in the oversight lens" tone="risk" icon={AlertTriangle} />
-        <AtlasMetricTile title="Critical risks" value={String(criticalCount)} note="Highest-priority AGSA-backed intervention items" tone="risk" icon={Gauge} />
-        <AtlasMetricTile title="Overdue actions" value={String(overdueCount)} note="Corrective actions requiring evidence movement" tone="gold" icon={Clock3} />
-        <AtlasMetricTile title="Briefings in review" value="1" note="Executive narrative awaiting final source checks" tone="blue" icon={FileText} />
-        <AtlasMetricTile title="Source coverage" value="95%" note="MVP target for audit-backed fields and citations" tone="good" icon={CheckCircle2} />
+        <AtlasMetricTile title="Municipalities watched" value="4" note="Pilot municipalities currently in the oversight workspace" tone="risk" icon={AlertTriangle} />
+        <AtlasMetricTile title="Critical risks" value={String(criticalCount)} note="Items that need the fastest review and next action" tone="risk" icon={Gauge} />
+        <AtlasMetricTile title="Overdue actions" value={String(overdueCount)} note="Follow-ups that need evidence, escalation or closure" tone="gold" icon={Clock3} />
+        <AtlasMetricTile title="Briefings in review" value="1" note="Decision pack waiting for final source checks" tone="blue" icon={FileText} />
+        <AtlasMetricTile title="Source coverage" value="95%" note="MVP target for fields that should have citations" tone="good" icon={CheckCircle2} />
       </section>
 
       <section className="command-layout">
@@ -48,10 +48,10 @@ export default function CommandCentrePage() {
         <section className="panel wide">
           <div className="panel-header">
             <div>
-              <p className="eyeless">Finding to action engine</p>
+              <p className="eyeless">Follow-up work</p>
               <h2>Action Board</h2>
             </div>
-            <Badge tone="overdue">Evidence review risks</Badge>
+            <Badge tone="overdue">Needs evidence review</Badge>
           </div>
           <ActionKanban />
         </section>
