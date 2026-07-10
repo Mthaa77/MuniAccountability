@@ -39,8 +39,8 @@ function assertIncludes(source, token, message) {
 
 [
   "publicSafeReviewOverlay",
-  'publicationState === "excluded"',
-  "return null",
+  'decision.status === "excluded"',
+  'reviewed.publicationState !== "excluded" ? reviewed : null',
   "reviewStatus",
   "publicationState"
 ].forEach((token) => assertIncludes(reviewOverlays, token, `Review overlay safety contract missing ${token}.`));
