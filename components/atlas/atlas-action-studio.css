@@ -1,0 +1,376 @@
+/* Action Studio, Step 2 workflow layer. */
+
+.action-studio-console {
+  display: grid;
+  gap: 18px;
+}
+
+.action-studio-hero,
+.action-studio-panel,
+.action-studio-card,
+.action-studio-proof-box,
+.action-studio-score-card,
+.action-studio-source-card,
+.action-studio-proof-list {
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: var(--atlas-shadow-soft);
+}
+
+.action-studio-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.42fr);
+  align-items: end;
+  gap: 18px;
+  padding: clamp(18px, 2vw, 26px);
+  background: linear-gradient(135deg, #ffffff, #fbf8f0) !important;
+}
+
+.action-studio-hero h2 {
+  margin: 0;
+  color: var(--atlas-heading) !important;
+  font-size: clamp(1.45rem, 2vw, 2.4rem) !important;
+  letter-spacing: -0.055em !important;
+}
+
+.action-studio-hero p:not(.eyeless) {
+  max-width: 760px;
+  margin: 6px 0 0;
+}
+
+.action-studio-state {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--atlas-line);
+  border-radius: 20px;
+  background: #fbf8f0;
+}
+
+.action-studio-state span,
+.action-studio-empty p,
+.action-studio-panel small,
+.action-studio-card header span,
+.action-studio-score-card p,
+.action-studio-proof-list span {
+  color: var(--text-soft) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.45 !important;
+}
+
+.action-studio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.action-studio-panel {
+  display: grid;
+  gap: 14px;
+  padding: clamp(16px, 1.7vw, 22px);
+}
+
+.action-studio-panel-header,
+.action-studio-card header,
+.action-studio-card footer,
+.action-studio-proof-box > div:first-child {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.action-studio-panel-header h3,
+.action-studio-proof-box h3,
+.action-studio-source-card h3,
+.action-studio-proof-list h3 {
+  margin: 0;
+  color: var(--atlas-heading) !important;
+  font-size: 1.05rem !important;
+  letter-spacing: -0.035em !important;
+}
+
+.action-studio-list {
+  display: grid;
+  gap: 10px;
+}
+
+.action-studio-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 20px;
+  background: #fbf8f0 !important;
+}
+
+.action-studio-list article > div:first-child,
+.action-studio-proof-list article > div {
+  display: grid;
+  gap: 4px;
+}
+
+.action-studio-list article > div:last-child {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.action-studio-list span,
+.action-studio-proof-list span {
+  color: var(--text-quiet) !important;
+  font-size: 0.72rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.action-studio-list strong,
+.action-studio-proof-list strong {
+  color: var(--atlas-heading) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.2 !important;
+}
+
+.action-studio-empty {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 18px;
+  border: 1px dashed var(--atlas-line-strong);
+  border-radius: 20px;
+  background: #fffdf8;
+}
+
+.action-studio-empty svg {
+  color: var(--atlas-emerald);
+}
+
+.action-studio-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 96;
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 3vw, 34px);
+  background: rgba(7, 22, 17, 0.48);
+  backdrop-filter: blur(10px);
+}
+
+.action-studio-card {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(1180px, 100%);
+  max-height: min(92dvh, 940px);
+  overflow: hidden;
+  background: #fffdf8 !important;
+  box-shadow: 0 36px 90px rgba(7, 22, 17, 0.32) !important;
+}
+
+.action-studio-card header,
+.action-studio-card footer {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--atlas-line);
+  background: #ffffff;
+}
+
+.action-studio-card footer {
+  align-items: center;
+  border-top: 1px solid var(--atlas-line);
+  border-bottom: 0;
+}
+
+.action-studio-card footer > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-studio-card h2 {
+  margin: 0;
+  color: var(--atlas-heading) !important;
+  font-size: clamp(1.2rem, 1.6vw, 1.8rem) !important;
+  letter-spacing: -0.045em !important;
+}
+
+.action-studio-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.72fr);
+  gap: 18px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.action-studio-main-form,
+.action-studio-sidecar,
+.action-studio-proof-box,
+.action-studio-source-card,
+.action-studio-proof-list {
+  display: grid;
+  gap: 12px;
+}
+
+.action-studio-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.action-studio-card label,
+.action-studio-proof-box label {
+  display: grid;
+  gap: 7px;
+  color: var(--atlas-heading) !important;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.action-studio-card input,
+.action-studio-card textarea,
+.action-studio-card select {
+  width: 100%;
+  border: 1px solid var(--atlas-line-strong) !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  color: var(--atlas-heading) !important;
+  padding: 11px 12px !important;
+  font-size: 0.9rem !important;
+}
+
+.action-studio-card textarea {
+  resize: vertical;
+}
+
+.action-studio-sidecar {
+  align-content: start;
+}
+
+.action-studio-score-card,
+.action-studio-proof-box,
+.action-studio-source-card,
+.action-studio-proof-list {
+  padding: 14px;
+  border-radius: 22px;
+}
+
+.action-studio-score-card span {
+  color: var(--text-quiet) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.action-studio-score-card strong {
+  color: var(--atlas-emerald) !important;
+  font-family: var(--font-data) !important;
+  font-size: clamp(2.2rem, 4vw, 3.2rem) !important;
+  line-height: 0.95;
+}
+
+.action-studio-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.action-studio-status-grid button {
+  min-height: 38px;
+  border: 1px solid var(--atlas-line) !important;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--atlas-heading);
+  font-size: 0.74rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.action-studio-status-grid button.active {
+  border-color: var(--atlas-emerald) !important;
+  background: var(--atlas-emerald-soft);
+  color: var(--atlas-emerald-ink);
+}
+
+.action-studio-proof-list article,
+.action-studio-source-card a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid var(--atlas-line);
+  border-radius: 16px;
+  background: #fbf8f0;
+  color: var(--atlas-heading) !important;
+  text-decoration: none;
+}
+
+.action-studio-proof-list svg,
+.action-studio-source-card svg {
+  color: var(--atlas-emerald);
+}
+
+@media (max-width: 980px) {
+  .action-studio-hero,
+  .action-studio-grid,
+  .action-studio-body {
+    grid-template-columns: 1fr;
+  }
+
+  .action-studio-card {
+    max-height: 96dvh;
+  }
+}
+
+@media (max-width: 720px) {
+  .action-studio-modal {
+    padding: 0;
+    place-items: stretch;
+  }
+
+  .action-studio-card {
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .action-studio-card header,
+  .action-studio-card footer {
+    padding: 12px 14px;
+  }
+
+  .action-studio-body {
+    padding: 14px;
+  }
+
+  .action-studio-form-row,
+  .action-studio-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-studio-list article {
+    grid-template-columns: 1fr;
+  }
+
+  .action-studio-list article > div:last-child {
+    justify-items: start;
+  }
+
+  .action-studio-card footer {
+    display: grid;
+    gap: 10px;
+  }
+
+  .action-studio-card footer > div:last-child,
+  .action-studio-card footer .primary-action,
+  .action-studio-card footer .secondary-action {
+    width: 100%;
+  }
+}
