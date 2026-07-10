@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, Clock3, FileCheck2 } from "lucide-react";
 import { ActionKanban } from "@/components/interactive";
 import { Badge } from "@/components/ui";
+import { ActionStudio } from "@/components/atlas/action-studio";
 import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { actions, evidenceChecklist } from "@/lib/pilot-data";
 
@@ -35,6 +36,8 @@ export default function ActionsPage() {
         <AtlasMetricTile title="Under review" value={String(underReviewActions)} note="Actions waiting for a reviewer decision" tone="gold" icon={Clock3} />
         <AtlasMetricTile title="Approved" value={String(approvedActions)} note="Actions accepted for the next report or closure step" tone="good" icon={CheckCircle2} />
       </section>
+
+      <ActionStudio />
 
       <section className="workflow-principle-grid">
         <article className="workflow-principle-card">
