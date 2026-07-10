@@ -31,19 +31,22 @@ Use this documentation hub when onboarding new developers, handing work to Codex
 7. [`CSS_LAYERS.md`](./CSS_LAYERS.md)  
    Critical. Explains why CSS import order matters and how not to break desktop/mobile layouts.
 
-8. [`DEVELOPER_ONBOARDING.md`](./DEVELOPER_ONBOARDING.md)  
+8. [`TESTING_STRATEGY.md`](./TESTING_STRATEGY.md)  
+   Defines the institutional test suite and readiness gates.
+
+9. [`DEVELOPER_ONBOARDING.md`](./DEVELOPER_ONBOARDING.md)  
    Local setup, verification commands and manual QA checklist.
 
-9. [`QA_CHECKLIST.md`](./QA_CHECKLIST.md)  
+10. [`QA_CHECKLIST.md`](./QA_CHECKLIST.md)  
    Route, workflow, device and deployment checks before shipping.
 
-10. [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)  
+11. [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)  
    Vercel/deployment debugging, environment checks and post-deploy QA.
 
-11. [`REPO_MAINTENANCE.md`](./REPO_MAINTENANCE.md)  
+12. [`REPO_MAINTENANCE.md`](./REPO_MAINTENANCE.md)  
    Safe cleanup strategy, refactor rules and future folder organization.
 
-12. [`NEXT_STEPS.md`](./NEXT_STEPS.md)  
+13. [`NEXT_STEPS.md`](./NEXT_STEPS.md)  
    Implementation plan from Step 5 onward.
 
 ## Important root-level handoff file
@@ -68,6 +71,22 @@ Repository templates now exist for future team workflow:
 
 Use them when the project moves from direct commits to branch/PR workflow.
 
+## Verification gates
+
+The main verification command is:
+
+```bash
+npm run verify
+```
+
+The institutional safety layer can also be run directly:
+
+```bash
+npm run test:institutional
+```
+
+It checks API contracts, workflow wiring, public-safety rules, CSS authority layers and documentation completeness.
+
 ## Documentation principles
 
 - Keep docs close to reality.
@@ -85,6 +104,7 @@ Use them when the project moves from direct commits to branch/PR workflow.
 | Evidence Intake Desk | Built | Dedicated evidence drawer, proof templates, source preview |
 | AGSA Review Cockpit | Built | Review queue, decision persistence, publish-safety gates |
 | Desktop/mobile shell | Stabilized | Multiple final CSS authority layers now protect layout |
+| Institutional tests | Started | Zero-dependency contract scripts now wired into verify |
 | Durable persistence | Not complete | Local JSON remains active prototype write path |
 | Auth/RBAC | Not complete | Needs production-grade Firebase/Admin role handling |
 | File evidence upload | Not complete | Evidence URL only, no object storage workflow yet |
