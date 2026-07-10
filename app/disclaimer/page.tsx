@@ -1,17 +1,37 @@
 import Link from "next/link";
-import { Badge, PageHeader } from "@/components/ui";
+import { AlertTriangle, Database, LockKeyhole, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui";
+import { AtlasEvidenceChip, AtlasHero, AtlasMetricTile, AtlasStatusPill } from "@/components/atlas/foundation";
 import { annexureValidation, treasuryValidation } from "@/lib/source-validation";
 import { workflowPersistence } from "@/lib/workflow-persistence";
 
 export default function DisclaimerPage() {
   return (
-    <>
-      <PageHeader
+    <div className="atlas-page-stack">
+      <AtlasHero
         kicker="Prototype notice"
-        title="What this platform can and cannot claim yet."
+        title="What this platform can and cannot claim yet"
+        emphasis="without overreaching."
         description="MuniAccountability Command is an AGSA-backed prototype workspace. It separates source-backed statements, review-required mappings, gated Treasury telemetry and production unlock evidence."
-        actions={<Badge tone="watch">demo mode</Badge>}
-      />
+        side={
+          <>
+            <AtlasEvidenceChip source="Demo mode" state="pending" />
+            <AtlasEvidenceChip source="Treasury locked" state="locked" />
+            <AtlasEvidenceChip source="Public boundary active" />
+          </>
+        }
+      >
+        <AtlasStatusPill tone="gold">Prototype</AtlasStatusPill>
+        <AtlasStatusPill>Source-backed claims</AtlasStatusPill>
+        <AtlasStatusPill tone="risk">No legal finding</AtlasStatusPill>
+      </AtlasHero>
+
+      <section className="atlas-queue-brief" aria-label="Prototype boundary summary">
+        <AtlasMetricTile title="AGSA" value="Active" note="Structured report extracts with page citations" icon={ShieldCheck} />
+        <AtlasMetricTile title="Annexure" value={String(annexureValidation.unresolvedCount)} note="Mappings still requiring exact official confirmation" tone={annexureValidation.unresolvedCount ? "risk" : "good"} icon={AlertTriangle} />
+        <AtlasMetricTile title="Treasury" value="Locked" note="Financial telemetry remains gated until validation passes" tone="gold" icon={LockKeyhole} />
+        <AtlasMetricTile title="Workflow" value={workflowPersistence.activeProvider} note="Current persistence boundary" tone="blue" icon={Database} />
+      </section>
 
       <section className="main-grid">
         <section className="panel wide">
@@ -72,6 +92,6 @@ export default function DisclaimerPage() {
           </Link>
         </section>
       </section>
-    </>
+    </div>
   );
 }
