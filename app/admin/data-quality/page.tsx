@@ -8,9 +8,13 @@ import { annexureValidation } from "@/lib/source-validation";
 import { workflowPersistence } from "@/lib/workflow-persistence";
 
 function statusTone(status: string): "default" | "gold" | "risk" {
-  if (["passed", "pass", "accepted", "active"].includes(status)) return "default";
+  if (["passed", "pass", "accepted", "active", "verified", "source_published"].includes(status)) return "default";
   if (["failed", "blocked", "risk", "needs_correction"].includes(status)) return "risk";
   return "gold";
+}
+
+function isPublishableQuality(state: string) {
+  return state === "verified" || state === "source_published";
 }
 
 export default function DataQualityPage() {
@@ -80,21 +84,24 @@ export default function DataQualityPage() {
             <Database size={22} />
           </div>
           <div className="atlas-quality-list">
-            {agsaDocuments.map((document) => (
-              <article className="atlas-quality-card" data-status={document.qualityState === "ready" ? "complete" : "ready_for_input"} key={document.documentId}>
-                <header>
-                  <strong>{document.title}</strong>
-                  <AtlasStatusPill tone={document.qualityState === "ready" ? "default" : "gold"}>{document.qualityState.replaceAll("_", " ")}</AtlasStatusPill>
-                </header>
-                <p>{document.fileName}</p>
-                <div className="atlas-evidence-pills">
-                  <span>{document.priority}</span>
-                  <span>{document.reportYear}</span>
-                  <span>{document.pageCount} pages</span>
-                </div>
-                <Link className="primary-link" href={`/sources/${document.documentId}`}>Open source document</Link>
-              </article>
-            ))}
+            {agsaDocuments.map((document) => {
+              const publishableQuality = isPublishableQuality(document.qualityState);
+              return (
+                <article className="atlas-quality-card" data-status={publishableQuality ? "complete" : "ready_for_input"} key={document.documentId}>
+                  <header>
+                    <strong>{document.title}</strong>
+                    <AtlasStatusPill tone={statusTone(document.qualityState)}>{document.qualityState.replaceAll("_", " ")}</AtlasStatusPill>
+                  </header>
+                  <p>{document.fileName}</p>
+                  <div className="atlas-evidence-pills">
+                    <span>{document.priority}</span>
+                    <span>{document.reportYear}</span>
+                    <span>{document.pageCount} pages</span>
+                  </div>
+                  <Link className="primary-link" href={`/sources/${document.documentId}`}>Open source document</Link>
+                </article>
+              );
+            })}
           </div>
         </section>
       </section>
