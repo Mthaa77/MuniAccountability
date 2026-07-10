@@ -10,13 +10,21 @@ npm run lint
 npm run build
 ```
 
-If available:
+Run deterministic institutional checks:
 
 ```bash
 npm run verify
+npm run test:institutional
 npm run typecheck
 npm run test:production-readiness
 npm run test:production-evidence
+```
+
+Run browser E2E checks for release candidates, major UI changes and workflow changes:
+
+```bash
+npm run test:e2e:install
+npm run test:e2e
 ```
 
 ## Core route smoke test
@@ -131,6 +139,32 @@ Verify:
 - Accept, Needs Correction and Exclude buttons save decisions.
 - Decision preview changes based on saved state.
 
+## Browser E2E coverage
+
+The Playwright suite currently covers:
+
+- command shell navigation
+- command search to AGSA Review Cockpit
+- mobile menu navigation
+- assistant source-lock refusal
+- source-backed assistant prompt
+- Action Studio visibility
+- Evidence Intake visibility
+- AGSA Review Cockpit governance controls
+- public MuniCheck safety boundary
+
+Run it with:
+
+```bash
+npm run test:e2e
+```
+
+The dedicated CI workflow is:
+
+```txt
+.github/workflows/e2e.yml
+```
+
 ## Layout checks
 
 Watch for:
@@ -174,5 +208,6 @@ After deployment:
 - test `/actions`
 - test `/admin/agsa-review`
 - test mobile and desktop
+- run or trigger E2E checks for release candidates
 
 If Vercel fails with `sts_credentials_fetch_failed`, check Vercel/GitHub integration and project credentials before debugging app code.
