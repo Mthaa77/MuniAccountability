@@ -16,6 +16,8 @@ const layout = read("app", "layout.tsx");
 const shell = read("components", "app-shell.tsx");
 const accessProvider = read("components", "auth", "access-provider.tsx");
 const accessDenied = read("app", "access-denied", "page.tsx");
+const firestoreRules = read("firestore.rules");
+const storageRules = read("storage.rules");
 const envExample = read(".env.example");
 const docs = read("docs", "AUTH_RBAC.md");
 
@@ -26,6 +28,8 @@ for (const requiredFile of [
   ["components", "auth", "access-provider.tsx"],
   ["app", "access-denied", "page.tsx"],
   ["components", "atlas", "atlas-rbac.css"],
+  ["firestore.rules"],
+  ["storage.rules"],
   ["docs", "AUTH_RBAC.md"]
 ]) {
   assert(exists(...requiredFile), `Missing RBAC file: ${requiredFile.join("/")}`);
@@ -111,6 +115,25 @@ assert(!middleware.includes("headerRole"), "Legacy client role-header trust must
 ].forEach((token) => assert(accessDenied.includes(token), `Access denied page missing ${token}.`));
 
 [
+  "tokenTenantId",
+  "belongsToTenant",
+  "super_admin",
+  "reviewDecisions",
+  "productionGateReviews",
+  "draftActions",
+  "auditLogs"
+].forEach((token) => assert(firestoreRules.includes(token), `Firestore RBAC rules missing ${token}.`));
+
+[
+  "tokenTenantId",
+  "belongsToTenant",
+  "allowedEvidenceType",
+  "request.resource.size < 20 * 1024 * 1024",
+  "super_admin",
+  "restricted"
+].forEach((token) => assert(storageRules.includes(token), `Storage RBAC rules missing ${token}.`));
+
+[
   "NEXT_PUBLIC_REQUIRE_AUTH",
   "MUNI_DEV_ROLE",
   "MUNI_SESSION_SECRET"
@@ -146,4 +169,4 @@ assert.equal(payload.tenantId, "qa-tenant");
 assert.equal(payload.authProvider, "signed_session");
 assert(payload.exp > payload.iat, "Development session token must expire after it is issued.");
 
-console.log("RBAC contracts verified: roles, permissions, signed sessions, middleware, role-aware navigation and docs are aligned.");
+console.log("RBAC contracts verified: roles, permissions, signed sessions, tenant rules, middleware, role-aware navigation and docs are aligned.");
