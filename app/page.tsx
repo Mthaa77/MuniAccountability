@@ -17,11 +17,18 @@ export default function CommandCentrePage() {
         emphasis="before decisions are made."
         description="Use this workspace to review municipal risks, open the source evidence, assign follow-up actions and prepare briefings that are easy to understand and safe to share. Treasury financial numbers stay locked until they are verified."
         side={
-          <>
-            <AtlasEvidenceChip source="Audit evidence loaded" />
-            <AtlasEvidenceChip source="Treasury numbers locked" state="pending" />
-            <AtlasEvidenceChip source="Prototype storage" state="locked" />
-          </>
+          <div className="command-posture">
+            <div className="command-posture-heading">
+              <span>Command posture</span>
+              <strong>Evidence review</strong>
+            </div>
+            <p>Start with the critical queue, verify the source trail, then assign the next accountable action.</p>
+            <div className="command-posture-list">
+              <AtlasEvidenceChip source="Audit evidence loaded" />
+              <AtlasEvidenceChip source="Treasury numbers locked" state="pending" />
+              <AtlasEvidenceChip source="Prototype storage" state="locked" />
+            </div>
+          </div>
         }
       >
         <AtlasStatusPill>Evidence first</AtlasStatusPill>

@@ -150,7 +150,7 @@ Purpose:
 
 This is part of `npm run test:institutional`, so the browser suite cannot silently disappear even though browser execution itself remains optional.
 
-### 9. Browser E2E regression checks
+### 9. Browser E2E tests and regression checks
 
 Scripts:
 
@@ -167,7 +167,7 @@ Purpose:
 - test assistant source-lock UX
 - test Action Studio and Evidence Intake visibility
 - test AGSA Review Cockpit governance controls
-- test public MuniCheck public-safety boundary
+- test the public MuniCheck boundary and its public-safety rules
 - test production-readiness gate-room and promotion controls
 - smoke test keyboard-accessible controls and labelled drawers
 

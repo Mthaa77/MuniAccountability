@@ -42,6 +42,7 @@ Motion and interaction layers:
 ```txt
 atlas-motion.css
 atlas-button-system.css
+atlas-elegance.css
 ```
 
 Workflow-specific layers:
@@ -63,6 +64,7 @@ Responsive/layout authority layers:
 atlas-compact-desktop-rescue.css
 atlas-desktop-shell-fix.css
 atlas-device-polish.css
+atlas-elegance.css
 ```
 
 ## Import order warning
@@ -78,6 +80,7 @@ atlas-compact-desktop-rescue.css
 atlas-desktop-shell-fix.css
 atlas-device-polish.css
 atlas-button-system.css
+atlas-elegance.css
 ```
 
 Do not reorder without testing desktop, laptop, mobile and phone Desktop site mode.

@@ -128,7 +128,7 @@ Test these interactions:
 
 ### Source-backed behavior
 
-Do not add public claims without source/review/confidence context.
+No proof, no public claim. Do not add public claims without source/review/confidence context.
 
 ### API calls
 

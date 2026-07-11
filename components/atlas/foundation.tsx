@@ -54,7 +54,8 @@ export function AtlasMetricTile({
   tone?: "default" | "risk" | "gold" | "good" | "blue";
 }) {
   return (
-    <section className="atlas-tile" data-tone={tone}>
+    <section className="atlas-tile" data-tone={tone} aria-label={`${title}: ${value}`}>
+      <span className="atlas-tile-signal" aria-hidden="true" />
       <div className="atlas-tile-icon">
         <Icon size={20} />
       </div>

@@ -169,6 +169,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
   const degradedCount = sources.filter((source) => source.status !== "healthy").length;
   const healthLabel = sourceState === "loading" ? "Checking sources" : sourceState === "error" ? "Source status unavailable" : degradedCount ? `${degradedCount} source gate(s) need review` : "Sources look healthy";
+  const activeNavItem = navGroups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href));
+  const activeNavGroup = navGroups.find((group) => group.items.some((item) => isActive(pathname, item.href)));
 
   useEffect(() => {
     const controller = new AbortController();
@@ -209,7 +211,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="premium-workspace atlas-workspace" key={pathname}>
         <header className="topbar premium-topbar atlas-topbar">
           <button className="icon-button mobile-menu" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={18} /></button>
-          <div><p className="eyeless">Source-backed municipal oversight</p><h1>MuniAccountability Command</h1></div>
+          <div className="workspace-identity">
+            <p className="workspace-breadcrumb"><span>MuniAccountability</span><i aria-hidden="true" />{activeNavGroup?.label ?? "Command"}</p>
+            <h1>{activeNavItem?.label ?? "Command Centre"}</h1>
+            <p className="workspace-purpose">{activeNavItem?.hint ?? "Source-backed municipal oversight"}</p>
+          </div>
           <div className="top-actions" aria-label="Workspace controls">
             <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}><Search size={18} /><span>Search pages and evidence</span><kbd>Ctrl K</kbd></button>
             <div className={`source-pill ${sourceState}`}>{sourceState === "loading" ? <Skeleton className="source-skeleton" /> : <span />}<strong>{healthLabel}</strong></div>

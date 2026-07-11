@@ -121,7 +121,7 @@ export default function MuniCheckDetailPage({ params }: { params: { municipality
       <section className="municheck-boundary-grid">
         <article className="municheck-soft-note">
           <div>
-            <p className="eyeless">What is not shown publicly</p>
+            <p className="eyeless" aria-label="What this page excludes">What is not shown publicly</p>
             <h2>Public safety boundary</h2>
           </div>
           <div className="municheck-method-list">
