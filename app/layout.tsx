@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/newsreader";
 import { AppShell } from "@/components/app-shell";
+import { AccessProvider } from "@/components/auth/access-provider";
 import { PrototypeNotice } from "@/components/prototype-notice";
+import { getCurrentUser } from "@/lib/auth/server-session";
 import "./globals.css";
 import "@/components/atlas/atlas.css";
 import "@/components/atlas/atlas-pages.css";
@@ -31,18 +33,23 @@ import "@/components/atlas/atlas-device-polish.css";
 import "@/components/atlas/atlas-button-system.css";
 import "@/components/atlas/atlas-elegance.css";
 import "@/components/atlas/atlas-navigation-revamp.css";
+import "@/components/atlas/atlas-rbac.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",
   description: "Municipal oversight, intervention and recovery operating system."
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="en">
       <body>
         <PrototypeNotice />
-        <AppShell>{children}</AppShell>
+        <AccessProvider user={user}>
+          <AppShell>{children}</AppShell>
+        </AccessProvider>
       </body>
     </html>
   );
