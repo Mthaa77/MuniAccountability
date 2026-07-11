@@ -68,20 +68,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/access-denied",
-    "/actions/:path*",
-    "/admin/:path*",
-    "/briefings/:path*",
-    "/docs-api/:path*",
-    "/financial-pulse/:path*",
-    "/findings/:path*",
-    "/intervention-queue/:path*",
-    "/municipalities/:path*",
-    "/recovery/:path*",
-    "/search/:path*",
-    "/sources/:path*",
-    "/api/v1/:path*",
-    "/v1/:path*"
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|woff2?)$).*)"
   ]
 };
