@@ -50,7 +50,9 @@ for (const requiredFile of [
   "rolePermissions",
   "accessForPath",
   "canAccessPath",
-  "hasAllPermissions"
+  "hasAllPermissions",
+  'pathname.startsWith("/munidata")',
+  "Unclassified institutional route (deny by default)"
 ].forEach((token) => assert(roles.includes(token), `Role policy missing ${token}.`));
 
 [
@@ -79,7 +81,12 @@ for (const requiredFile of [
   "INSUFFICIENT_PERMISSION",
   'deniedUrl.pathname = "/access-denied"',
   'response.headers.set("x-muni-tenant-id"',
-  'response.headers.set("x-muni-user-id"'
+  'response.headers.set("x-muni-user-id"',
+  "_next/static",
+  "_next/image",
+  "favicon.ico",
+  "robots.txt",
+  "sitemap.xml"
 ].forEach((token) => assert(middleware.includes(token), `Middleware RBAC contract missing ${token}.`));
 
 assert(!middleware.includes('request.headers.get("x-muni-role")'), "Middleware must not trust client-supplied x-muni-role headers.");
@@ -145,7 +152,8 @@ assert(!middleware.includes("headerRole"), "Legacy client role-header trust must
   "does not trust a browser-supplied `x-muni-role` header",
   "Firebase production flow",
   "session revocation",
-  "MFA policy"
+  "MFA policy",
+  "deny by default"
 ].forEach((token) => assert(docs.includes(token), `AUTH_RBAC documentation missing ${token}.`));
 
 const secret = "institutional-test-secret-0123456789abcdef";
@@ -169,4 +177,4 @@ assert.equal(payload.tenantId, "qa-tenant");
 assert.equal(payload.authProvider, "signed_session");
 assert(payload.exp > payload.iat, "Development session token must expire after it is issued.");
 
-console.log("RBAC contracts verified: roles, permissions, signed sessions, tenant rules, middleware, role-aware navigation and docs are aligned.");
+console.log("RBAC contracts verified: roles, permissions, fail-closed routing, signed sessions, tenant rules, middleware, role-aware navigation and docs are aligned.");
