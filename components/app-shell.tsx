@@ -21,18 +21,19 @@ import {
   ShieldCheck,
   Siren,
   Sparkles,
-  UsersRound,
-  WandSparkles
+  UsersRound
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "@/lib/client-api";
 import type { SourceHealth } from "@/lib/types";
+import { roleDescriptions } from "@/lib/auth/roles";
 import { Dialog } from "@/components/ui/dialog";
 import { Sheet } from "@/components/ui/sheet";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/feedback";
 import { FreeAssistant } from "@/components/atlas/free-assistant";
 import { PageTransition } from "@/components/atlas/page-transition";
+import { useAccess } from "@/components/auth/access-provider";
 
 const navGroups = [
   {
@@ -103,6 +104,11 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function initials(name?: string) {
+  if (!name) return "PV";
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "MU";
+}
+
 function NavigationContent({
   pathname,
   onNavigate,
@@ -120,10 +126,15 @@ function NavigationContent({
   sourceState?: "loading" | "ready" | "error";
   healthLabel?: string;
 }) {
+  const { role, roleLabel, canVisit } = useAccess();
+  const visibleGroups = navGroups
+    .map((group) => ({ ...group, items: group.items.filter((item) => canVisit(item.href)) }))
+    .filter((group) => group.items.length > 0);
+
   return (
     <>
       <div className="sidebar-topline">
-        <Link href="/" className="brand-lockup premium-brand nav-brand-card" onClick={onNavigate} aria-label="MuniAtlas command centre">
+        <Link href={canVisit("/") ? "/" : "/municheck"} className="brand-lockup premium-brand nav-brand-card" onClick={onNavigate} aria-label="MuniAtlas command centre">
           <div className="brand-mark">MA</div>
           <div className="nav-brand-copy">
             <strong>MuniAtlas</strong>
@@ -137,22 +148,26 @@ function NavigationContent({
         ) : null}
       </div>
 
-      <button className="sidebar-command-trigger" aria-label="Open command search" onClick={onSearch} title="Search pages and evidence">
-        <span className="sidebar-command-icon"><Search size={17} /></span>
-        <span className="sidebar-command-copy"><strong>Search command</strong><small>Pages, evidence and workflows</small></span>
-        <kbd>⌘K</kbd>
-      </button>
+      {canVisit("/search") ? (
+        <button className="sidebar-command-trigger" aria-label="Open command search" onClick={onSearch} title="Search pages and evidence">
+          <span className="sidebar-command-icon"><Search size={17} /></span>
+          <span className="sidebar-command-copy"><strong>Search command</strong><small>Pages, evidence and workflows</small></span>
+          <kbd>⌘K</kbd>
+        </button>
+      ) : null}
 
-      <div className="nav-command-card" aria-label={`Source health: ${healthLabel ?? "Checking source health"}`} title={healthLabel}>
-        <span className={`nav-status-light ${sourceState ?? "ready"}`} />
-        <div>
-          <span className="nav-command-kicker">Source health</span>
-          <strong>{healthLabel ?? "Checking source health"}</strong>
+      {canVisit("/sources") ? (
+        <div className="nav-command-card" aria-label={`Source health: ${healthLabel ?? "Checking source health"}`} title={healthLabel}>
+          <span className={`nav-status-light ${sourceState ?? "ready"}`} />
+          <div>
+            <span className="nav-command-kicker">Source health</span>
+            <strong>{healthLabel ?? "Checking source health"}</strong>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <nav className="nav-groups" aria-label="Primary sections">
-        {navGroups.map((group) => {
+        {visibleGroups.map((group) => {
           const groupActive = group.items.some((item) => isActive(pathname, item.href));
           return (
             <section className={groupActive ? "nav-group active-group" : "nav-group"} key={group.label}>
@@ -183,23 +198,27 @@ function NavigationContent({
         <div className="nav-footer-copy"><span className="nav-command-kicker">Trust rule</span><strong>No proof, no public claim</strong></div>
         <p>Every public statement needs a source, review state and confidence signal.</p>
         <div className="nav-footer-actions">
-          <Link href="/sources" onClick={onNavigate}>Sources</Link>
-          <Link href="/admin/agsa-review" onClick={onNavigate}>AGSA Review</Link>
+          {canVisit("/sources") ? <Link href="/sources" onClick={onNavigate}>Sources</Link> : null}
+          {canVisit("/admin/agsa-review") ? <Link href="/admin/agsa-review" onClick={onNavigate}>AGSA Review</Link> : null}
+          {!canVisit("/sources") ? <Link href="/municheck" onClick={onNavigate}>MuniCheck</Link> : null}
         </div>
       </div>
 
-      <div className="nav-workspace-chip" title="Gauteng institutional pilot">
+      <div className="nav-workspace-chip" title={roleDescriptions[role]}>
         <span><Sparkles size={14} /></span>
-        <div><strong>Institutional pilot</strong><small>Gauteng workspace</small></div>
+        <div><strong>{roleLabel}</strong><small>{role === "public" ? "Public-safe access" : "Gauteng workspace"}</small></div>
       </div>
     </>
   );
 }
 
 function MobileBottomNavigation({ pathname, onMore }: { pathname: string; onMore: () => void }) {
+  const { canVisit } = useAccess();
+  const visibleItems = mobileNavItems.filter((item) => canVisit(item.href));
+
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile primary navigation">
-      {mobileNavItems.map((item) => {
+      {visibleItems.map((item) => {
         const Icon = item.icon;
         const active = isActive(pathname, item.href);
         return (
@@ -219,23 +238,29 @@ function MobileBottomNavigation({ pathname, onMore }: { pathname: string; onMore
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, role, roleLabel, canVisit } = useAccess();
   const [menuOpen, setMenuOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [query, setQuery] = useState("");
   const [sourceState, setSourceState] = useState<"loading" | "ready" | "error">("loading");
   const [sources, setSources] = useState<SourceHealth[]>([]);
+  const visibleNavGroups = useMemo(
+    () => navGroups.map((group) => ({ ...group, items: group.items.filter((item) => canVisit(item.href)) })).filter((group) => group.items.length > 0),
+    [canVisit]
+  );
   const commandItems = useMemo(
     () =>
-      [...navGroups.flatMap((group) => group.items.map((item) => ({ ...item, hint: `${group.label} / ${item.hint}` }))), ...quickActions].filter((item) =>
-        `${item.label} ${item.hint}`.toLowerCase().includes(query.toLowerCase())
-      ),
-    [query]
+      [
+        ...visibleNavGroups.flatMap((group) => group.items.map((item) => ({ ...item, hint: `${group.label} / ${item.hint}` }))),
+        ...quickActions.filter((item) => canVisit(item.href))
+      ].filter((item) => `${item.label} ${item.hint}`.toLowerCase().includes(query.toLowerCase())),
+    [canVisit, query, visibleNavGroups]
   );
   const degradedCount = sources.filter((source) => source.status !== "healthy").length;
   const healthLabel = sourceState === "loading" ? "Checking sources" : sourceState === "error" ? "Source status unavailable" : degradedCount ? `${degradedCount} source gate(s) need review` : "Sources look healthy";
-  const activeNavItem = navGroups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href));
-  const activeNavGroup = navGroups.find((group) => group.items.some((item) => isActive(pathname, item.href)));
+  const activeNavItem = visibleNavGroups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href));
+  const activeNavGroup = visibleNavGroups.find((group) => group.items.some((item) => isActive(pathname, item.href)));
 
   useEffect(() => {
     setNavCollapsed(window.localStorage.getItem("muni-nav-collapsed") === "true");
@@ -250,6 +275,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    if (!canVisit("/sources")) {
+      setSourceState("ready");
+      return;
+    }
+
     const controller = new AbortController();
     apiGet<{ sources?: SourceHealth[] }>("/v1/sources", controller.signal)
       .then((payload) => {
@@ -258,21 +288,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       })
       .catch(() => setSourceState("error"));
     return () => controller.abort();
-  }, []);
+  }, [canVisit]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      if (canVisit("/search") && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setCommandOpen(true);
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [canVisit]);
 
   return (
-    <main className={navCollapsed ? "premium-shell atlas-shell nav-collapsed" : "premium-shell atlas-shell"}>
+    <main className={navCollapsed ? "premium-shell atlas-shell nav-collapsed" : "premium-shell atlas-shell"} data-auth-role={role}>
       <PageTransition />
       <aside className="premium-sidebar atlas-sidebar" aria-label="Primary navigation">
         <NavigationContent pathname={pathname} collapsed={navCollapsed} onSearch={() => setCommandOpen(true)} onToggleCollapse={toggleNavigation} sourceState={sourceState} healthLabel={healthLabel} />
@@ -283,21 +313,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <span>Menu</span>
       </button>
 
-      <FreeAssistant />
+      {canVisit("/api/v1/assistant/query", "POST") ? <FreeAssistant /> : null}
 
       <div className="premium-workspace atlas-workspace" key={pathname}>
         <header className="topbar premium-topbar atlas-topbar">
           <button className="icon-button mobile-menu" aria-label="Open workspace navigation" onClick={() => setMenuOpen(true)}><Menu size={18} /></button>
           <div className="workspace-identity">
-            <p className="workspace-breadcrumb"><span>MuniAccountability</span><i aria-hidden="true" />{activeNavGroup?.label ?? "Command"}</p>
-            <h1>{activeNavItem?.label ?? "Command Centre"}</h1>
-            <p className="workspace-purpose">{activeNavItem?.hint ?? "Source-backed municipal oversight"}</p>
+            <p className="workspace-breadcrumb"><span>MuniAccountability</span><i aria-hidden="true" />{activeNavGroup?.label ?? "Public"}</p>
+            <h1>{activeNavItem?.label ?? (pathname === "/access-denied" ? "Access Control" : "MuniCheck")}</h1>
+            <p className="workspace-purpose">{activeNavItem?.hint ?? "Public-safe municipal accountability"}</p>
           </div>
           <div className="top-actions" aria-label="Workspace controls">
-            <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}><Search size={18} /><span>Search pages and evidence</span><kbd>Ctrl K</kbd></button>
-            <div className={`source-pill ${sourceState}`}>{sourceState === "loading" ? <Skeleton className="source-skeleton" /> : <span />}<strong>{healthLabel}</strong></div>
-            <Link className="secondary-action glass-action" href="/sources"><PanelRightOpen size={17} />Check sources</Link>
-            <Link className="primary-action glass-action" href="/admin/agsa-review"><ShieldAlert size={17} />AGSA Review</Link>
+            {canVisit("/search") ? <button className="command-trigger" aria-label="Open command search" onClick={() => setCommandOpen(true)}><Search size={18} /><span>Search pages and evidence</span><kbd>Ctrl K</kbd></button> : null}
+            {canVisit("/sources") ? <div className={`source-pill ${sourceState}`}>{sourceState === "loading" ? <Skeleton className="source-skeleton" /> : <span />}<strong>{healthLabel}</strong></div> : null}
+            <div className="access-identity" title={`${roleLabel}: ${roleDescriptions[role]}`}>
+              <span className="access-avatar">{initials(user?.name)}</span>
+              <div><strong>{user?.name ?? "Public visitor"}</strong><small>{roleLabel}</small></div>
+            </div>
+            {canVisit("/sources") ? <Link className="secondary-action glass-action" href="/sources"><PanelRightOpen size={17} />Check sources</Link> : null}
+            {canVisit("/admin/agsa-review") ? <Link className="primary-action glass-action" href="/admin/agsa-review"><ShieldAlert size={17} />AGSA Review</Link> : null}
           </div>
         </header>
         {children}
@@ -321,7 +355,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link href={item.href} onClick={() => setCommandOpen(false)}><strong>{item.label}</strong><span>{item.hint}</span></Link>
                 </CommandItem>
               ))}
-              {!commandItems.length ? <div className="command-empty">No match yet. Try “AGSA”, “sources”, “briefing”, “audit” or “queue”.</div> : null}
+              {!commandItems.length ? <div className="command-empty">No permitted match yet. Try a public or role-approved workspace.</div> : null}
             </CommandGroup>
           </CommandList>
         </Command>
