@@ -9,6 +9,8 @@ The architecture is optimized for a premium MVP/prototype:
 - source-locked evidence behavior
 - workflow actions and review decisions
 - public-safe publishing boundaries
+- signed-session RBAC
+- tenant-aware storage rules
 - future migration to durable tenant storage
 
 ## High-level architecture
@@ -16,13 +18,17 @@ The architecture is optimized for a premium MVP/prototype:
 ```txt
 User Interface
   ↓
-App Shell and Pages
+Role-aware App Shell and Pages
+  ↓
+Signed Session + Middleware RBAC
   ↓
 Client API Helper
   ↓
 /api/v1/[...resource]
   ↓
 Domain helpers, typed pilot data and local stores
+  ↓
+Future Firestore / Cloud Storage tenant services
 ```
 
 ## Current implementation
@@ -34,6 +40,39 @@ app/api/v1/[...resource]/route.ts
 ```
 
 The current data layer is mostly static and typed, but shaped to match a future warehouse and workflow-service architecture.
+
+## Authentication and access layer
+
+Primary files:
+
+```txt
+lib/auth/roles.ts
+lib/auth/session-token.ts
+lib/auth/server-session.ts
+components/auth/access-provider.tsx
+middleware.ts
+app/access-denied/page.tsx
+```
+
+Responsibilities:
+
+- canonical role and permission matrix
+- path and HTTP-method policy
+- HMAC-signed session verification
+- server-side current-user resolution
+- middleware `401`/`403` enforcement
+- role-aware navigation and controls
+- public-safe denial experience
+
+The browser does not supply trusted role headers. Tenant and role are resolved from a signed session. Firestore and Storage rules independently enforce tenant membership and role boundaries.
+
+The current auth layer is a strong foundation, but production still needs Firebase ID-token exchange, session revocation, administrator-managed role claims, privileged-role MFA and security-event logs.
+
+See:
+
+```txt
+docs/AUTH_RBAC.md
+```
 
 ## User interface layer
 
@@ -47,12 +86,13 @@ components/app-shell.tsx
 
 The shell owns:
 
-- sidebar navigation
+- role-aware sidebar navigation
 - mobile menu sheet
 - command search
-- topbar actions
+- topbar identity and role badge
+- source health
 - page transition loader
-- global free assistant mount
+- assistant visibility based on permission
 
 Premium workflow components live in:
 
@@ -86,7 +126,7 @@ apiPost("/v1/agsa/review-decisions", payload)
 apiPatch("/v1/actions/drafts/:id", payload)
 ```
 
-The helper turns `/v1/*` into `/api/v1/*` for the Next.js route.
+The helper turns `/v1/*` into `/api/v1/*` for the Next.js route. Middleware applies method-aware authorization before the route handler executes.
 
 ## Domain/data layer
 
@@ -102,7 +142,7 @@ Primary domain types live in:
 lib/types.ts
 ```
 
-When adding new fields, update types first, then the relevant pilot data, stores and UI.
+When adding new fields, update types first, then the relevant pilot data, stores, API contracts, UI and docs.
 
 ## Persistence layer
 
@@ -121,7 +161,7 @@ These store data under:
 data/agsa/generated/
 ```
 
-This is good enough for deterministic prototype review, but not for production.
+This is suitable for deterministic prototype review, but not production.
 
 Future production persistence should add:
 
@@ -130,8 +170,28 @@ Future production persistence should add:
 - timestamps
 - durable audit trail
 - object storage for evidence files
-- role-based access control
+- transaction/concurrency behavior
 - migration path from local JSON
+
+## Firebase data rules
+
+Prepared security files:
+
+```txt
+firestore.rules
+storage.rules
+```
+
+They enforce:
+
+- `request.auth.token.tenantId` matches the tenant path
+- role-based read/write boundaries
+- `super_admin` cross-tenant exception
+- immutable audit logs
+- evidence file size and content-type controls
+- deny-by-default fallback rules
+
+Emulator tests are still required before production deployment.
 
 ## Source-locked search and assistant
 
@@ -147,18 +207,17 @@ The assistant should never invent claims. It should either:
 1. answer from source-backed results, or
 2. refuse unsupported claims.
 
-The current assistant is free/local Evidence Mode. Paid Analyst Mode is only a future UI affordance.
+The current assistant is free/local Evidence Mode. Paid Analyst Mode is only a future UI affordance. Assistant queries require analyst-level permission when authentication is enabled.
 
 ## Workflow modules
 
-The core workflow modules are:
-
 | Step | Module | Main file | Route |
 | --- | --- | --- | --- |
-| 1 | Free Assistant | `components/atlas/free-assistant.tsx` | global |
+| 1 | Free Assistant | `components/atlas/free-assistant.tsx` | global, analyst+ |
 | 2 | Action Studio | `components/atlas/action-studio.tsx` | `/actions` |
 | 3 | Evidence Intake Desk | `components/atlas/evidence-attachment-drawer.tsx` | `/actions` |
-| 4 | AGSA Review Cockpit | `components/atlas/agsa-review-desk.tsx` | `/admin/agsa-review` |
+| 4 | AGSA Review Cockpit | `components/atlas/agsa-review-desk.tsx` | `/admin/agsa-review`, reviewer+ |
+| 5 | Production Readiness | `app/admin/page.tsx` | `/admin`, admin+ |
 
 ## Public-safe boundary
 
@@ -169,39 +228,53 @@ Public-safe routes include:
 ```txt
 /municheck
 /municheck/[municipalityId]
+/disclaimer
 ```
 
-Before public output expands, ensure it respects AGSA review decisions and source confidence.
+Before public output expands, ensure it respects AGSA review decisions, publication state and source confidence.
 
 ## Design system architecture
 
-Atlas design assets currently live in many global CSS files under:
+Atlas design assets currently live in global CSS files under:
 
 ```txt
 components/atlas/*.css
 ```
 
-This was necessary during rapid stabilization. The final authority layers are imported last in `app/layout.tsx`.
+Final authority layers include device, navigation, button and RBAC polish. Import order in `app/layout.tsx` matters.
 
-Important final layers:
+See:
 
 ```txt
-atlas-compact-desktop-rescue.css
-atlas-desktop-shell-fix.css
-atlas-device-polish.css
-atlas-button-system.css
+docs/CSS_LAYERS.md
 ```
 
-See [`CSS_LAYERS.md`](./CSS_LAYERS.md) before changing layout CSS.
+## Testing architecture
+
+Deterministic institutional verification:
+
+```bash
+npm run verify
+```
+
+Browser-level signed-session testing:
+
+```bash
+npm run test:e2e
+```
+
+The test suite covers API contracts, workflows, source-locking, public safety, CSS authority, RBAC, tenant rules, accessibility smoke checks and production-readiness journeys.
 
 ## Intended production stack
 
 - Next.js + TypeScript strict mode for institutional and public web surfaces.
 - BigQuery datasets for raw, staging, core, marts and ops analytical data.
-- Cloud SQL or Firestore for tenant workflow state: actions, decisions, permissions, comments and approvals.
-- Cloud Storage for raw AGSA reports, source artifacts, evidence and generated briefings.
-- Firebase Auth / Identity Platform for institutional access with RBAC and SSO-ready tenant boundaries.
-- Source adapters with health checks, artifact hashes, schema fingerprints, validation events and fixture tests.
+- Firestore or Cloud SQL for tenant workflow state.
+- Cloud Storage for source artifacts, evidence and generated briefings.
+- Firebase Auth / Identity Platform for institutional access with SSO-ready tenant boundaries.
+- Server-side Firebase token exchange into short-lived application sessions.
+- Source adapters with health checks, hashes, schema fingerprints and validation events.
+- Central audit/security event pipeline.
 
 ## Data trust rules
 
@@ -209,9 +282,10 @@ See [`CSS_LAYERS.md`](./CSS_LAYERS.md) before changing layout CSS.
 - AGSA findings, Treasury submissions, client-entered updates and platform calculations remain visually distinct.
 - Treasury telemetry is marked as pending validation until connector and reuse checks pass.
 - Scores are operational prioritisation aids, not legal findings, credit ratings or corruption labels.
+- No protected route relies on UI hiding alone.
 
 ## Current architecture boundary
 
-This app is a strong MVP/prototype, not a finished institutional production system.
+This app is a strong MVP with institutional security foundations, not a finished production system.
 
-Do not market prototype values as verified official findings. Treat scores as prioritization aids until official source validation is complete.
+Do not market prototype values as verified official findings. Do not describe authentication as production-complete until Firebase exchange, revocation, MFA, tenant membership administration and security audit logging are operational.
