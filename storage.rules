@@ -10,23 +10,47 @@ service firebase.storage {
       return signedIn() && request.auth.token.role is string ? request.auth.token.role : 'public';
     }
 
+    function tokenTenantId() {
+      return signedIn() && request.auth.token.tenantId is string ? request.auth.token.tenantId : '';
+    }
+
+    function isSuperAdmin() {
+      return role() == 'super_admin';
+    }
+
+    function belongsToTenant(tenantId) {
+      return signedIn() && (isSuperAdmin() || tokenTenantId() == tenantId);
+    }
+
     function hasAnyRole(allowed) {
       return signedIn() && role() in allowed;
     }
 
+    function allowedEvidenceType() {
+      return request.resource.contentType.matches('application/pdf')
+        || request.resource.contentType.matches('image/.*')
+        || request.resource.contentType.matches('text/plain')
+        || request.resource.contentType.matches('application/msword')
+        || request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.*');
+    }
+
     match /public/{allPaths=**} {
       allow read: if true;
-      allow write: if hasAnyRole(['admin']);
+      allow write: if hasAnyRole(['admin', 'super_admin']);
     }
 
     match /tenants/{tenantId}/evidence/{allPaths=**} {
-      allow read: if hasAnyRole(['analyst', 'reviewer', 'admin']);
-      allow write: if hasAnyRole(['reviewer', 'admin'])
-        && request.resource.size < 20 * 1024 * 1024;
+      allow read: if belongsToTenant(tenantId)
+        && hasAnyRole(['viewer', 'analyst', 'reviewer', 'admin', 'super_admin']);
+      allow write: if belongsToTenant(tenantId)
+        && hasAnyRole(['analyst', 'reviewer', 'admin', 'super_admin'])
+        && request.resource.size < 20 * 1024 * 1024
+        && allowedEvidenceType();
     }
 
     match /tenants/{tenantId}/restricted/{allPaths=**} {
-      allow read, write: if hasAnyRole(['admin']);
+      allow read, write: if belongsToTenant(tenantId)
+        && hasAnyRole(['admin', 'super_admin']);
     }
 
     match /{allPaths=**} {
