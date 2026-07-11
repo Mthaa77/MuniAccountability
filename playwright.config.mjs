@@ -1,5 +1,11 @@
+import { E2E_SESSION_SECRET, sessionCookie } from "./tests/e2e/helpers/auth.mjs";
+
 const PORT = Number(process.env.PORT ?? 3000);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`;
+const authenticatedStorageState = {
+  cookies: [sessionCookie("admin", baseURL)],
+  origins: []
+};
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
@@ -15,6 +21,7 @@ const config = {
   reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]] : "list",
   use: {
     baseURL,
+    storageState: authenticatedStorageState,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure"
@@ -42,12 +49,14 @@ const config = {
     : {
         command: `npm run dev -- -p ${PORT}`,
         url: baseURL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === "true",
         timeout: 120_000,
         env: {
-          NEXT_PUBLIC_DEMO_MODE: "true",
-          NEXT_PUBLIC_REQUIRE_AUTH: "false",
+          NEXT_PUBLIC_DEMO_MODE: "false",
+          NEXT_PUBLIC_REQUIRE_AUTH: "true",
+          MUNI_SESSION_SECRET: E2E_SESSION_SECRET,
           WORKFLOW_STORE_PROVIDER: "local_json",
+          WORKFLOW_TENANT_ID: "e2e-tenant",
           DISABLE_EXPENSIVE_JOBS: "true"
         }
       }
