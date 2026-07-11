@@ -13,7 +13,8 @@ const finalImports = [
   "atlas-compact-desktop-rescue.css",
   "atlas-desktop-shell-fix.css",
   "atlas-device-polish.css",
-  "atlas-button-system.css"
+  "atlas-button-system.css",
+  "atlas-elegance.css"
 ];
 
 const importPositions = finalImports.map((file) => {
@@ -34,6 +35,7 @@ const compactRescue = read("components", "atlas", "atlas-compact-desktop-rescue.
 const desktopFix = read("components", "atlas", "atlas-desktop-shell-fix.css");
 const devicePolish = read("components", "atlas", "atlas-device-polish.css");
 const buttonSystem = read("components", "atlas", "atlas-button-system.css");
+const elegance = read("components", "atlas", "atlas-elegance.css");
 
 [
   "@media (max-width: 1180px)",
@@ -64,6 +66,14 @@ const buttonSystem = read("components", "atlas", "atlas-button-system.css");
   "@media (max-width: 760px)",
   "prefers-reduced-motion"
 ].forEach((token) => assert(buttonSystem.includes(token), `Button system layer missing ${token}.`));
+
+[
+  "Final elegance authority layer",
+  "--atlas-font-body",
+  ".workspace-identity",
+  ".atlas-tile-signal",
+  "prefers-reduced-motion"
+].forEach((token) => assert(elegance.includes(token), `Elegance layer missing ${token}.`));
 
 finalImports.forEach((file) => {
   assert(cssLayers.includes(file), `CSS layer docs must mention ${file}.`);

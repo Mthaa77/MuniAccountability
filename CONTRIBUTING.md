@@ -43,6 +43,8 @@ npm run verify
 
 No proof, no public claim.
 
+Internal workflow notes are not exposed publicly.
+
 Do not add public-facing claims unless source, confidence and review state are clear.
 
 ### 2. Use existing architecture

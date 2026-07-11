@@ -56,12 +56,12 @@ The queue ranks risk and work items for oversight attention.
 ## Action workflow routes
 
 ```txt
-GET   /v1/actions
-GET   /v1/actions/drafts
-POST  /v1/actions/drafts
+GET /v1/actions
+GET /v1/actions/drafts
+POST /v1/actions/drafts
 PATCH /v1/actions/drafts/:id
-POST  /v1/actions/drafts/:id/transition
-POST  /v1/actions/drafts/:id/evidence
+POST /v1/actions/drafts/:id/transition
+POST /v1/actions/drafts/:id/evidence
 PATCH /v1/actions/:id
 ```
 

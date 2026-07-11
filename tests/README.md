@@ -1,4 +1,4 @@
-# Tests
+# Browser E2E suite
 
 This folder contains browser-level institutional tests.
 

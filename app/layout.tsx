@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/manrope";
+import "@fontsource-variable/newsreader";
 import { AppShell } from "@/components/app-shell";
 import { PrototypeNotice } from "@/components/prototype-notice";
 import "./globals.css";
@@ -27,6 +29,7 @@ import "@/components/atlas/atlas-compact-desktop-rescue.css";
 import "@/components/atlas/atlas-desktop-shell-fix.css";
 import "@/components/atlas/atlas-device-polish.css";
 import "@/components/atlas/atlas-button-system.css";
+import "@/components/atlas/atlas-elegance.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",

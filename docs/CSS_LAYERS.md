@@ -31,6 +31,7 @@ atlas-compact-desktop-rescue.css
 atlas-desktop-shell-fix.css
 atlas-device-polish.css
 atlas-button-system.css
+atlas-elegance.css
 ```
 
 Do not reorder them without testing.
@@ -83,6 +84,18 @@ It:
 - styles floating buttons
 - adds disabled and focus-visible states
 - preserves mobile touch targets
+
+### `atlas-elegance.css`
+
+Final visual authority for the premium institutional finish.
+
+It:
+
+- uses locally bundled variable fonts with no runtime font request
+- unifies canvas, surface, border, radius and shadow tokens
+- adds route-aware workspace identity styling
+- refines cards, forms, tables, dialogs and workflow surfaces
+- preserves reduced-motion and responsive behaviour
 
 ## Workflow-specific layers
 
@@ -164,7 +177,7 @@ Check `atlas-compact-desktop-rescue.css`.
 
 ### Hazard: buttons look inconsistent
 
-Check `atlas-button-system.css` is imported last.
+Check `atlas-elegance.css` is imported last, immediately after `atlas-button-system.css`.
 
 ### Hazard: mobile floating buttons cover content
 
