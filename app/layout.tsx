@@ -30,6 +30,7 @@ import "@/components/atlas/atlas-desktop-shell-fix.css";
 import "@/components/atlas/atlas-device-polish.css";
 import "@/components/atlas/atlas-button-system.css";
 import "@/components/atlas/atlas-elegance.css";
+import "@/components/atlas/atlas-navigation-revamp.css";
 
 export const metadata: Metadata = {
   title: "MuniAccountability Command",

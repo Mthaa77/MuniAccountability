@@ -14,7 +14,8 @@ const finalImports = [
   "atlas-desktop-shell-fix.css",
   "atlas-device-polish.css",
   "atlas-button-system.css",
-  "atlas-elegance.css"
+  "atlas-elegance.css",
+  "atlas-navigation-revamp.css"
 ];
 
 const importPositions = finalImports.map((file) => {
@@ -36,6 +37,7 @@ const desktopFix = read("components", "atlas", "atlas-desktop-shell-fix.css");
 const devicePolish = read("components", "atlas", "atlas-device-polish.css");
 const buttonSystem = read("components", "atlas", "atlas-button-system.css");
 const elegance = read("components", "atlas", "atlas-elegance.css");
+const navigationRevamp = read("components", "atlas", "atlas-navigation-revamp.css");
 
 [
   "@media (max-width: 1180px)",
@@ -74,6 +76,15 @@ const elegance = read("components", "atlas", "atlas-elegance.css");
   ".atlas-tile-signal",
   "prefers-reduced-motion"
 ].forEach((token) => assert(elegance.includes(token), `Elegance layer missing ${token}.`));
+
+[
+  "Premium adaptive navigation authority layer",
+  "--nav-collapsed-width",
+  ".sidebar-collapse-button",
+  ".mobile-bottom-nav",
+  ".mobile-navigation-sheet",
+  "prefers-reduced-motion"
+].forEach((token) => assert(navigationRevamp.includes(token), `Navigation revamp layer missing ${token}.`));
 
 finalImports.forEach((file) => {
   assert(cssLayers.includes(file), `CSS layer docs must mention ${file}.`);

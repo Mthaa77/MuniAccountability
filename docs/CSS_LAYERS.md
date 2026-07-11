@@ -32,6 +32,7 @@ atlas-desktop-shell-fix.css
 atlas-device-polish.css
 atlas-button-system.css
 atlas-elegance.css
+atlas-navigation-revamp.css
 ```
 
 Do not reorder them without testing.
@@ -96,6 +97,19 @@ It:
 - adds route-aware workspace identity styling
 - refines cards, forms, tables, dialogs and workflow surfaces
 - preserves reduced-motion and responsive behaviour
+
+### `atlas-navigation-revamp.css`
+
+Final adaptive navigation authority.
+
+It:
+
+- provides an expandable and collapsible desktop command rail
+- adds a source-health strip and sidebar command search
+- introduces tablet slide-over navigation
+- introduces a persistent mobile bottom navigation bar
+- moves the assistant launcher above mobile navigation safely
+- preserves accessible labels, focus visibility and reduced motion
 
 ## Workflow-specific layers
 
@@ -177,7 +191,7 @@ Check `atlas-compact-desktop-rescue.css`.
 
 ### Hazard: buttons look inconsistent
 
-Check `atlas-elegance.css` is imported last, immediately after `atlas-button-system.css`.
+Check `atlas-navigation-revamp.css` is imported last, immediately after `atlas-elegance.css`.
 
 ### Hazard: mobile floating buttons cover content
 

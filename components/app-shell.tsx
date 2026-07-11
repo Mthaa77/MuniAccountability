@@ -6,6 +6,8 @@ import {
   Archive,
   BarChart3,
   BriefcaseBusiness,
+  ChevronLeft,
+  ChevronRight,
   ClipboardCheck,
   Database,
   FileText,
@@ -18,6 +20,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Siren,
+  Sparkles,
   UsersRound,
   WandSparkles
 } from "lucide-react";
@@ -88,30 +91,64 @@ const quickActions = [
   { href: "/admin/agsa-review", label: "Open AGSA Review Cockpit", hint: "Review extraction issues before public output" }
 ];
 
+const mobileNavItems = [
+  { href: "/", label: "Home", icon: Gauge },
+  { href: "/intervention-queue", label: "Queue", icon: Siren },
+  { href: "/actions", label: "Actions", icon: ClipboardCheck },
+  { href: "/sources", label: "Sources", icon: Database }
+];
+
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: { pathname: string; onNavigate?: () => void; sourceState?: "loading" | "ready" | "error"; healthLabel?: string }) {
+function NavigationContent({
+  pathname,
+  onNavigate,
+  onSearch,
+  onToggleCollapse,
+  collapsed = false,
+  sourceState,
+  healthLabel
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+  onSearch?: () => void;
+  onToggleCollapse?: () => void;
+  collapsed?: boolean;
+  sourceState?: "loading" | "ready" | "error";
+  healthLabel?: string;
+}) {
   return (
     <>
       <div className="sidebar-topline">
-        <Link href="/" className="brand-lockup premium-brand nav-brand-card" onClick={onNavigate}>
+        <Link href="/" className="brand-lockup premium-brand nav-brand-card" onClick={onNavigate} aria-label="MuniAtlas command centre">
           <div className="brand-mark">MA</div>
           <div className="nav-brand-copy">
             <strong>MuniAtlas</strong>
             <span>Municipal Accountability Command</span>
           </div>
         </Link>
+        {onToggleCollapse ? (
+          <button className="sidebar-collapse-button" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={onToggleCollapse}>
+            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+        ) : null}
       </div>
 
-      <div className="nav-command-card" aria-label="Navigation status">
+      <button className="sidebar-command-trigger" aria-label="Open command search" onClick={onSearch} title="Search pages and evidence">
+        <span className="sidebar-command-icon"><Search size={17} /></span>
+        <span className="sidebar-command-copy"><strong>Search command</strong><small>Pages, evidence and workflows</small></span>
+        <kbd>⌘K</kbd>
+      </button>
+
+      <div className="nav-command-card" aria-label={`Source health: ${healthLabel ?? "Checking source health"}`} title={healthLabel}>
+        <span className={`nav-status-light ${sourceState ?? "ready"}`} />
         <div>
-          <span className="nav-command-kicker">System status</span>
+          <span className="nav-command-kicker">Source health</span>
           <strong>{healthLabel ?? "Checking source health"}</strong>
         </div>
-        <span className={`nav-status-light ${sourceState ?? "ready"}`} />
       </div>
 
       <nav className="nav-groups" aria-label="Primary sections">
@@ -119,7 +156,7 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
           const groupActive = group.items.some((item) => isActive(pathname, item.href));
           return (
             <section className={groupActive ? "nav-group active-group" : "nav-group"} key={group.label}>
-              <div className="nav-group-heading">
+              <div className="nav-group-heading" title={group.label}>
                 <span>{group.label}</span>
                 <small>{group.eyebrow}</small>
               </div>
@@ -128,7 +165,7 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
                   const Icon = item.icon;
                   const active = isActive(pathname, item.href);
                   return (
-                    <Link href={item.href} key={item.href} className={active ? "active nav-item" : "nav-item"} aria-current={active ? "page" : undefined} onClick={onNavigate}>
+                    <Link href={item.href} key={item.href} className={active ? "active nav-item" : "nav-item"} aria-current={active ? "page" : undefined} aria-label={collapsed ? item.label : undefined} title={collapsed ? item.label : undefined} onClick={onNavigate}>
                       <span className="nav-item-icon"><Icon size={17} /></span>
                       <span className="nav-item-copy"><strong>{item.label}</strong><small>{item.hint}</small></span>
                       {item.badge ? <span className="nav-item-badge">{item.badge}</span> : null}
@@ -141,15 +178,42 @@ function NavigationContent({ pathname, onNavigate, sourceState, healthLabel }: {
         })}
       </nav>
 
-      <div className="sidebar-card evidence-lock nav-footer-card">
-        <div><span className="nav-command-kicker">Trust rule</span><strong>No proof, no public claim</strong></div>
-        <p>Before anything is published, it should have a source, a review state and a clear confidence signal.</p>
+      <div className="sidebar-card evidence-lock nav-footer-card" title="No proof, no public claim">
+        <div className="nav-footer-symbol"><ShieldCheck size={17} /></div>
+        <div className="nav-footer-copy"><span className="nav-command-kicker">Trust rule</span><strong>No proof, no public claim</strong></div>
+        <p>Every public statement needs a source, review state and confidence signal.</p>
         <div className="nav-footer-actions">
           <Link href="/sources" onClick={onNavigate}>Sources</Link>
           <Link href="/admin/agsa-review" onClick={onNavigate}>AGSA Review</Link>
         </div>
       </div>
+
+      <div className="nav-workspace-chip" title="Gauteng institutional pilot">
+        <span><Sparkles size={14} /></span>
+        <div><strong>Institutional pilot</strong><small>Gauteng workspace</small></div>
+      </div>
     </>
+  );
+}
+
+function MobileBottomNavigation({ pathname, onMore }: { pathname: string; onMore: () => void }) {
+  return (
+    <nav className="mobile-bottom-nav" aria-label="Mobile primary navigation">
+      {mobileNavItems.map((item) => {
+        const Icon = item.icon;
+        const active = isActive(pathname, item.href);
+        return (
+          <Link href={item.href} key={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}>
+            <Icon size={19} />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+      <button aria-label="Open navigation menu" onClick={onMore}>
+        <Menu size={19} />
+        <span>More</span>
+      </button>
+    </nav>
   );
 }
 
@@ -157,6 +221,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(false);
   const [query, setQuery] = useState("");
   const [sourceState, setSourceState] = useState<"loading" | "ready" | "error">("loading");
   const [sources, setSources] = useState<SourceHealth[]>([]);
@@ -171,6 +236,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const healthLabel = sourceState === "loading" ? "Checking sources" : sourceState === "error" ? "Source status unavailable" : degradedCount ? `${degradedCount} source gate(s) need review` : "Sources look healthy";
   const activeNavItem = navGroups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href));
   const activeNavGroup = navGroups.find((group) => group.items.some((item) => isActive(pathname, item.href)));
+
+  useEffect(() => {
+    setNavCollapsed(window.localStorage.getItem("muni-nav-collapsed") === "true");
+  }, []);
+
+  function toggleNavigation() {
+    setNavCollapsed((current) => {
+      const next = !current;
+      window.localStorage.setItem("muni-nav-collapsed", String(next));
+      return next;
+    });
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -195,13 +272,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <main className="premium-shell atlas-shell">
+    <main className={navCollapsed ? "premium-shell atlas-shell nav-collapsed" : "premium-shell atlas-shell"}>
       <PageTransition />
       <aside className="premium-sidebar atlas-sidebar" aria-label="Primary navigation">
-        <NavigationContent pathname={pathname} sourceState={sourceState} healthLabel={healthLabel} />
+        <NavigationContent pathname={pathname} collapsed={navCollapsed} onSearch={() => setCommandOpen(true)} onToggleCollapse={toggleNavigation} sourceState={sourceState} healthLabel={healthLabel} />
       </aside>
 
-      <button className="nav-float-button" aria-label="Open navigation menu" onClick={() => setMenuOpen(true)}>
+      <button className="nav-float-button" aria-label="Open tablet navigation" onClick={() => setMenuOpen(true)}>
         <Menu size={17} />
         <span>Menu</span>
       </button>
@@ -210,7 +287,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="premium-workspace atlas-workspace" key={pathname}>
         <header className="topbar premium-topbar atlas-topbar">
-          <button className="icon-button mobile-menu" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={18} /></button>
+          <button className="icon-button mobile-menu" aria-label="Open workspace navigation" onClick={() => setMenuOpen(true)}><Menu size={18} /></button>
           <div className="workspace-identity">
             <p className="workspace-breadcrumb"><span>MuniAccountability</span><i aria-hidden="true" />{activeNavGroup?.label ?? "Command"}</p>
             <h1>{activeNavItem?.label ?? "Command Centre"}</h1>
@@ -226,9 +303,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </div>
 
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="MuniAtlas menu">
+      <MobileBottomNavigation pathname={pathname} onMore={() => setMenuOpen(true)} />
+
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="MuniAtlas navigation" className="mobile-navigation-sheet">
         <div className="mobile-nav-panel">
-          <NavigationContent pathname={pathname} onNavigate={() => setMenuOpen(false)} sourceState={sourceState} healthLabel={healthLabel} />
+          <NavigationContent pathname={pathname} onNavigate={() => setMenuOpen(false)} onSearch={() => { setMenuOpen(false); setCommandOpen(true); }} sourceState={sourceState} healthLabel={healthLabel} />
         </div>
       </Sheet>
 

@@ -28,10 +28,23 @@ test.describe("Command shell navigation", () => {
     await expect(page.getByRole("heading", { name: /AGSA Review Cockpit/i })).toBeVisible();
   });
 
+  test("desktop command rail collapses and expands without losing navigation", async ({ page, isMobile }) => {
+    test.skip(isMobile, "Desktop command rail behavior is covered in the desktop project.");
+
+    await page.goto("/");
+    await page.getByRole("button", { name: "Collapse sidebar" }).click();
+    await expect(page.locator("main.nav-collapsed")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Action Board" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Expand sidebar" }).click();
+    await expect(page.locator("main.nav-collapsed")).toHaveCount(0);
+  });
+
   test("mobile menu opens and reaches AGSA Review", async ({ page, isMobile }) => {
     test.skip(!isMobile, "Mobile menu behavior is covered only in the mobile project.");
 
     await page.goto("/");
+    await expect(page.getByRole("navigation", { name: /Mobile primary navigation/i })).toBeVisible();
     await page.getByRole("button", { name: /Open navigation menu/i }).click();
     await expect(page.getByText(/MuniAtlas/i).first()).toBeVisible();
 

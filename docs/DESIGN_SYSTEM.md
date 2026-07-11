@@ -55,6 +55,7 @@ Typography rules are mainly in:
 ```txt
 components/atlas/atlas-type.css
 components/atlas/atlas-elegance.css
+components/atlas/atlas-navigation-revamp.css
 ```
 
 The final system uses locally bundled Manrope Variable for interface text and Newsreader Variable for selective editorial emphasis. The local font packages avoid runtime font requests and layout shifts. Keep headings confident but avoid letter-by-letter breaking.
@@ -185,6 +186,7 @@ components/atlas/atlas-compact-desktop-rescue.css
 components/atlas/atlas-desktop-shell-fix.css
 components/atlas/atlas-device-polish.css
 components/atlas/atlas-elegance.css
+components/atlas/atlas-navigation-revamp.css
 ```
 
 These protect:
