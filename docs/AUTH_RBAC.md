@@ -17,6 +17,8 @@ lib/auth/server-session.ts
 components/auth/access-provider.tsx
 middleware.ts
 app/access-denied/page.tsx
+firestore.rules
+storage.rules
 ```
 
 The implementation supports:
@@ -30,6 +32,8 @@ The implementation supports:
 - role-aware navigation
 - API `401` and `403` responses
 - a public-safe access-denied page
+- tenant-aware Firestore and Storage rules
+- signed-session browser tests
 - demo-mode role testing
 
 ## Roles
@@ -122,6 +126,41 @@ The middleware validates:
 
 The middleware does **not** trust a browser-supplied `x-muni-role` header.
 
+## Tenant isolation
+
+Tenant identity is part of the signed session and must also be present in Firebase custom claims when Firestore/Storage are enabled.
+
+The data rules use:
+
+```txt
+request.auth.token.tenantId
+```
+
+A normal user may only access paths under their own tenant:
+
+```txt
+/tenants/{tenantId}/...
+```
+
+`super_admin` is the only role allowed to cross tenant boundaries, and that role should be reserved for platform operations.
+
+Firestore rules protect:
+
+- public profiles
+- review decisions
+- production gate reviews
+- draft actions
+- immutable audit logs
+
+Storage rules protect:
+
+- tenant evidence
+- restricted files
+- file size limits
+- approved content types
+
+UI route filtering is a usability feature, not the security boundary. Middleware and Firebase rules remain authoritative.
+
 ## Demo mode
 
 When:
@@ -202,13 +241,16 @@ The current work is a strong RBAC and signed-session foundation, but full produc
 - Never accept role or tenant identity directly from client headers or request bodies.
 - Enforce authorization on the server even when navigation is hidden in the UI.
 - Use least privilege. Do not assign `admin` when `viewer`, `analyst` or `reviewer` is sufficient.
+- Validate Firestore and Storage rules with emulator tests before production deployment.
 
 ## Test commands
 
 ```bash
+npm run lint
 npm run test:rbac-contracts
 npm run test:institutional
 npm run verify
+npm run test:e2e
 ```
 
-The RBAC contract suite checks the role matrix, permissions, signed session format, middleware enforcement, role-aware shell and documentation.
+The RBAC contract suite checks the role matrix, permissions, signed session format, middleware enforcement, role-aware shell, tenant rules and documentation.
