@@ -25,28 +25,31 @@ Use this documentation hub when onboarding new developers, handing work to Codex
 5. [`WORKFLOW_MODULES.md`](./WORKFLOW_MODULES.md)  
    Explains Step 1 to Step 4: Assistant, Action Studio, Evidence Intake and AGSA Review Cockpit.
 
-6. [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)  
+6. [`AUTH_RBAC.md`](./AUTH_RBAC.md)  
+   Explains roles, permissions, signed sessions, middleware enforcement and the future Firebase exchange flow.
+
+7. [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)  
    Explains the Atlas visual system, buttons, cards, navigation and motion.
 
-7. [`CSS_LAYERS.md`](./CSS_LAYERS.md)  
+8. [`CSS_LAYERS.md`](./CSS_LAYERS.md)  
    Critical. Explains why CSS import order matters and how not to break desktop/mobile layouts.
 
-8. [`TESTING_STRATEGY.md`](./TESTING_STRATEGY.md)  
-   Defines the institutional test suite, Playwright browser checks and readiness gates.
+9. [`TESTING_STRATEGY.md`](./TESTING_STRATEGY.md)  
+   Defines the institutional test suite, signed-session RBAC checks, Playwright browser checks and readiness gates.
 
-9. [`DEVELOPER_ONBOARDING.md`](./DEVELOPER_ONBOARDING.md)  
+10. [`DEVELOPER_ONBOARDING.md`](./DEVELOPER_ONBOARDING.md)  
    Local setup, verification commands and manual QA checklist.
 
-10. [`QA_CHECKLIST.md`](./QA_CHECKLIST.md)  
+11. [`QA_CHECKLIST.md`](./QA_CHECKLIST.md)  
    Route, workflow, device, browser E2E and deployment checks before shipping.
 
-11. [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)  
+12. [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)  
    Vercel/deployment debugging, environment checks and post-deploy QA.
 
-12. [`REPO_MAINTENANCE.md`](./REPO_MAINTENANCE.md)  
+13. [`REPO_MAINTENANCE.md`](./REPO_MAINTENANCE.md)  
    Safe cleanup strategy, refactor rules and future folder organization.
 
-13. [`NEXT_STEPS.md`](./NEXT_STEPS.md)  
+14. [`NEXT_STEPS.md`](./NEXT_STEPS.md)  
    Implementation plan from Step 5 onward.
 
 ## Important root-level handoff file
@@ -107,15 +110,15 @@ The heavier browser E2E layer can be run with:
 npm run test:e2e
 ```
 
-It checks API contracts, workflow wiring, public-safety rules, CSS authority layers, documentation completeness and browser-level user journeys.
+It checks API contracts, workflow wiring, RBAC/session boundaries, public-safety rules, CSS authority layers, documentation completeness and browser-level user journeys.
 
 ## Documentation principles
 
 - Keep docs close to reality.
-- Update docs when routes, workflows, CSS layers or persistence paths change.
+- Update docs when routes, workflows, CSS layers, authentication or persistence paths change.
 - Do not bury critical warnings in chat history. Add them here.
 - Document prototype boundaries clearly.
-- Treat public-claim safety as part of product behavior, not just copywriting.
+- Treat public-claim safety and access control as product behavior, not just documentation.
 
 ## Current high-level status
 
@@ -126,9 +129,9 @@ It checks API contracts, workflow wiring, public-safety rules, CSS authority lay
 | Evidence Intake Desk | Built | Dedicated evidence drawer, proof templates, source preview |
 | AGSA Review Cockpit | Built | Review queue, decision persistence, publish-safety gates |
 | Desktop/mobile shell | Stabilized | Multiple final CSS authority layers now protect layout |
-| Institutional tests | Expanded | Node contract scripts plus optional Playwright E2E browser checks |
+| Institutional tests | Expanded | Node contract scripts plus signed-session Playwright browser checks |
+| Auth/RBAC | Foundation built | Signed sessions, role policy, middleware and role-aware navigation; Firebase exchange and revocation still required |
 | Durable persistence | Not complete | Local JSON remains active prototype write path |
-| Auth/RBAC | Not complete | Needs production-grade Firebase/Admin role handling |
 | File evidence upload | Not complete | Evidence URL only, no object storage workflow yet |
 
 ## When adding new docs
