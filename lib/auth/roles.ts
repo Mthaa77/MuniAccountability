@@ -86,6 +86,8 @@ const PUBLIC_ACCESS: RouteAccess = {
   public: true
 };
 
+const INSTITUTIONAL_ROLES: Role[] = ["viewer", "analyst", "reviewer", "admin", "super_admin"];
+
 function protectedAccess(rolesAllowed: Role[], permissionsRequired: Permission[], reason: string): RouteAccess {
   return {
     roles: rolesAllowed,
@@ -126,6 +128,7 @@ export function accessForPath(pathname: string, method = "GET"): RouteAccess {
   if (
     pathname === "/access-denied" ||
     pathname.startsWith("/municheck") ||
+    pathname.startsWith("/munidata") ||
     pathname.startsWith("/disclaimer") ||
     pathname.startsWith("/api/v1/municheck") ||
     pathname.startsWith("/v1/municheck") ||
@@ -149,7 +152,7 @@ export function accessForPath(pathname: string, method = "GET"): RouteAccess {
   }
 
   if (pathname.startsWith("/docs-api")) {
-    return protectedAccess(["viewer", "analyst", "reviewer", "admin", "super_admin"], ["workspace.read"], "Institutional API documentation");
+    return protectedAccess(INSTITUTIONAL_ROLES, ["workspace.read"], "Institutional API documentation");
   }
 
   if (pathname.startsWith("/briefings")) {
@@ -159,7 +162,7 @@ export function accessForPath(pathname: string, method = "GET"): RouteAccess {
   if (pathname.startsWith("/actions") || pathname.startsWith("/api/v1/actions") || pathname.startsWith("/v1/actions")) {
     const permission: Permission = upperMethod === "GET" ? "actions.read" : "actions.write";
     return protectedAccess(
-      upperMethod === "GET" ? ["viewer", "analyst", "reviewer", "admin", "super_admin"] : ["analyst", "reviewer", "admin", "super_admin"],
+      upperMethod === "GET" ? INSTITUTIONAL_ROLES : ["analyst", "reviewer", "admin", "super_admin"],
       [permission],
       "Action workflow"
     );
@@ -168,7 +171,7 @@ export function accessForPath(pathname: string, method = "GET"): RouteAccess {
   if (pathname.startsWith("/api/v1/assistant/query") || pathname.startsWith("/v1/assistant/query")) {
     const permission: Permission = upperMethod === "GET" ? "evidence.read" : "actions.write";
     return protectedAccess(
-      upperMethod === "GET" ? ["viewer", "analyst", "reviewer", "admin", "super_admin"] : ["analyst", "reviewer", "admin", "super_admin"],
+      upperMethod === "GET" ? INSTITUTIONAL_ROLES : ["analyst", "reviewer", "admin", "super_admin"],
       [permission],
       "Source-locked assistant"
     );
@@ -186,10 +189,14 @@ export function accessForPath(pathname: string, method = "GET"): RouteAccess {
     pathname.startsWith("/api/v1") ||
     pathname.startsWith("/v1")
   ) {
-    return protectedAccess(["viewer", "analyst", "reviewer", "admin", "super_admin"], ["workspace.read"], "Institutional workspace");
+    return protectedAccess(INSTITUTIONAL_ROLES, ["workspace.read"], "Institutional workspace");
   }
 
-  return PUBLIC_ACCESS;
+  return protectedAccess(
+    INSTITUTIONAL_ROLES,
+    ["workspace.read"],
+    "Unclassified institutional route (deny by default)"
+  );
 }
 
 export function requiredRolesForPath(pathname: string, method = "GET"): Role[] {
