@@ -46,7 +46,7 @@ for (const [spec, tokens] of Object.entries(specContracts)) {
 
 [
   "createSessionToken",
-  "HMAC",
+  "createHmac",
   "sha256",
   "muni_session",
   "authenticateAs",
