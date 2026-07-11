@@ -26,6 +26,7 @@ The implementation supports:
 - canonical roles
 - explicit permissions
 - route and HTTP-method policies
+- fail-closed route classification
 - HMAC-signed session cookies
 - server-side current-user resolution
 - middleware enforcement
@@ -82,12 +83,15 @@ accessForPath(pathname, method)
 
 Important policies:
 
-- `/municheck`, `/disclaimer` and public MuniData routes are public-safe.
+- `/municheck`, `/munidata`, `/disclaimer` and their public API families are explicitly public-safe.
 - institutional workspace pages require at least `viewer` access.
 - action writes and assistant queries require `analyst` or higher.
 - AGSA review decisions require `reviewer` or higher.
 - production-readiness administration requires `admin` or higher.
 - `super_admin` receives all permissions.
+- all unclassified application routes **deny by default** and require institutional `workspace.read` permission.
+
+Middleware runs across application and API routes while excluding static assets. A new route is therefore protected until it is deliberately classified as public or assigned a more specific permission rule.
 
 ## Session cookie
 
@@ -242,6 +246,7 @@ The current work is a strong RBAC and signed-session foundation, but full produc
 - Enforce authorization on the server even when navigation is hidden in the UI.
 - Use least privilege. Do not assign `admin` when `viewer`, `analyst` or `reviewer` is sufficient.
 - Validate Firestore and Storage rules with emulator tests before production deployment.
+- Keep the route policy fail closed. New routes must not become public accidentally.
 
 ## Test commands
 
@@ -253,4 +258,4 @@ npm run verify
 npm run test:e2e
 ```
 
-The RBAC contract suite checks the role matrix, permissions, signed session format, middleware enforcement, role-aware shell, tenant rules and documentation.
+The RBAC contract suite checks the role matrix, permissions, fail-closed routing, signed session format, middleware enforcement, role-aware shell, tenant rules and documentation.
