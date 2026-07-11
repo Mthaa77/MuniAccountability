@@ -1,0 +1,157 @@
+/* Institutional identity and RBAC surfaces. Loaded last. */
+
+.access-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  max-width: 230px;
+  padding: 5px 12px 5px 6px;
+  border: 1px solid rgba(11, 95, 79, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 249, 246, 0.92));
+  color: #0a2a22;
+  box-shadow: 0 12px 28px rgba(7, 22, 17, 0.07);
+}
+
+.access-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  min-width: 31px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0b5f4f, #073f36);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16);
+}
+
+.access-identity > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.access-identity strong,
+.access-identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.access-identity strong {
+  color: #0a2a22;
+  font-size: 0.77rem;
+  font-weight: 950;
+}
+
+.access-identity small {
+  color: #66736d;
+  font-size: 0.66rem;
+  font-weight: 780;
+}
+
+.access-denied-page {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  gap: 22px;
+}
+
+.access-denied-seal {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid rgba(143, 51, 43, 0.2);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(248,232,229,0.9));
+  color: #7d2e28;
+}
+
+.access-denied-seal strong {
+  color: #4d201d;
+  font-size: 1rem;
+}
+
+.access-denied-seal span {
+  color: #785c58;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.access-denied-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.access-denied-actions article {
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid rgba(213, 205, 188, 0.78);
+  border-radius: 28px;
+  background: rgba(255, 253, 248, 0.96);
+  box-shadow: 0 20px 50px rgba(14, 26, 21, 0.08);
+}
+
+.access-denied-actions h2 {
+  margin: 0 0 8px;
+  color: #10251f;
+  font-size: clamp(1.4rem, 2.4vw, 2.2rem);
+}
+
+.access-denied-actions p {
+  max-width: 720px;
+  margin: 0;
+  color: #62706a;
+  line-height: 1.65;
+}
+
+.access-denied-actions article > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+[data-auth-role="public"] .source-pill,
+[data-auth-role="public"] .command-trigger {
+  display: none !important;
+}
+
+@media (min-width: 1181px) and (max-width: 1440px) {
+  .access-identity {
+    max-width: 185px;
+  }
+
+  .access-identity strong {
+    max-width: 110px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .access-identity {
+    order: -1;
+    max-width: min(100%, 320px);
+  }
+}
+
+@media (max-width: 760px) {
+  .access-identity {
+    width: 100%;
+    max-width: none;
+    justify-content: flex-start;
+  }
+
+  .access-denied-actions article > div {
+    display: grid;
+  }
+
+  .access-denied-actions .primary-action,
+  .access-denied-actions .secondary-action {
+    width: 100%;
+  }
+}
