@@ -2,7 +2,7 @@
 
 Premium municipal oversight and recovery operating system for South African institutional users.
 
-The current MVP is an **AGSA-first municipal accountability workspace**. It combines source-backed municipal case files, intervention queues, draft action workflows, public-safe MuniCheck profiles, source health panels, validation gates and production-readiness evidence packs.
+The current MVP is an **AGSA-first municipal accountability workspace**. It combines source-backed municipal case files, intervention queues, draft action workflows, public-safe MuniCheck profiles, source health panels, validation gates, signed-session RBAC and production-readiness evidence packs.
 
 ## Current Prototype Scope
 
@@ -11,6 +11,8 @@ The current MVP is an **AGSA-first municipal accountability workspace**. It comb
 - Public MuniCheck and MuniData entry points.
 - Versioned `/v1/*` API family backed by typed AGSA-derived data.
 - Source-locked search and assistant query policy: unsupported claims are refused.
+- Signed session-cookie boundary with roles, permissions, middleware enforcement and role-aware navigation.
+- Tenant-aware Firestore and Storage rules.
 - Production gate model for exact MFMA annexure mapping, Treasury/Municipal Money Financial Pulse unlock and durable workflow persistence.
 
 The prototype deliberately marks Treasury/Municipal Money telemetry as pending validation. It does not claim live financial integration.
@@ -30,15 +32,16 @@ Recommended reading order:
 3. `docs/FRONTEND_GUIDE.md`
 4. `docs/API_REFERENCE.md`
 5. `docs/WORKFLOW_MODULES.md`
-6. `docs/DESIGN_SYSTEM.md`
-7. `docs/CSS_LAYERS.md`
-8. `docs/TESTING_STRATEGY.md`
-9. `docs/DEVELOPER_ONBOARDING.md`
-10. `docs/QA_CHECKLIST.md`
-11. `docs/DEPLOYMENT_RUNBOOK.md`
-12. `docs/REPO_MAINTENANCE.md`
-13. `docs/NEXT_STEPS.md`
-14. `CODEX_CONTINUATION.md`
+6. `docs/AUTH_RBAC.md`
+7. `docs/DESIGN_SYSTEM.md`
+8. `docs/CSS_LAYERS.md`
+9. `docs/TESTING_STRATEGY.md`
+10. `docs/DEVELOPER_ONBOARDING.md`
+11. `docs/QA_CHECKLIST.md`
+12. `docs/DEPLOYMENT_RUNBOOK.md`
+13. `docs/REPO_MAINTENANCE.md`
+14. `docs/NEXT_STEPS.md`
+15. `CODEX_CONTINUATION.md`
 
 Folder-level guides also exist in:
 
@@ -69,12 +72,14 @@ Run the full deterministic platform verification chain before promoting any chan
 npm run verify
 ```
 
-Focused checks are also available:
+Focused checks:
 
 ```bash
+npm run lint
 npm run typecheck
 npm run build
 npm run test:institutional
+npm run test:rbac-contracts
 npm run test:institutional-api-contracts
 npm run test:institutional-workflows
 npm run test:public-safety-contracts
@@ -84,7 +89,7 @@ npm run test:production-readiness
 npm run test:production-evidence
 ```
 
-The institutional suite protects API contracts, workflow wiring, public-safety rules, CSS authority layers and documentation completeness.
+The institutional suite protects API contracts, workflow wiring, signed-session RBAC, tenant rules, public-safety rules, CSS authority layers and documentation completeness.
 
 ## Browser E2E Tests
 
@@ -113,7 +118,44 @@ Run headed for debugging:
 npm run test:e2e:headed
 ```
 
-The E2E suite is intentionally separate from `npm run verify` because browser tests are heavier. Use it for release candidates, major workflow changes and layout regressions.
+The browser suite starts the app with signed-session authentication enabled and tests anonymous, viewer, reviewer and admin access boundaries.
+
+## Authentication and RBAC
+
+Default demo mode:
+
+```env
+NEXT_PUBLIC_DEMO_MODE=true
+NEXT_PUBLIC_REQUIRE_AUTH=false
+MUNI_DEV_ROLE=admin
+```
+
+Supported roles:
+
+```txt
+public
+viewer
+analyst
+reviewer
+admin
+super_admin
+```
+
+For signed-session testing:
+
+```env
+NEXT_PUBLIC_DEMO_MODE=false
+NEXT_PUBLIC_REQUIRE_AUTH=true
+MUNI_SESSION_SECRET=replace-with-at-least-32-random-characters
+```
+
+Generate a development token:
+
+```bash
+npm run auth:dev-token -- --role reviewer
+```
+
+See `docs/AUTH_RBAC.md` for the role matrix, permission model, tenant isolation and future Firebase ID-token exchange flow.
 
 ## Firebase and GCP Preparation
 
@@ -126,18 +168,9 @@ This repo is prepared for a cheap/free-first Firebase and GCP path:
 - Cost-control notes: `docs/COST_CONTROL.md`
 - Deployment guide: `docs/FIREBASE_GCP_DEPLOYMENT.md`
 
-Default mode remains cheap and demo-safe:
-
-```env
-NEXT_PUBLIC_DEMO_MODE=true
-NEXT_PUBLIC_REQUIRE_AUTH=false
-WORKFLOW_STORE_PROVIDER=local_json
-DISABLE_EXPENSIVE_JOBS=true
-```
-
 ## Workflow Persistence
 
-The current active write path is local JSON, suitable for prototype review only. The workflow-store abstraction now prepares a clean switch to Firestore once Firebase Admin credentials, Auth role claims, rules and smoke tests are ready.
+The current active write path is local JSON, suitable for prototype review only. The workflow-store abstraction prepares a clean switch to Firestore once Firebase Admin credentials, tenant claims, Auth role claims, rules and smoke tests are ready.
 
 Prepared providers:
 
@@ -163,3 +196,4 @@ Important boundaries:
 - Treasury/Municipal Money telemetry remains gated until validation passes.
 - Exact municipality-level audit outcomes require official annexure validation where unresolved.
 - Public MuniCheck profiles must not expose internal workflow notes or restricted evidence.
+- The signed-session/RBAC foundation still requires Firebase ID-token exchange, revocation, administrator-managed claims and privileged-role MFA before production authentication is complete.
